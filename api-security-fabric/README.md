@@ -54,7 +54,7 @@ Modifiez la spécification OpenAPI enrichie dans `contracts/api-spec.yaml` en as
 ### 2. Compiler la configuration Kong
 Le script de transformation compile automatiquement le contrat OpenAPI et les modèles de profils déclaratifs pour générer le manifeste decK final :
 ```bash
-python3 scripts/transform.py
+python3 api-security-fabric/scripts/transform.py
 ```
 Cela produit ou met à jour le fichier `config/kong.yaml`.
 
