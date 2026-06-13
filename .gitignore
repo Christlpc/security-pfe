@@ -1,1 +1,7 @@
 docker-compose.yml
+create_agency.sh
+onboard_bankassurance.sh
+secrets_BANK_NAME.txt
+Dev_api-security-fabric.md
+dfd.drawio
+NSIA Assurances API.yaml
