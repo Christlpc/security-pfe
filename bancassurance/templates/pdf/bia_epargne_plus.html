@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIA Épargne Plus - {{ simulation.reference }}</title>
+    <style>
+        /* ============================================
+           CONFIGURATION PAGE
+           ============================================ */
+        @page {
+            size: A4;
+            margin: 1.2cm 1cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8.5pt;
+            line-height: 1.25;
+            color: #000;
+        }
+        
+        /* ============================================
+           EN-TÊTE NSIA
+           ============================================ */
+        .header-nsia {
+            text-align: center;
+            font-size: 7pt;
+            line-height: 1.2;
+            border-bottom: 1px solid #000;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+        
+        /* ============================================
+           TITRE PRODUIT
+           ============================================ */
+        .produit-header {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            color: #E67E22;
+            margin: 8px 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .produit-subtitle {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+        
+        /* ============================================
+           SECTIONS
+           ============================================ */
+        .section {
+            margin-bottom: 8px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            background: #003366;
+            color: #fff;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 9pt;
+            margin-top: 8px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        /* ============================================
+           GRILLE FORMULAIRE
+           ============================================ */
+        .form-row {
+            display: flex;
+            gap: 4mm;
+            margin: 3px 0;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group.half {
+            flex: 0.5;
+        }
+        
+        .form-label {
+            font-size: 8pt;
+            font-weight: normal;
+            margin-bottom: 1px;
+            display: block;
+        }
+        
+        .form-value {
+            border-bottom: 1px solid #333;
+            padding: 1px 3px;
+            min-height: 16px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        
+        .form-value.empty {
+            border-bottom: 1px dotted #999;
+            color: transparent;
+        }
+        
+        /* ============================================
+           COMPTE BANCAIRE (DIGIT BOXES)
+           ============================================ */
+        .compte-section {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 3mm;
+            flex-wrap: wrap;
+        }
+        
+        .compte-label {
+            font-weight: normal;
+            font-size: 8pt;
+        }
+        
+        .digit-boxes {
+            display: inline-flex;
+            gap: 1mm;
+        }
+        
+        .digit-box {
+            width: 5mm;
+            height: 5.5mm;
+            border: 1px solid #333;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+            line-height: 5.5mm;
+            background: white;
+        }
+        
+        .digit-separator {
+            margin: 0 1.5mm;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        
+        /* ============================================
+           CHECKBOXES & RADIO
+           ============================================ */
+        .checkbox-group,
+        .radio-group {
+            display: inline-flex;
+            gap: 6mm;
+            margin: 2px 0;
+            align-items: center;
+        }
+        
+        .checkbox-item,
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5mm;
+        }
+        
+        .checkbox,
+        .radio {
+            width: 4mm;
+            height: 4mm;
+            border: 1.5px solid #333;
+            display: inline-block;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .radio {
+            border-radius: 50%;
+        }
+        
+        .checkbox.checked::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        
+        .radio.checked::after {
+            content: "●";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 7pt;
+        }
+
+         /* ============================================
+           SECTION BANQUE
+           ============================================ */
+        .section-banque {
+            margin-bottom: 10px;
+        }
+        
+        .banque-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .banque-nom {
+            display: table-cell;
+            width: 50%;
+            font-size: 11pt;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        
+        .proposition {
+            display: table-cell;
+            width: 50%;
+            text-align: right;
+            font-size: 10pt;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        
+        .produit-type {
+            font-size: 10pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .info-ligne {
+            margin: 3px 0;
+            font-size: 8pt;
+        }
+        
+        .label {
+            font-weight: bold;
+        }
+        
+        /* ============================================
+           TABLEAUX
+           ============================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 8pt;
+        }
+        
+        table.bordered {
+            border: 1px solid #000;
+        }
+        
+        table.bordered td,
+        table.bordered th {
+            border: 1px solid #000;
+            padding: 3px 5px;
+            vertical-align: middle;
+        }
+        
+        th {
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8pt;
+        }
+        
+        /* ============================================
+           TABLEAU BÉNÉFICIAIRES
+           ============================================ */
+        .beneficiaires-table {
+            font-size: 8pt;
+        }
+        
+        .beneficiaires-table th {
+            background: #e8e8e8;
+            padding: 3px;
+        }
+        
+        .beneficiaires-table td {
+            min-height: 18px;
+        }
+        
+        .beneficiaires-table tr.empty td {
+            height: 16px;
+            background: #fafafa;
+        }
+        
+        /* ============================================
+           SECTION COTISATIONS
+           ============================================ */
+        .cotisation-line {
+            margin: 4px 0;
+            font-size: 8.5pt;
+        }
+        
+        .cotisation-montant {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2mm;
+        }
+        
+        .montant-boxes {
+            display: inline-flex;
+            gap: 0.8mm;
+        }
+        
+        .montant-box {
+            width: 5mm;
+            height: 5.5mm;
+            border: 1px solid #333;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+            line-height: 5.5mm;
+            background: white;
+        }
+        
+        /* ============================================
+           SIGNATURES
+           ============================================ */
+        .signatures-section {
+            margin-top: 12px;
+            page-break-inside: avoid;
+        }
+        
+        .date-lieu {
+            text-align: right;
+            margin-bottom: 6px;
+            font-size: 8pt;
+        }
+        
+        .signatures-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .signature-cell {
+            display: table-cell;
+            width: 33.33%;
+            border: 1px solid #000;
+            padding: 3px;
+            vertical-align: top;
+        }
+        
+        .signature-title {
+            font-weight: bold;
+            font-size: 7.5pt;
+            text-align: center;
+            padding: 3px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #000;
+        }
+        
+        .signature-subtitle {
+            font-size: 6.5pt;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .signature-box {
+            height: 50px;
+            padding: 4px;
+        }
+        
+        /* ============================================
+           NOTE IMPORTANTE
+           ============================================ */
+        .note-importante {
+            font-size: 7pt;
+            margin: 8px 0;
+            padding: 5px;
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            line-height: 1.3;
+        }
+        
+        /* ============================================
+           FILIGRANE
+           ============================================ */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 70pt;
+            font-weight: bold;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        
+        .watermark.brouillon {
+            color: #6c757d;
+            opacity: 0.15;
+        }
+        
+        .watermark.en-attente {
+            color: #ffc107;
+            opacity: 0.12;
+        }
+        
+        .watermark.valide {
+            color: #28a745;
+            opacity: 0.08;
+        }
+        
+        .watermark.annule {
+            color: #dc3545;
+            opacity: 0.15;
+        }
+        
+        .watermark.converti {
+            color: #17a2b8;
+            opacity: 0.10;
+        }
+        
+        /* ============================================
+           UTILITAIRES
+           ============================================ */
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         FILIGRANE
+         ============================================ -->
+    {% if simulation.statut != 'convertie' %}
+    <div class="watermark {{ simulation.statut }}">
+        {{ simulation.get_statut_display }}
+    </div>
+    {% endif %}
+
+    <!-- ============================================
+         EN-TÊTE NSIA
+         ============================================ -->
+    
+    <!--     <div class="header-nsia">
+        <p>Entreprise régie par le Code des Assurances CIMA, Société Anonyme au capital de 3 176 000 000 F CFA Entièrement libéré.</p>
+        <p>RCCM CG/BZV/08B1365 Siège social : 1 Avenue Cardinal Emile BIAYENDA Brazzaville Congo</p>
+        <p>BP : 1151 Brazzaville République du Congo | Tél : (242) 22 282 24 92 | Fax : (242) 22 282 24 93</p>
+        <p>Email : nsiaViecongo@groupensia.com</p>
+    </div>
+    -->
+
+    <!-- ============================================
+         TITRE PRODUIT
+         ============================================ -->
+    <div class="produit-header">
+        ÉPARGNE PLUS
+    </div>
+    <div class="produit-subtitle">
+        BULLETIN INDIVIDUEL D'ADHÉSION
+    </div>
+
+     <!-- ============================================
+         SECTION BANQUE
+         ============================================ -->
+    <div class="section-banque">
+        <div class="banque-header">
+            <div class="banque-nom">{{ simulation.banque.nom_court }}</div>
+            <div class="proposition">PROPOSITION N° {{ simulation.reference }}</div>
+        </div>
+        
+        
+        <div class="info-ligne">
+            <span class="label">RESERVE A NSIA Vie Congo</span>
+            {% if simulation.agence %}
+            <span style="float: right;"><span class="label">Agence :</span> {{ simulation.agence.nom }}</span>
+            
+            {% endif %}
+        </div>
+        
+        <div class="info-ligne">
+            <span class="label">Nom du conseiller :</span>
+            {{ simulation.gestionnaire }}
+        </div>
+    </div>
+
+
+    <!-- ============================================
+         I. SOUSCRIPTEUR
+         ============================================ -->
+    <div class="section">
+        <div class="section-title">I. SOUSCRIPTEUR</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Nom</span>
+                <div class="form-value">{{ simulation.nom_client }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Prénoms</span>
+                <div class="form-value">{{simulation.prenom_client}}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Date de Naissance</span>
+                <div class="form-value">{{simulation.donnees_entree.date_naissance}}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Lieu de Naissance</span>
+                <div class="form-value">{{simulation.donnees_entree.lieu_naissance}}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Situation matrimoniale</span>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'celibataire' %}checked{% endif %}"></span>
+                        <span>Célibataire</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'marie' %}checked{% endif %}"></span>
+                        <span>Marié(e)</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'divorce' %}checked{% endif %}"></span>
+                        <span>Divorcé(e)</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'veuf' %}checked{% endif %}"></span>
+                        <span>Veuf(ve)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Adresse géographique</span>
+                <div class="form-value">{{ simulation.banque.adresse|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Profession</span>
+                <div class="form-value">{{simulation.donnees_entree.profession}}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Employeur</span>
+                <div class="form-value">{{simulation.donnees_entree.employeur}}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Adresse Employeur</span>
+                <div class="form-value empty">&nbsp;</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Téléphone Bureau</span>
+                <div class="form-value empty">&nbsp;</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Téléphone Domicile</span>
+                <div class="form-value">{{simulation.telephone_client}}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Cellulaire</span>
+                <div class="form-value empty">{{simulation.telephone_client}}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Email personnel</span>
+                <div class="form-value">{{simulation.email_client}}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Email Professionnel</span>
+                <div class="form-value empty">{{ simulation.banque.email|default:"" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         II. ADHÉRENT
+         ============================================ -->
+    <div class="section">
+        <div class="section-title">II. ADHÉRENT</div>
+        
+        <!-- Compte bancaire -->
+        <div class="compte-section">
+            <span class="compte-label">Compte N° :</span>
+            
+            <span class="compte-label">banque</span>
+            <div class="digit-boxes">
+                {% with banque_code=simulation.donnees_entree.banque_client|default:"00000" %}
+                    {% for digit in banque_code %}
+                    <span class="digit-box">{{ digit }}</span>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            
+            <span class="compte-label">Agence</span>
+            <div class="digit-boxes">
+                {% with agence_code=simulation.donnees_entree.agence_client|default:"00000" %}
+                    {% for digit in agence_code %}
+                    <span class="digit-box">{{ digit }}</span>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            
+            <span class="compte-label">Compte</span>
+            <div class="digit-boxes">
+                {% with compte_num=simulation.donnees_entree.numero_compte|default:"000000000000" %}
+                    {% for digit in compte_num %}
+                    <span class="digit-box">{{ digit }}</span>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            
+            <span class="compte-label">Clé</span>
+            <div class="digit-boxes">
+                {% with cle=simulation.donnees_entree.numero_compte_cle|default:"00" %}
+                    {% for digit in cle %}
+                    <span class="digit-box">{{ digit }}</span>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+
+            <span class="compte-label">( Prière de joindre le RIB)</span>
+        </div>
+        
+        <!-- Civilité -->
+        <div class="form-row">
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.titre_assure == 'Monsieur' %}checked{% endif %}"></span>
+                        <span>M.</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.titre_assure == 'Madame' %}checked{% endif %}"></span>
+                        <span>Mme</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.titre_assure == 'Mademoiselle' %}checked{% endif %}"></span>
+                        <span>Mlle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Nom</span>
+                <div class="form-value">{{ simulation.nom_client }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Prénoms</span>
+                <div class="form-value">{{ simulation.prenom_client }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Date de Naissance</span>
+                <div class="form-value">{{ simulation.donnees_entree.date_naissance}}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Lieu de Naissance</span>
+                <div class="form-value">{{ simulation.donnees_entree.lieu_naissance|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Situation matrimoniale</span>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'celibataire' %}checked{% endif %}"></span>
+                        <span>Célibataire</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'marie' %}checked{% endif %}"></span>
+                        <span>Marié(e)</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'divorce' %}checked{% endif %}"></span>
+                        <span>Divorcé(e)</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.situation_matrimoniale == 'veuf' %}checked{% endif %}"></span>
+                        <span>Veuf(ve)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Adresse géographique</span>
+                <div class="form-value">{{ simulation.donnees_entree.adresse_postale|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Profession</span>
+                <div class="form-value">{{ simulation.donnees_entree.profession|default:"" }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Employeur</span>
+                <div class="form-value">{{ simulation.donnees_entree.employeur|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Adresse Employeur</span>
+                <div class="form-value">{{ simulation.donnees_entree.adresse_employeur|default:"" }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Téléphone Bureau</span>
+                <div class="form-value">{{ simulation.donnees_entree.telephone_bureau|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Téléphone Domicile</span>
+                <div class="form-value">{{ simulation.donnees_entree.telephone_domicile|default:"" }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Cellulaire</span>
+                <div class="form-value">{{ simulation.telephone_client }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Email personnel</span>
+                <div class="form-value">{{ simulation.email_client }}</div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Email Professionnel</span>
+                <div class="form-value empty">{{ simulation.donnees_entree.email_professionnel|default:"" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Avez vous déjà souscrit à des contrats d'assurances auprès de NSIA Vie?</span>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.deja_souscrit_nsia %}checked{% endif %}"></span>
+                        <span>Oui</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if not simulation.donnees_entree.deja_souscrit_nsia %}checked{% endif %}"></span>
+                        <span>Non</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Merci de préciser le type de contrat et le numéro de police</span>
+                <div class="form-value">{{ simulation.donnees_entree.contrats_nsia_existants|default:"" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         III. BÉNÉFICIAIRES
+         ============================================ -->
+    <div class="section">
+        <div class="section-title">III. BÉNÉFICIAIRES</div>
+        
+        <table class="bordered beneficiaires-table">
+            <thead>
+                <tr>
+                    <th style="width: 45%;">Bénéficiaires</th>
+                    <th style="width: 30%;">En qualité de</th>
+                    <th style="width: 25%;">Taux de répartition</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if simulation.beneficiaires.all %}
+                    {% for benef in simulation.beneficiaires.all %}
+                    <tr>
+                        <td>{{ benef.nom_prenoms }}</td>
+                        <td>{{ benef.qualite|default:"" }}</td>
+                        <td class="text-center">{{ benef.part_pourcentage }}%</td>
+                    </tr>
+                    {% endfor %}
+                    
+                {% else %}
+                    <tr class="empty">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr class="empty">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr class="empty">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+        <!-- <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Autres, préciser svp:</span>
+                <div class="form-value">{{ simulation.donnees_entree.autres_beneficiaires|default:"" }}</div>
+            </div>
+        </div>
+    -->
+    </div>
+
+    <!-- ============================================
+         IV. COTISATIONS SOUSCRITES
+         ============================================ -->
+    <div class="section">
+        <div class="section-title">IV. COTISATIONS SOUSCRITES</div>
+        
+        <div class="cotisation-line">
+            <span>Je décide d'effectuer une cotisation périodique de</span>
+            <div class="cotisation-montant">
+                <div class="montant-boxes">
+                    {% with montant=simulation.donnees_entree.cotisation_mensuelle|floatformat:0 %}
+                        {% for digit in montant %}
+                        <span class="montant-box">{{ digit }}</span>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                <span>FCFA</span>
+            </div>
+        </div>
+        
+        <div class="cotisation-line">
+            <span>Droit d'adhésion</span>
+            <div class="cotisation-montant">
+                <div class="montant-boxes">
+                    {% with frais=simulation.resultats_calcul.frais_adhesion|floatformat:0 %}
+                        {% for digit in frais %}
+                        <span class="montant-box">{{ digit }}</span>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                <span>FCFA, que je règlerai sur</span>
+                <div class="montant-boxes">
+                     {% with nb_mensualites=simulation.resultats_calcul.nombre_mensualites|floatformat:0 %}
+                        {% for digit in nb_mensualites %}
+                        <span class="montant-box">{{ digit }}</span>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                <span>mensualité(s)</span>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Périodicité de cotisation :</span>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.periodicite == 'M' %}checked{% endif %}"></span>
+                        <span>Mensuelle</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.periodicite == 'T' %}checked{% endif %}"></span>
+                        <span>Trimestrielle</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.periodicite == 'S' %}checked{% endif %}"></span>
+                        <span>Semestrielle</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <span class="checkbox {% if simulation.donnees_entree.periodicite == 'A' %}checked{% endif %}"></span>
+                        <span>Annuelle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group half">
+                <span class="form-label">Durée de cotisation</span>
+                <div class="cotisation-montant">
+                    <div class="montant-boxes">
+                        {% with duree=simulation.donnees_entree.duree_annees|default:"5"|stringformat:"02d" %}
+                            {% for digit in duree %}
+                            <span class="montant-box">{{ digit }}</span>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <span>ans</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Date d'effet du contrat</span>
+                <div class="cotisation-montant">
+                    <div class="montant-boxes">
+                        {% with date_effet=simulation.donnees_entree.date_effet|date:"dmY"|default:"01012025" %}
+                            {% for digit in date_effet %}
+                            <span class="montant-box">{{ digit }}</span>
+                            {% if forloop.counter == 2 or forloop.counter == 4 %}
+                            <span class="digit-separator">/</span>
+                            {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <span>(JJ/MM/AAAA)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <span class="form-label">Précisez l'origine des fonds servant à souscrire à cette assurance</span>
+                <div class="form-value">{{ simulation.donnees_entree.origine_fonds|default:"" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         NOTE IMPORTANTE
+         ============================================ -->
+    <div class="note-importante">
+        <strong>Le contrat est valide sous réserve de l'acceptation du risque par NSIA Vie Assurances et paiement de la première cotisation.</strong>
+    </div>
+
+    <!-- ============================================
+         SIGNATURES
+         ============================================ -->
+    <div class="signatures-section">
+        <div class="date-lieu">
+            Fait à _________________, Le {{ today|date:"d/m/Y" }}
+        </div>
+        
+        <div class="signatures-grid">
+            <div class="signature-cell">
+                <div class="signature-title">Signature de l'Assuré</div>
+                <div class="signature-subtitle">(procédé de la mention « Lu et approuvé)</div>
+                <div class="signature-box"></div>
+            </div>
+            <div class="signature-cell">
+                <div class="signature-title">Signature du Souscripteur</div>
+                <div class="signature-subtitle">(Visa et cachet)</div>
+                <div class="signature-box"></div>
+            </div>
+            <div class="signature-cell">
+                <div class="signature-title">Pour NSIA Vie Assurances</div>
+                <div class="signature-subtitle">(Visa et cachet)</div>
+                <div class="signature-box"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

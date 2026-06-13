@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>BIA Mobateli - {{ simulation.reference }}</title>
+    <style>
+        /* ============================================
+           CONFIGURATION PAGE
+           ============================================ */
+        @page { size: A4; margin: 1.2cm 1cm; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 8pt; line-height: 1.3; color: #000; }
+
+        /* EN-TÊTE NSIA */
+        .header-nsia { text-align: center; font-size: 7pt; line-height: 1.2; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 8px; }
+
+        /* PRODUIT */
+        .produit-header { text-align: center; font-size: 14pt; font-weight: bold; color: #003366; margin: 8px 0 2px; }
+        .produit-subtitle { text-align: center; font-size: 11pt; font-weight: bold; margin-bottom: 5px; }
+
+        /* SECTION BANQUE */
+        .section-banque { margin-bottom: 8px; }
+        .banque-header { display: table; width: 100%; margin-bottom: 5px; }
+        .banque-nom { display: table-cell; width: 50%; font-size: 10pt; font-weight: bold; vertical-align: middle; }
+        .proposition { display: table-cell; width: 50%; text-align: right; font-size: 10pt; font-weight: bold; vertical-align: middle; }
+        .info-ligne { margin: 3px 0; font-size: 8pt; }
+
+        /* SECTIONS */
+        .section-title { background:#003366 ; color: white; padding: 3px 8px; font-weight: bold; font-size: 8pt; margin-top: 8px; margin-bottom: 4px; }
+        .section-subtitle { font-weight: bold; font-size: 7.5pt; font-style: italic; margin: 4px 0 2px 0; }
+
+        /* TABLEAUX */
+        table { width: 100%; border-collapse: collapse; margin: 3px 0; font-size: 7.5pt; }
+        table.bordered { border: 1px solid #000; }
+        table.bordered td, table.bordered th { border: 1px solid #000; padding: 2px 4px; vertical-align: top; }
+        th { background: #f0f0f0; font-weight: bold; text-align: left; font-size: 7pt; }
+        .col-label { font-weight: bold; background: #f8f8f8; width: 22%; }
+        .col-value { width: 28%; }
+
+        /* CHECKBOXES */
+        .cb { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; text-align: center; font-size: 7pt; line-height: 10px; margin-right: 2px; vertical-align: middle; }
+        .cb.checked { background: #003366; color: #fff; }
+
+        /* GARANTIES */
+        .garanties-table td { padding: 3px 5px; }
+        .garanties-table .option-ff { font-size: 6.5pt; padding-left: 15px; }
+
+        /* QUESTIONNAIRE */
+        .q2-intro { font-size: 6.5pt; font-style: italic; margin: 5px 0; padding: 4px; background: #f9f9f9; border-left: 3px solid #003366; }
+        .questions-table th { text-align: center; font-size: 6.5pt; padding: 2px; }
+        .questions-table td { padding: 2px 3px; font-size: 7pt; }
+
+        /* PAIEMENT */
+        .paiement-section { font-size: 7.5pt; margin-top: 4px; }
+        .paiement-section .label { font-weight: bold; }
+
+        /* DÉCLARATIONS */
+        .declaration { font-size: 6.5pt; margin: 6px 0; padding: 4px; background: #f9f9f9; border: 1px solid #ddd; line-height: 1.4; }
+        .note-importante { font-size: 7pt; font-weight: bold; margin: 5px 0; padding: 4px; background: #fff3cd; border-left: 4px solid #ffc107; }
+
+        /* SIGNATURES */
+        .signatures-section { margin-top: 10px; page-break-inside: avoid; }
+        .date-lieu { text-align: right; margin-bottom: 5px; font-size: 7.5pt; }
+        .signatures-grid { display: table; width: 100%; }
+        .signature-cell { display: table-cell; width: 25%; border: 1px solid #000; padding: 2px; vertical-align: top; }
+        .signature-title { font-weight: bold; font-size: 6.5pt; text-align: center; padding: 2px; background: #f0f0f0; border-bottom: 1px solid #000; }
+        .signature-box { height: 50px; }
+
+        /* FILIGRANE */
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80pt; font-weight: bold; opacity: 0.1; z-index: -1; pointer-events: none; white-space: nowrap; text-transform: uppercase; }
+        .watermark.brouillon { color: #6c757d; opacity: 0.15; }
+        .watermark.valide { color: #28a745; opacity: 0.08; }
+        .watermark.annule { color: #dc3545; opacity: 0.15; }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        .small { font-size: 6.5pt; }
+    </style>
+</head>
+<body>
+
+    <!-- FILIGRANE -->
+    {% if simulation.statut != 'convertie' %}
+    <div class="watermark {{ simulation.statut }}">{{ simulation.get_statut_display }}</div>
+    {% endif %}
+
+    {# ====== Raccourci : d = donnees_entree ====== #}
+    {% with d=simulation.donnees_entree %}
+
+    <!-- ============================================
+         EN-TÊTE NSIA
+         ============================================ -->
+    <div class="header-nsia">
+        <p>Entreprise régie par le Code des Assurances CIMA, Société Anonyme au capital de 3 176 000 000 F CFA Entièrement libéré.</p>
+        <p>RCCM CG/BZV/08B1365 Siège social : 1 Avenue Cardinal Emile BIAYENDA Brazzaville Congo</p>
+        <p>BP : 1151 Brazzaville République du Congo | Tél : (242) 22 282 24 92 | Fax : (242) 22 282 24 93</p>
+        <p>Email : nsiaViecongo@groupensia.com</p>
+    </div>
+
+    <!-- ============================================
+         TITRE PRODUIT
+         ============================================ -->
+    <div class="produit-header">{% if simulation.banque.code_banque == "BOA" %}LIKAMA{% else %}MOBATELI{% endif %}</div>
+    <div class="produit-subtitle">Bulletin d'Adhésion</div>
+
+    <!-- ============================================
+         SECTION BANQUE
+         ============================================ -->
+    <div class="section-banque">
+        <div class="banque-header">
+            <div class="banque-nom">{{ simulation.banque.nom_court }}</div>
+            <div class="proposition">
+                {% if simulation.statut == 'convertie' %}CONTRAT N° {{ simulation.souscription.reference }}
+                {% else %}PROPOSITION N° {{ simulation.reference }}{% endif %}
+            </div>
+        </div>
+
+        <div class="info-ligne">
+            <span class="label">RESERVE A {{ simulation.banque.nom_court }}</span>
+            {% if simulation.agence %}
+            <span style="float: right;"><span class="label">Agence :</span> {{ simulation.agence.nom }}</span>
+            {% endif %}
+        </div>
+
+        <div class="info-ligne">
+            <span class="label">Gestionnaire/ Chargé de Clientèle :</span>
+            {{ simulation.gestionnaire }}
+        </div>
+    </div>
+
+    <!-- ============================================
+         1. PARTIES CONTRACTANTES (Souscripteur)
+         ============================================ -->
+    <div class="section-title">1. PARTIES CONTRACTANTES</div>
+
+    {% if d.assure_est_souscripteur %}
+    <table class="bordered">
+        <tr><td colspan="4" class="text-center small" style="font-style: italic;">Le souscripteur est l'assuré (IDEM) — voir section 2</td></tr>
+    </table>
+    {% else %}
+    {% with s=d.souscripteur %}
+    <table class="bordered">
+        <tr>
+            <td class="col-label">Civilité</td>
+            <td>
+                <span class="cb {% if s.civilite == 'MME' %}checked{% endif %}">{% if s.civilite == 'MME' %}✓{% endif %}</span> Mme
+                <span class="cb {% if s.civilite == 'MLLE' %}checked{% endif %}">{% if s.civilite == 'MLLE' %}✓{% endif %}</span> Mlle
+                <span class="cb {% if s.civilite == 'M' %}checked{% endif %}">{% if s.civilite == 'M' %}✓{% endif %}</span> M.
+            </td>
+            <td class="col-label">Lieu de naissance</td>
+            <td>{{ s.lieu_naissance|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nom(s)</td>
+            <td>{{ s.nom|default:"" }}</td>
+            <td class="col-label">Prénom(s)</td>
+            <td>{{ s.prenoms|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Date de naissance</td>
+            <td>{{ s.date_naissance|default:"" }}</td>
+            <td class="col-label">Situation matr.</td>
+            <td>{{ s.situation_matrimoniale|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Adresse géographique</td>
+            <td colspan="3">{{ s.adresse_geographique|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Adresse postale</td>
+            <td>{{ s.adresse_postale|default:"" }}</td>
+            <td class="col-label">Tél. Domicile</td>
+            <td>{{ s.telephone_domicile|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Profession</td>
+            <td>{{ s.profession|default:"" }}</td>
+            <td class="col-label">Cellulaire</td>
+            <td>{{ s.cellulaire|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Employeur</td>
+            <td>{{ s.employeur|default:"" }}</td>
+            <td class="col-label">Tél. Bureau</td>
+            <td>{{ s.telephone_bureau|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">E-mail personnel</td>
+            <td>{{ s.email_personnel|default:"" }}</td>
+            <td class="col-label">E-mail professionnel</td>
+            <td>{{ s.email_professionnel|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Correspondant</td>
+            <td>{{ s.correspondant|default:"" }}</td>
+            <td class="col-label">Tél.</td>
+            <td>{{ s.tel_correspondant|default:"" }}</td>
+        </tr>
+    </table>
+    {% endwith %}
+    {% endif %}
+
+    <!-- ============================================
+         2. ASSURÉ
+         ============================================ -->
+    <div class="section-title">2. ASSURÉ {% if d.assure_est_souscripteur %}<span class="small">(Indiquer « IDEM » si le souscripteur est l'assuré)</span>{% endif %}</div>
+
+    <table class="bordered">
+        <tr>
+            <td class="col-label">Civilité</td>
+            <td>
+                <span class="cb {% if d.titre_assure == 'MME' %}checked{% endif %}">{% if d.titre_assure == 'MME' %}✓{% endif %}</span> Mme
+                <span class="cb {% if d.titre_assure == 'MLLE' %}checked{% endif %}">{% if d.titre_assure == 'MLLE' %}✓{% endif %}</span> Mlle
+                <span class="cb {% if d.titre_assure == 'M' %}checked{% endif %}">{% if d.titre_assure == 'M' %}✓{% endif %}</span> M.
+            </td>
+            <td class="col-label">N° Pièce d'identité</td>
+            <td>{{ d.numero_piece_identite|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nom</td>
+            <td>{{ d.nom|default:"" }}</td>
+            <td class="col-label">Prénoms</td>
+            <td>{{ d.prenom|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Date de naissance</td>
+            <td>{{ d.date_naissance|default:"" }}</td>
+            <td class="col-label">Lieu de naissance</td>
+            <td>{{ d.lieu_naissance|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Situation matrimoniale</td>
+            <td colspan="3">
+                <span class="cb {% if d.situation_matrimoniale == 'celibataire' %}checked{% endif %}">{% if d.situation_matrimoniale == 'celibataire' %}✓{% endif %}</span> Célibataire
+                <span class="cb {% if d.situation_matrimoniale == 'marie' %}checked{% endif %}">{% if d.situation_matrimoniale == 'marie' %}✓{% endif %}</span> Marié(e)
+                <span class="cb {% if d.situation_matrimoniale == 'divorce' %}checked{% endif %}">{% if d.situation_matrimoniale == 'divorce' %}✓{% endif %}</span> Divorcé(e)
+                <span class="cb {% if d.situation_matrimoniale == 'veuf' %}checked{% endif %}">{% if d.situation_matrimoniale == 'veuf' %}✓{% endif %}</span> Veuf(ve)
+                <span class="cb {% if d.situation_matrimoniale == 'concubin' %}checked{% endif %}">{% if d.situation_matrimoniale == 'concubin' %}✓{% endif %}</span> Concubin(e)
+            </td>
+        </tr>
+        <tr>
+            <td class="col-label">Adresse géographique</td>
+            <td colspan="3">{{ d.adresse_geographique|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Adresse postale perso.</td>
+            <td>{{ d.adresse_postale|default:"" }}</td>
+            <td class="col-label">Tél. Domicile</td>
+            <td>{{ d.telephone_domicile|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Profession</td>
+            <td>{{ d.profession|default:"" }}</td>
+            <td class="col-label">Cellulaire</td>
+            <td>{{ d.cellulaire|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Employeur</td>
+            <td>{{ d.employeur|default:"" }}</td>
+            <td class="col-label">Adresse Employeur</td>
+            <td>{{ d.adresse_employeur|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Tél. Employeur</td>
+            <td>{{ d.telephone_employeur|default:"" }}</td>
+            <td class="col-label">Poste</td>
+            <td>{{ d.poste_occupe|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Tél. Bureau</td>
+            <td>{{ d.telephone_bureau|default:"" }}</td>
+            <td class="col-label">N° Compte</td>
+            <td>{{ d.numero_compte|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">E-mail personnel</td>
+            <td>{{ d.email|default:"" }}</td>
+            <td class="col-label">E-mail professionnel</td>
+            <td>{{ d.email_professionnel|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Correspondant</td>
+            <td>{{ d.correspondant_nom|default:"" }}</td>
+            <td class="col-label">Tél.</td>
+            <td>{{ d.correspondant_telephone|default:"" }} / {{ d.correspondant_cellulaire|default:"" }}</td>
+        </tr>
+    </table>
+
+    <!-- ============================================
+         3. FICHE D'IDENTIFICATION FAMILIALE
+         ============================================ -->
+    <div class="section-title">3. FICHE D'IDENTIFICATION FAMILIALE <span class="small">(Ne remplir que si la couverture Frais Funéraires s'étend à la famille)</span></div>
+
+    <!-- Conjoint -->
+    <div class="section-subtitle">CONJOINT</div>
+    <table class="bordered">
+        {% if d.conjoint %}
+        {% with c=d.conjoint %}
+        <tr>
+            <td class="col-label">Civilité</td>
+            <td>
+                <span class="cb {% if c.civilite == 'MME' %}checked{% endif %}">{% if c.civilite == 'MME' %}✓{% endif %}</span> Mme
+                <span class="cb {% if c.civilite == 'MLLE' %}checked{% endif %}">{% if c.civilite == 'MLLE' %}✓{% endif %}</span> Mlle
+                <span class="cb {% if c.civilite == 'M' %}checked{% endif %}">{% if c.civilite == 'M' %}✓{% endif %}</span> M.
+            </td>
+            <td class="col-label">Date de naissance</td>
+            <td>{{ c.date_naissance|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nom</td>
+            <td>{{ c.nom|default:"" }}</td>
+            <td class="col-label">Prénoms</td>
+            <td>{{ c.prenoms|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Lieu de naissance</td>
+            <td>{{ c.lieu_naissance|default:"" }}</td>
+            <td class="col-label">Mobile</td>
+            <td>{{ c.mobile|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Tél. Domicile</td>
+            <td>{{ c.telephone_domicile|default:"" }}</td>
+            <td class="col-label">Tél. Bureau</td>
+            <td>{{ c.telephone_bureau|default:"" }}</td>
+        </tr>
+        {% endwith %}
+        {% else %}
+        <tr><td colspan="4" class="text-center small" style="font-style: italic;">—</td></tr>
+        {% endif %}
+    </table>
+
+    <!-- Enfants -->
+    <div class="section-subtitle">ENFANTS</div>
+    <table class="bordered">
+        <thead>
+            <tr>
+                <th style="width: 5%;">N°</th>
+                <th style="width: 35%;">Enfants Nom et Prénoms</th>
+                <th style="width: 15%;">Date de naissance</th>
+                <th style="width: 5%;">N°</th>
+                <th style="width: 35%;">Enfants Nom et Prénoms</th>
+                <th style="width: 15%;">Date de naissance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in "012" %}
+            <tr>
+                {% with idx1=forloop.counter idx2=forloop.counter|add:3 %}
+                <td class="text-center bold">{{ idx1|stringformat:"02d" }}</td>
+                {% if d.enfants %}
+                    {% for enfant in d.enfants %}
+                        {% if forloop.counter == idx1 %}
+                <td>{{ enfant.nom_prenoms|default:"" }}</td>
+                <td>{{ enfant.date_naissance|default:"" }}</td>
+                        {% endif %}
+                    {% endfor %}
+                    {% if d.enfants|length < idx1 %}
+                <td></td><td></td>
+                    {% endif %}
+                {% else %}
+                <td></td><td></td>
+                {% endif %}
+                <td class="text-center bold">{{ idx2|stringformat:"02d" }}</td>
+                {% if d.enfants %}
+                    {% for enfant in d.enfants %}
+                        {% if forloop.counter == idx2 %}
+                <td>{{ enfant.nom_prenoms|default:"" }}</td>
+                <td>{{ enfant.date_naissance|default:"" }}</td>
+                        {% endif %}
+                    {% endfor %}
+                    {% if d.enfants|length < idx2 %}
+                <td></td><td></td>
+                    {% endif %}
+                {% else %}
+                <td></td><td></td>
+                {% endif %}
+                {% endwith %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ============================================
+         4. BÉNÉFICIAIRES
+         ============================================ -->
+    <div class="section-title">4. BÉNÉFICIAIRES <span class="small">En cas de décès de l'assuré principal</span></div>
+
+    <div style="margin: 3px 0; font-size: 7.5pt;">
+        {% with bp=d.beneficiaires_predefinis %}
+        <span class="cb {% if 'conjoint' in bp %}checked{% endif %}">{% if 'conjoint' in bp %}✓{% endif %}</span> Mon conjoint non divorcé, ni séparé de corps
+        &nbsp;&nbsp;
+        <span class="cb {% if 'enfants' in bp %}checked{% endif %}">{% if 'enfants' in bp %}✓{% endif %}</span> Mes enfants nés ou à naître
+        &nbsp;&nbsp;
+        <span class="cb {% if 'autres' in bp %}checked{% endif %}">{% if 'autres' in bp %}✓{% endif %}</span> Autres, précisez svp
+        {% endwith %}
+    </div>
+
+    <table class="bordered">
+        <thead>
+            <tr>
+                <th style="width: 5%;">N°</th>
+                <th style="width: 30%;">Bénéficiaires</th>
+                <th style="width: 15%;">En qualité de</th>
+                <th style="width: 10%;">Taux de répartition</th>
+                <th style="width: 5%;">N°</th>
+                <th style="width: 25%;">Bénéficiaires</th>
+                <th style="width: 15%;">En qualité de</th>
+                <th style="width: 10%;">Taux de répartition</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in "012" %}
+            <tr>
+                {% with idx1=forloop.counter idx2=forloop.counter|add:3 %}
+                <td class="text-center bold">{{ idx1|stringformat:"02d" }}</td>
+                {% for benef in simulation.beneficiaires.all %}
+                    {% if forloop.counter == idx1 %}
+                <td>{{ benef.nom_prenoms }}</td>
+                <td>{{ benef.get_qualite_display }}</td>
+                <td class="text-center">{{ benef.part_pourcentage }}%</td>
+                    {% endif %}
+                {% endfor %}
+                {% if simulation.beneficiaires.count < idx1 %}
+                <td></td><td></td><td></td>
+                {% endif %}
+
+                <td class="text-center bold">{{ idx2|stringformat:"02d" }}</td>
+                {% for benef in simulation.beneficiaires.all %}
+                    {% if forloop.counter == idx2 %}
+                <td>{{ benef.nom_prenoms }}</td>
+                <td>{{ benef.get_qualite_display }}</td>
+                <td class="text-center">{{ benef.part_pourcentage }}%</td>
+                    {% endif %}
+                {% endfor %}
+                {% if simulation.beneficiaires.count < idx2 %}
+                <td></td><td></td><td></td>
+                {% endif %}
+                {% endwith %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ============================================
+         II. CAPITAUX SOUSCRITS ET PRIMES
+         ============================================ -->
+    <div class="section-title">II. CAPITAUX SOUSCRITS ET PRIMES</div>
+
+    <table class="bordered garanties-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">Garanties souscrites</th>
+                <th style="width: 30%;">Capitaux souscrits</th>
+                <th style="width: 30%;">Prime</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- DTC -->
+            <tr>
+                <td>
+                    <span class="cb checked">✓</span> Décès toutes causes
+                </td>
+                <td class="text-right">{% if simulation.resultats_calcul.capital_dtc_iad %}{{ simulation.resultats_calcul.capital_dtc_iad|floatformat:0 }}{% elif d.capital_dtc_iad %}{{ d.capital_dtc_iad|floatformat:0 }}{% endif %} FCFA</td>
+                <td class="text-right">{% if simulation.resultats_calcul.prime_nette %}{{ simulation.resultats_calcul.prime_nette|floatformat:0 }}{% elif simulation.resultats_calcul.prime %}{{ simulation.resultats_calcul.prime|floatformat:0 }}{% endif %} FCFA</td>
+            </tr>
+            <!-- Décès Accidentel -->
+            <tr>
+                <td>
+                    {% if d.garanties.deces_accidentel.souscrite %}
+                    <span class="cb checked">✓</span>
+                    {% else %}
+                    <span class="cb"></span>
+                    {% endif %}
+                    Décès Accidentel
+                </td>
+                <td class="text-right">{% if d.garanties.deces_accidentel.souscrite %}{{ d.garanties.deces_accidentel.capital|floatformat:0 }} FCFA{% endif %}</td>
+                <td class="text-right"></td>
+            </tr>
+            <!-- IPT -->
+            <tr>
+                <td>
+                    {% if d.garanties.ipt.souscrite %}
+                    <span class="cb checked">✓</span>
+                    {% else %}
+                    <span class="cb"></span>
+                    {% endif %}
+                    Invalidité Permanente Totale (IPT)
+                </td>
+                <td class="text-right">{% if d.garanties.ipt.souscrite %}{{ d.garanties.ipt.capital|floatformat:0 }} FCFA{% endif %}</td>
+                <td class="text-right"></td>
+            </tr>
+            <!-- IPP -->
+            <tr>
+                <td>
+                    {% if d.garanties.ipp.souscrite %}
+                    <span class="cb checked">✓</span>
+                    {% else %}
+                    <span class="cb"></span>
+                    {% endif %}
+                    Invalidité Permanente Partielle (IPP)
+                </td>
+                <td class="text-right">{% if d.garanties.ipp.souscrite %}{{ d.garanties.ipp.capital|floatformat:0 }} FCFA{% endif %}</td>
+                <td class="text-right"></td>
+            </tr>
+            <!-- Frais Funéraires -->
+            <tr>
+                <td>
+                    {% if d.option_frais_funeraires %}
+                    <span class="cb checked">✓</span>
+                    {% else %}
+                    <span class="cb"></span>
+                    {% endif %}
+                    Frais Funéraires
+                </td>
+                <td colspan="2">
+                    <div class="option-ff">
+                        <span class="cb {% if d.option_frais_funeraires == 'option_1' %}checked{% endif %}">{% if d.option_frais_funeraires == 'option_1' %}✓{% endif %}</span>
+                        Option 1 : 500 000F cfa par adulte et 250 000F cfa par enfant
+                    </div>
+                    <div class="option-ff">
+                        <span class="cb {% if d.option_frais_funeraires == 'option_2' %}checked{% endif %}">{% if d.option_frais_funeraires == 'option_2' %}✓{% endif %}</span>
+                        Option 2 : 750 000F cfa par adulte et 375 000F cfa par enfant
+                    </div>
+                    <div class="option-ff">
+                        <span class="cb {% if d.option_frais_funeraires == 'option_3' %}checked{% endif %}">{% if d.option_frais_funeraires == 'option_3' %}✓{% endif %}</span>
+                        Option 3 : 1 000 000F cfa par adulte et 500 000F cfa par enfant
+                    </div>
+                </td>
+            </tr>
+            <!-- Totaux -->
+            <tr>
+                <td colspan="2" class="text-right bold">Frais accessoires :</td>
+                <td class="text-right bold">{{ simulation.resultats_calcul.frais_accessoires|floatformat:0 }} FCFA</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="text-right bold">Prime TTC :</td>
+                <td class="text-right bold">{{ simulation.resultats_calcul.prime_totale|floatformat:0 }} FCFA</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ============================================
+         PAIEMENT
+         ============================================ -->
+    <div class="section-title">COMMENT ALLEZ-VOUS PAYER VOTRE PRIME ?</div>
+
+    <div class="paiement-section">
+        <table style="border: none; font-size: 7.5pt;">
+            <tr>
+                <td style="border: none; width: 50%;">
+                    <span class="cb {% if d.mode_paiement == 'prelevement_bancaire' %}checked{% endif %}">{% if d.mode_paiement == 'prelevement_bancaire' %}✓{% endif %}</span> Prélèvement Bancaire
+                    &nbsp;&nbsp;
+                    <span class="cb {% if d.mode_paiement == 'prelevement_salaire' %}checked{% endif %}">{% if d.mode_paiement == 'prelevement_salaire' %}✓{% endif %}</span> Prélèvement sur salaire
+                </td>
+                <td style="border: none; width: 50%;">
+                    <span class="cb {% if d.mode_paiement == 'especes' %}checked{% endif %}">{% if d.mode_paiement == 'especes' %}✓{% endif %}</span> Espèces (à l'ordre exclusif de NSIA Vie Assurances)
+                    &nbsp;&nbsp;
+                    <span class="cb {% if d.mode_paiement == 'cheque' %}checked{% endif %}">{% if d.mode_paiement == 'cheque' %}✓{% endif %}</span> Chèque (à l'ordre exclusif de NSIA Vie Assurances)
+                </td>
+            </tr>
+        </table>
+
+        <table style="border: none; font-size: 7.5pt; margin-top: 3px;">
+            <tr>
+                <td style="border: none;">
+                    <span class="label">La cotisation est payable par :</span>
+                    <span class="cb {% if d.type_cotisation == 'prime_unique' %}checked{% endif %}">{% if d.type_cotisation == 'prime_unique' %}✓{% endif %}</span> Prime unique
+                    &nbsp;
+                    <span class="cb {% if d.type_cotisation == 'cotisations_annuelles' %}checked{% endif %}">{% if d.type_cotisation == 'cotisations_annuelles' %}✓{% endif %}</span> Cotisations annuelles
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <span class="label">Quelle est la durée du contrat ?</span> {{ d.duree_contrat|default:"" }} ans
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <span class="label">A quelle date voulez-vous payer la première prime ?</span> {{ d.date_premiere_prime|default:"" }}
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <span class="label">Par conséquent, la date d'effet de votre contrat est fixée au</span> {{ d.date_effet|default:"" }}
+                    &nbsp;&nbsp;
+                    <span class="label">La date d'échéance est fixée au</span> {{ d.date_echeance|default:"" }}
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <strong>Attention ! N'oubliez pas de renouveler votre contrat à chaque date anniversaire.</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <span class="label">Précisez l'origine des fonds servant à souscrire à cette assurance :</span> {{ d.origine_des_fonds|default:"" }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {% endwith %}{# fin with d=donnees_entree #}
+
+    <!-- ============================================
+         QUESTIONNAIRE MÉDICAL
+         ============================================ -->
+    <div class="section-title">QUESTIONNAIRE MEDICAL</div>
+
+    <div class="q2-intro">
+        <strong>Rappel important :</strong><br>
+        - Les déclarations de l'assuré constituent la base du contrat d'assurance.<br>
+        - Nous vous invitons par conséquent à répondre au questionnaire ci-dessous avec sincérité et exactitude.<br>
+        - Notez que vos déclarations sont strictement confidentielles.<br>
+        - L'assureur se réserve le droit de vérifier l'exactitude des déclarations faites (art. 8 du code CIMA).
+    </div>
+
+    {% if questionnaire %}
+    <table class="bordered" style="font-size: 7pt;">
+        <tr>
+            <td class="col-label" style="width: 15%;">1. Taille :</td>
+            <td style="width: 18%;">{{ questionnaire.taille_cm }} cm</td>
+            <td class="col-label" style="width: 15%;">2. Poids :</td>
+            <td style="width: 18%;">{{ questionnaire.poids_kg }} Kg</td>
+            <td class="col-label" style="width: 18%;">3. Tension artérielle :</td>
+            <td style="width: 16%;">{{ questionnaire.tension_arterielle|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">4. Fumez-vous ?</td>
+            <td>{% if questionnaire.fumeur %}OUI{% else %}NON{% endif %}</td>
+            <td class="col-label">Nb cigarettes/jour :</td>
+            <td colspan="2">{% if questionnaire.fumeur %}{{ questionnaire.nb_cigarettes_jour }}{% endif %}</td>
+        </tr>
+        <tr>
+            <td class="col-label">5. Alcool ?</td>
+            <td>{% if questionnaire.consomme_alcool %}OUI{% else %}NON{% endif %}</td>
+            <td class="col-label">Distractions :</td>
+            <td colspan="3">{{ questionnaire.distractions|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">6. Sport ?</td>
+            <td>{% if questionnaire.pratique_sport %}OUI{% else %}NON{% endif %}</td>
+            <td class="col-label">Lequel :</td>
+            <td colspan="3">{{ questionnaire.type_sport|default:"" }}</td>
+        </tr>
+    </table>
+
+    <!-- Antécédents médicaux -->
+    {% if medical_questions %}
+    <table class="bordered questions-table" style="margin-top: 4px;">
+        <thead>
+            <tr>
+                <th style="width: 45%;">Nature</th>
+                <th style="width: 8%;">OUI/NON</th>
+                <th style="width: 17%;">Précisez</th>
+                <th style="width: 15%;">Période du traitement</th>
+                <th style="width: 15%;">Lieu du traitement</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in medical_questions %}
+            <tr>
+                <td>{{ q.label }}</td>
+                <td class="text-center">{% if q.value %}OUI{% else %}NON{% endif %}</td>
+                <td>{{ q.precisez|default:"" }}</td>
+                <td>{{ q.periode|default:"" }}</td>
+                <td>{{ q.lieu|default:"" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- ============================================
+         DÉCLARATIONS
+         ============================================ -->
+    <div class="declaration">
+        Je soussigné, certifie avoir répondu avec sincérité, sans aucune réticence et n'avoir rien dissimulé sur mon état passé ou actuel. Je prends acte que toute réticence ou fausse déclaration de ma part entraînera la nullité du contrat. J'autorise expressément NSIA Vie Assurances à prendre toutes informations qu'elle jugerait utiles auprès des médecins qui nous ont soignés.
+    </div>
+
+    <div class="note-importante">
+        <strong>NB :</strong> Le contrat est valide sous réserve de l'acceptation du risque par NSIA Vie Assurances.
+    </div>
+
+    <!-- ============================================
+         SIGNATURES
+         ============================================ -->
+    <div class="signatures-section">
+        <div class="date-lieu">Fait à _________________, Le {{ today|date:"d/m/Y" }}</div>
+
+        <div class="signatures-grid">
+            <div class="signature-cell">
+                <div class="signature-title">Le Souscripteur</div>
+                <div class="signature-box"></div>
+            </div>
+            <div class="signature-cell">
+                <div class="signature-title">L'Assuré</div>
+                <div class="signature-box"></div>
+            </div>
+            <div class="signature-cell">
+                <div class="signature-title">Le Conseiller</div>
+                <div class="signature-box"></div>
+            </div>
+            <div class="signature-cell">
+                <div class="signature-title">Réservé à NSIA Vie Assurances</div>
+                <div class="signature-box"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

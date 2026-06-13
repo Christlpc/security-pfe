@@ -19,7 +19,23 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_SSH_PORT || 22 }}
           script: |
-            echo "🚀 Début du déploiement..."
+            echo "🚀 Début du déploiement de la plateforme..."
             cd ~/pfe-nsia-bancassurance/security-pfe
             git pull origin main
-            echo "✅ Code mis à jour avec succès !"
+            
+            echo "📦 Mise à jour des dépendances du backend..."
+            cd bancassurance
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            echo "🔄 Application des migrations de base de données (incluant RLS)..."
+            DJANGO_ENV=production python manage.py migrate --noinput
+            
+            echo "⚡ Redémarrage du serveur backend..."
+            sudo systemctl restart bancassurance || sudo systemctl restart gunicorn || echo "⚠️ Service systemd non redémarré (redémarrage manuel requis)"
+            
+            echo "✅ Déploiement du backend terminé avec succès !"

@@ -1,0 +1,101 @@
+[
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 2000000,
+      "tranche_age": "Moins de 45 ans",
+      "age_min": 18,
+      "age_max": 44,
+      "prime": 34900,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 2000000,
+      "tranche_age": "de 45 à 54 ans",
+      "age_min": 45,
+      "age_max": 54,
+      "prime": 45100,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 2000000,
+      "tranche_age": "de 55 à 64 ans",
+      "age_min": 55,
+      "age_max": 64,
+      "prime": 65100,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 5000000,
+      "tranche_age": "Moins de 45 ans",
+      "age_min": 18,
+      "age_max": 44,
+      "prime": 50800,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 5000000,
+      "tranche_age": "de 45 à 54 ans",
+      "age_min": 45,
+      "age_max": 54,
+      "prime": 76300,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 5000000,
+      "tranche_age": "de 55 à 64 ans",
+      "age_min": 55,
+      "age_max": 64,
+      "prime": 126300,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 7500000,
+      "tranche_age": "Moins de 45 ans",
+      "age_min": 18,
+      "age_max": 44,
+      "prime": 64050,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 7500000,
+      "tranche_age": "de 45 à 54 ans",
+      "age_min": 45,
+      "age_max": 54,
+      "prime": 102300,
+      "actif": true
+    }
+  },
+  {
+    "model": "tarification.tablelikamaboa",
+    "fields": {
+      "capital_dtc_iad": 7500000,
+      "tranche_age": "de 55 à 64 ans",
+      "age_min": 55,
+      "age_max": 64,
+      "prime": 177300,
+      "actif": true
+    }
+  }
+]

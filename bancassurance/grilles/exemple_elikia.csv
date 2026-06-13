@@ -1,0 +1,12 @@
+# Exemple : Primes Elikia Scolaire
+# Usage : python manage.py load_tarification --banque=NOUVELLE_BANQUE --produit=elikia --fichier=grilles/exemple_elikia.csv
+rente_annuelle,duree_rente,capital_garanti,tranche_age,age_min,age_max,prime_nette_annuelle
+200000,5,953308,45 ans et moins,18,45,5000
+200000,5,953308,46-55 ans,46,55,10000
+200000,5,953308,56-64 ans,56,64,20000
+400000,5,1906616,45 ans et moins,18,45,10000
+400000,5,1906616,46-55 ans,46,55,20000
+400000,5,1906616,56-64 ans,56,64,37000
+600000,5,2859924,45 ans et moins,18,45,15000
+600000,5,2859924,46-55 ans,46,55,30000
+600000,5,2859924,56-64 ans,56,64,55000

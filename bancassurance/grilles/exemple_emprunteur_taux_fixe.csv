@@ -1,0 +1,4 @@
+# Exemple : Banque avec taux fixe (comme ECOBANK, CDCO, COMIFI)
+# Usage : python manage.py load_tarification --banque=NOUVELLE_BANQUE --produit=emprunteur --fichier=grilles/exemple_emprunteur_taux_fixe.csv
+tranche_age,age_min,age_max,duree,taux,frais_accessoires
+Tous âges,18,64,1,0.550,5000

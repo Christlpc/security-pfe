@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulletin d'Adhésion - {{ simulation.reference }}</title>
+    <style>
+        /* ===================================
+           STYLES GÉNÉRAUX POUR IMPRESSION PDF
+           =================================== */
+        @page {
+            size: A4;
+            margin: 15mm 10mm 15mm 10mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #2c3e50;
+        }
+        
+        /* ===================================
+           EN-TÊTE
+           =================================== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .header-left img {
+            max-height: 45px;
+            max-width: 150px;
+        }
+        
+        .header-center {
+            text-align: center;
+            flex-grow: 1;
+            padding: 0 15px;
+        }
+        
+        .header-center h1 {
+            font-size: 14pt;
+            color: #2c3e50;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header-center .subtitle {
+            font-size: 9pt;
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+        
+        .header-right img {
+            max-height: 40px;
+            max-width: 120px;
+        }
+        
+        /* ===================================
+           INFORMATIONS RÉFÉRENCE
+           =================================== */
+        .reference-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .reference-box .ref-label {
+            font-size: 8pt;
+            opacity: 0.9;
+        }
+        
+        .reference-box .ref-value {
+            font-size: 11pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        /* ===================================
+           SECTIONS
+           =================================== */
+        .section {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            background: #34495e;
+            color: white;
+            padding: 6px 10px;
+            font-size: 10pt;
+            font-weight: bold;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-title .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 8pt;
+            margin-left: 8px;
+        }
+        
+        /* ===================================
+           TABLEAUX
+           =================================== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 8.5pt;
+        }
+        
+        table.info-table td {
+            padding: 5px 8px;
+            border: 1px solid #dcdde1;
+        }
+        
+        table.info-table td:first-child {
+            background: #f8f9fa;
+            font-weight: 600;
+            width: 40%;
+            color: #34495e;
+        }
+        
+        table.info-table td:last-child {
+            background: white;
+            color: #2c3e50;
+        }
+        
+        /* Table questionnaire médical */
+        table.medical-table {
+            font-size: 8pt;
+        }
+        
+        table.medical-table th {
+            background: #ecf0f1;
+            padding: 5px 8px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #bdc3c7;
+        }
+        
+        table.medical-table td {
+            padding: 4px 8px;
+            border: 1px solid #dcdde1;
+        }
+        
+        table.medical-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        /* ===================================
+           GRILLE 2 COLONNES
+           =================================== */
+        .grid-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .col-box {
+            border: 1px solid #dcdde1;
+            padding: 8px;
+            border-radius: 3px;
+            background: #f8f9fa;
+        }
+        
+        .col-box .label {
+            font-size: 7.5pt;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .col-box .value {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        /* ===================================
+           RÉSULTATS CALCUL
+           =================================== */
+        .result-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .result-row:last-child {
+            border-bottom: none;
+            margin-top: 5px;
+            padding-top: 8px;
+            border-top: 2px solid rgba(255,255,255,0.4);
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        
+        .result-label {
+            font-size: 9pt;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        
+        /* ===================================
+           ALERTES & MESSAGES
+           =================================== */
+        .alert {
+            padding: 8px 12px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-size: 8.5pt;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        
+        /* ===================================
+           QUESTIONNAIRE MÉDICAL - QUESTIONS
+           =================================== */
+        .question-row {
+            display: flex;
+            padding: 5px 8px;
+            border-bottom: 1px solid #ecf0f1;
+            align-items: center;
+        }
+        
+        .question-row:last-child {
+            border-bottom: none;
+        }
+        
+        .question-row .q-number {
+            width: 30px;
+            font-weight: bold;
+            color: #3498db;
+            font-size: 8pt;
+        }
+        
+        .question-row .q-text {
+            flex-grow: 1;
+            font-size: 8.5pt;
+        }
+        
+        .question-row .q-answer {
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .q-answer.yes {
+            color: #e74c3c;
+        }
+        
+        .q-answer.no {
+            color: #27ae60;
+        }
+        
+        /* ===================================
+           BADGES & LABELS
+           =================================== */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 7.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* ===================================
+           SURPRIME HIGHLIGHT
+           =================================== */
+        .surprime-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .surprime-box .surprime-label {
+            font-size: 8pt;
+            color: #856404;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .surprime-box .surprime-value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .surprime-box .surprime-category {
+            font-size: 9pt;
+            color: #856404;
+            margin-top: 5px;
+        }
+        
+        /* ===================================
+           DÉCLARATIONS LÉGALES
+           =================================== */
+        .legal-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            font-size: 7.5pt;
+            line-height: 1.5;
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .legal-section p {
+            margin-bottom: 8px;
+        }
+        
+        .legal-section strong {
+            color: #2c3e50;
+        }
+        
+        /* ===================================
+           SIGNATURES
+           =================================== */
+        .signatures {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .signature-box {
+            border: 1px solid #bdc3c7;
+            padding: 15px 8px;
+            text-align: center;
+            min-height: 70px;
+            background: white;
+            border-radius: 3px;
+        }
+        
+        .signature-box .sig-label {
+            font-size: 7.5pt;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .signature-box .sig-name {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+        
+        /* ===================================
+           PIED DE PAGE
+           =================================== */
+        .footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #dcdde1;
+            font-size: 7pt;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        /* ===================================
+           UTILITAIRES
+           =================================== */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .mt-10 { margin-top: 10px; }
+        .mb-10 { margin-bottom: 10px; }
+        
+        /* ===================================
+           IMPRESSION - OPTIMISATIONS
+           =================================== */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===================================
+         EN-TÊTE
+         =================================== -->
+    <div class="header">
+        <div class="header-left">
+            <img src="{{ nsia_info.logo_url|default:'/static/bia/logos/nsia.png' }}" alt="NSIA">
+        </div>
+        <div class="header-center">
+            <h1>Bulletin d'Adhésion</h1>
+            <div class="subtitle">{{ produit|upper }} - Assurance Emprunteur</div>
+        </div>
+        <div class="header-right">
+            <img src="{{ logo_banque_url }}" alt="{{ banque.nom }}">
+        </div>
+    </div>
+
+    <!-- ===================================
+         RÉFÉRENCE
+         =================================== -->
+    <div class="reference-box">
+        <div>
+            <div class="ref-label">Référence BIA</div>
+            <div class="ref-value">{{ simulation.reference }}</div>
+        </div>
+        <div>
+            <div class="ref-label">Date d'émission</div>
+            <div class="ref-value">{{ today|date:"d/m/Y" }}</div>
+        </div>
+        <div>
+            <div class="ref-label">Banque Partenaire</div>
+            <div class="ref-value">{{ banque.nom_complet }}</div>
+        </div>
+    </div>
+
+    <!-- ===================================
+         SECTION Q1 : INFORMATIONS EMPRUNTEUR
+         =================================== -->
+    <div class="section">
+        <div class="section-title">
+            Q1 - Informations de l'Emprunteur
+            <span class="badge">Partie Obligatoire</span>
+        </div>
+        
+        <table class="info-table">
+            <tr>
+                <td>Nom</td>
+                <td>{{ simulation.nom_client|upper }}</td>
+            </tr>
+            <tr>
+                <td>Prénom(s)</td>
+                <td>{{ simulation.prenom_client|title }}</td>
+            </tr>
+            <tr>
+                <td>Date de naissance</td>
+                <td>
+                    {{ simulation.donnees_entree.date_naissance|date:"d/m/Y" }}
+                    {% if age %}
+                        <span class="badge badge-info" style="margin-left: 10px;">{{ age }} ans</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Profession</td>
+                <td>{{ simulation.profession|default:"Non renseignée" }}</td>
+            </tr>
+            <tr>
+                <td>Adresse</td>
+                <td>{{ simulation.adresse|default:"Non renseignée" }}</td>
+            </tr>
+            <tr>
+                <td>Téléphone</td>
+                <td>{{ simulation.telephone_client|default:"Non renseigné" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ===================================
+         SECTION Q1 : INFORMATIONS PRÊT
+         =================================== -->
+    <div class="section">
+        <div class="section-title">Caractéristiques du Prêt</div>
+        
+        <div class="grid-2cols">
+            <div class="col-box">
+                <div class="label">Montant du Prêt</div>
+                <div class="value">{{ simulation.resultats_calcul.montant_pret|floatformat:0 }} FCFA</div>
+            </div>
+            <div class="col-box">
+                <div class="label">Durée</div>
+                <div class="value">{{ simulation.resultats_calcul.duree_mois }} mois</div>
+            </div>
+            <div class="col-box">
+                <div class="label">Taux d'intérêt</div>
+                <div class="value">{{ simulation.resultats_calcul.taux_applique }}%</div>
+            </div>
+            <div class="col-box">
+                <div class="label">Mensualité prêt</div>
+                <div class="value">{{ simulation.mensualite_pret|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================
+         SECTION Q1 : RÉSULTATS CALCUL PRIME
+         =================================== -->
+    <div class="section">
+        <div class="section-title">Calcul de la Prime d'Assurance</div>
+        
+        <div class="result-box">
+            <div class="result-row">
+                <div class="result-label">Prime de base</div>
+                <div class="result-value">{{ simulation.resultats_calcul.prime_nette|floatformat:0 }} FCFA</div>
+            </div>
+            {% if simulation.surprime and simulation.surprime > 0 %}
+            <div class="result-row">
+                <div class="result-label">
+                    Surprime médicale 
+                    {% if simulation.details_calcul.taux_surprime_applique %}
+                        ({{ simulation.details_calcul.taux_surprime_applique }}%)
+                    {% endif %}
+                </div>
+                <div class="result-value">{{ simulation.surprime_montant|floatformat:0 }} FCFA</div>
+            </div>
+            {% endif %}
+            <div class="result-row">
+                <div class="result-label">PRIME TOTALE MENSUELLE</div>
+                <div class="result-value">{{ simulation.resultats_calcul.prime_totale|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+        
+        {% if simulation.details_calcul.taux_surprime_applique and simulation.details_calcul.taux_surprime_applique > 0 %}
+        <div class="alert alert-warning">
+            <strong>Surprime appliquée :</strong> Une surprime de {{ simulation.details_calcul.taux_surprime_applique }}% 
+            a été calculée sur la base du questionnaire médical (Q2).
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===================================
+         SECTION Q2 : QUESTIONNAIRE MÉDICAL
+         =================================== -->
+    {% if has_questionnaire and questionnaire %}
+    <div class="section">
+        <div class="section-title">
+            Q2 - Questionnaire Médical
+            <span class="badge">Complété le {{ questionnaire.date_remplissage|date:"d/m/Y" }}</span>
+        </div>
+        
+        <!-- Données physiques -->
+        <h3 style="font-size: 9pt; color: #34495e; margin: 10px 0 5px 0; padding-left: 5px; border-left: 3px solid #3498db;">
+            Données Physiques
+        </h3>
+        <table class="info-table">
+            <tr>
+                <td>Taille</td>
+                <td>{{ questionnaire.taille_cm }} cm</td>
+            </tr>
+            <tr>
+                <td>Poids</td>
+                <td>{{ questionnaire.poids_kg }} kg</td>
+            </tr>
+            <tr>
+                <td>IMC (Indice de Masse Corporelle)</td>
+                <td>
+                    <strong>{{ questionnaire.imc|floatformat:1 }}</strong>
+                    {% if questionnaire.imc < 18.5 %}
+                        <span class="badge badge-warning">Insuffisance pondérale</span>
+                    {% elif questionnaire.imc < 25 %}
+                        <span class="badge badge-success">Poids normal</span>
+                    {% elif questionnaire.imc < 30 %}
+                        <span class="badge badge-warning">Surpoids</span>
+                    {% else %}
+                        <span class="badge badge-danger">Obésité</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Tension artérielle</td>
+                <td>{{ questionnaire.tension_arterielle|default:"Non renseignée" }}</td>
+            </tr>
+        </table>
+        
+        <!-- Habitudes de vie -->
+        <h3 style="font-size: 9pt; color: #34495e; margin: 15px 0 5px 0; padding-left: 5px; border-left: 3px solid #3498db;">
+            Habitudes de Vie
+        </h3>
+        <table class="info-table">
+            <tr>
+                <td>Fumeur</td>
+                <td>
+                    {% if questionnaire.fumeur %}
+                        <span class="badge badge-danger">OUI</span>
+                        {% if questionnaire.nb_cigarettes_jour %}
+                            - {{ questionnaire.nb_cigarettes_jour }} cigarette(s)/jour
+                        {% endif %}
+                    {% else %}
+                        <span class="badge badge-success">NON</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Consommation d'alcool</td>
+                <td>
+                    {% if questionnaire.alcool %}
+                        <span class="badge badge-warning">OUI</span>
+                    {% else %}
+                        <span class="badge badge-success">NON</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Pratique sportive</td>
+                <td>
+                    {% if questionnaire.sport %}
+                        <span class="badge badge-success">OUI</span>
+                        {% if questionnaire.type_sport %}
+                            - {{ questionnaire.type_sport }}
+                        {% endif %}
+                    {% else %}
+                        <span class="badge badge-warning">NON</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        
+        <!-- Antécédents médicaux -->
+        <h3 style="font-size: 9pt; color: #34495e; margin: 15px 0 5px 0; padding-left: 5px; border-left: 3px solid #3498db;">
+            Antécédents Médicaux (15 questions)
+        </h3>
+        <table class="medical-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">N°</th>
+                    <th style="width: 75%;">Question</th>
+                    <th style="width: 20%; text-align: center;">Réponse</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Souffrez-vous d'infirmité ou de malformation ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.a_infirmite %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Avez-vous été malade au cours des 6 derniers mois ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.malade_6mois %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Vous sentez-vous fatigué(e) fréquemment ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.fatigue_frequente %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Avez-vous constaté une perte ou prise de poids importante ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.perte_poids %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Avez-vous des ganglions, furoncles ou abcès ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.ganglions %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Avez-vous une fièvre persistante ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.fievre_persistante %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Avez-vous des plaies buccales (bouche) ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.plaies_buccales %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Souffrez-vous de diarrhée fréquente ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.diarrhee %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Avez-vous des ballonnements abdominaux ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.ballonnement %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Avez-vous des œdèmes des membres inférieurs (OMI) ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.oedemes %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Êtes-vous facilement essoufflé(e) ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.essoufflement %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td>Avez-vous déjà subi une perfusion ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.perfusion %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>13</td>
+                    <td>Avez-vous déjà reçu une transfusion sanguine ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.transfusion %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>14</td>
+                    <td>Souffrez-vous d'hypertension artérielle ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.hypertension %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td>Souffrez-vous de diabète ?</td>
+                    <td style="text-align: center;">
+                        {% if questionnaire.diabete %}
+                            <span class="badge badge-danger">OUI</span>
+                        {% else %}
+                            <span class="badge badge-success">NON</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Résultat évaluation risque -->
+        {% if questionnaire.taux_surprime > 0 %}
+        <div class="surprime-box">
+            <div class="surprime-label">Surprime Médicale Calculée</div>
+            <div class="surprime-value">{{ questionnaire.taux_surprime }}%</div>
+            <div class="surprime-category">
+                Catégorie : 
+                {% if questionnaire.categorie_risque == 'faible' %}
+                    <strong>Risque Faible</strong>
+                {% elif questionnaire.categorie_risque == 'moyen' %}
+                    <strong>Risque Moyen</strong>
+                {% elif questionnaire.categorie_risque == 'eleve' %}
+                    <strong>Risque Élevé</strong>
+                {% elif questionnaire.categorie_risque == 'tres_eleve' %}
+                    <strong>Risque Très Élevé</strong>
+                {% else %}
+                    <strong>{{ questionnaire.get_categorie_risque_display }}</strong>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <strong>Aucune surprime appliquée</strong> - Le profil médical ne nécessite pas de majoration de prime.
+        </div>
+        {% endif %}
+        
+    </div>
+    {% else %}
+    <div class="section">
+        <div class="section-title">Q2 - Questionnaire Médical</div>
+        <div class="alert alert-warning">
+            <strong>Questionnaire non complété</strong> - Le questionnaire médical n'a pas encore été rempli. 
+            Une évaluation médicale sera nécessaire avant validation définitive.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===================================
+         DÉCLARATIONS LÉGALES
+         =================================== -->
+    <div class="legal-section">
+        <p style="font-weight: bold; margin-bottom: 10px; font-size: 8.5pt;">
+            DÉCLARATION DE L'ASSURÉ
+        </p>
+        <p>
+            Je soussigné(e), <strong>{{ simulation.prenom_client }} {{ simulation.nom_client }}</strong>, 
+            certifie avoir répondu avec sincérité, sans aucune réticence et n'avoir dissimulé 
+            aucun fait important pouvant influencer l'opinion de l'Assureur sur les risques à garantir.
+        </p>
+        <p>
+            Je reconnais avoir pris connaissance des conditions générales et particulières de 
+            l'assurance emprunteur et les accepte sans réserve.
+        </p>
+        <p style="margin-top: 10px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107;">
+            <strong>NB :</strong> Pour tout Assuré dont l'âge est supérieur ou égal à 50 ans 
+            ou dont le capital dépasse 10 000 000 FCFA, NSIA VIE ASSURANCES se réserve 
+            le droit de soumettre l'Adhérent à un examen médical complémentaire.
+        </p>
+    </div>
+
+    <!-- ===================================
+         SIGNATURES
+         =================================== -->
+    <div style="margin-top: 12px; text-align: right; font-size: 8pt; color: #7f8c8d;">
+        Fait à Brazzaville, le {{ today|date:"d/m/Y" }}
+    </div>
+    
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="sig-label">Visa du Souscripteur</div>
+            <div class="sig-name">{{ banque.nom_complet }}</div>
+        </div>
+        <div class="signature-box">
+            <div class="sig-label">Visa de l'Assuré</div>
+            <div class="sig-name">{{ simulation.prenom_client }} {{ simulation.nom_client }}</div>
+        </div>
+        <div class="signature-box">
+            <div class="sig-label">Visa {{ banque.nom_complet }}</div>
+            <div class="sig-name">Le Responsable</div>
+        </div>
+        <div class="signature-box">
+            <div class="sig-label">Réservé à NSIA Vie</div>
+            <div class="sig-name">Validation médicale</div>
+        </div>
+    </div>
+
+    <!-- ===================================
+         PIED DE PAGE
+         =================================== -->
+    <div class="footer">
+        {{ nsia_info.nom_complet }} - {{ nsia_info.forme_juridique }} au capital de {{ nsia_info.capital }}<br>
+        RCCM : {{ nsia_info.rccm }} - {{ nsia_info.siege }}, {{ nsia_info.ville }}, {{ nsia_info.pays }}<br>
+        Tél : {{ nsia_info.tel }} - Email : {{ nsia_info.email }} - {{ nsia_info.texte_legal }}
+    </div>
+
+</body>
+</html>

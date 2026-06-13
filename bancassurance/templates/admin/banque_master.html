@@ -1,0 +1,658 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Banques Master (Test) | NSIA Bancassurance{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --navy:       #1B3A5C;
+    --navy-light: #24507A;
+    --gold:       #C8962E;
+    --gold-light: #E8B84B;
+    --green:      #1A7A4A;
+    --red:        #C0392B;
+    --blue:       #2980B9;
+    --bg:         #F0F3F7;
+    --surface:    #FFFFFF;
+    --border:     #DDE2EA;
+    --text:       #1C2B3A;
+    --muted:      #7A8899;
+    --radius:     12px;
+    --shadow:     0 2px 16px rgba(27,58,92,0.08);
+    --shadow-lg:  0 8px 32px rgba(27,58,92,0.12);
+}
+
+#content { padding: 0 !important; width: 100% !important; max-width: none !important; }
+
+#bm-page {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: clamp(16px, 3vw, 40px);
+    box-sizing: border-box;
+}
+
+/* ===== HEADER ===== */
+.bm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.bm-header h1 {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+}
+
+.bm-header p {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 4px 0 0;
+}
+
+.bm-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--navy);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    transition: all 0.2s;
+}
+.bm-back:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ===== STATS ROW ===== */
+.bm-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.bm-stat {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 200px;
+    flex: 1;
+}
+
+.bm-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bm-stat-icon svg { width: 24px; height: 24px; }
+
+.bm-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.1;
+}
+
+.bm-stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* ===== MESSAGES ===== */
+.bm-messages {
+    margin-bottom: 20px;
+}
+
+.bm-msg {
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bm-msg-success { background: #D4EDDA; color: #155724; border-left: 4px solid var(--green); }
+.bm-msg-error { background: #F8D7DA; color: #721C24; border-left: 4px solid var(--red); }
+.bm-msg-warning { background: #FFF3CD; color: #856404; border-left: 4px solid var(--gold); }
+.bm-msg-info { background: #D1ECF1; color: #0C5460; border-left: 4px solid var(--blue); }
+
+/* ===== BANK CARDS ===== */
+.bm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+}
+
+.bm-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bm-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.bm-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border-bottom: 3px solid var(--gold);
+}
+
+.bm-card-title {
+    color: #FFF;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.bm-card-code {
+    color: var(--gold-light);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+}
+
+.bm-card-status {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active { background: rgba(26,122,74,0.2); color: #1A7A4A; }
+.status-none { background: rgba(122,136,153,0.2); color: var(--muted); }
+.status-desync { background: rgba(200,150,46,0.2); color: #8B6914; }
+
+.bm-card-body { padding: 20px 22px; }
+
+/* Metrics row */
+.bm-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.bm-metric {
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 8px;
+    background: var(--bg);
+}
+
+.bm-metric-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.bm-metric-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+/* Users list */
+.bm-users {
+    margin-bottom: 18px;
+}
+
+.bm-users-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.bm-user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.bm-user-row:nth-child(even) { background: var(--bg); }
+
+.bm-user-name {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+    font-size: 12px;
+}
+
+.bm-role-badge {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #FFF;
+}
+
+.role-gestionnaire { background: var(--green); }
+.role-responsable_agence { background: var(--gold); }
+.role-responsable_banque { background: var(--navy); }
+
+.bm-user-status {
+    font-size: 11px;
+    font-weight: 600;
+}
+.bm-user-active { color: var(--green); }
+.bm-user-inactive { color: var(--red); }
+
+/* Empty state for no test bank */
+.bm-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--muted);
+}
+
+.bm-empty svg { margin-bottom: 10px; opacity: 0.4; }
+.bm-empty p { font-size: 14px; margin: 4px 0; }
+
+/* Actions */
+.bm-card-actions {
+    padding: 14px 22px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.bm-btn svg { width: 16px; height: 16px; }
+
+.bm-btn:hover { transform: translateY(-1px); }
+
+.bm-btn-create { background: var(--green); color: #FFF; }
+.bm-btn-create:hover { background: #1E8E56; }
+
+.bm-btn-reset { background: var(--blue); color: #FFF; }
+.bm-btn-reset:hover { background: #3498DB; }
+
+.bm-btn-sync { background: var(--gold); color: #FFF; }
+.bm-btn-sync:hover { background: var(--gold-light); }
+
+.bm-btn-delete { background: transparent; color: var(--red); border: 1px solid var(--red); }
+.bm-btn-delete:hover { background: var(--red); color: #FFF; }
+
+/* Password input row */
+.bm-pwd-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.bm-pwd-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface);
+    transition: border-color 0.2s;
+}
+
+.bm-pwd-input:focus { border-color: var(--gold); outline: none; }
+
+/* Modal confirmation */
+.bm-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(27,58,92,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.bm-modal-overlay.active { display: flex; }
+
+.bm-modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 32px;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+}
+
+.bm-modal h3 {
+    font-size: 18px;
+    color: var(--navy);
+    margin: 0 0 10px;
+}
+
+.bm-modal p {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 24px;
+}
+
+.bm-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.bm-modal-cancel {
+    padding: 10px 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bm-modal-confirm {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(--red);
+    color: #FFF;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .bm-grid { grid-template-columns: 1fr; }
+    .bm-metrics { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .bm-stats { flex-direction: column; }
+    .bm-card-actions { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="bm-page">
+
+    <!-- HEADER -->
+    <div class="bm-header">
+        <div>
+            <h1>Banques Master (Test)</h1>
+            <p>Créez et gérez les environnements de test miroirs pour chaque banque partenaire</p>
+        </div>
+        <a href="{% url 'admin:index' %}" class="bm-back">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Retour Dashboard
+        </a>
+    </div>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="bm-messages">
+        {% for message in messages %}
+        <div class="bm-msg bm-msg-{{ message.tags }}">
+            {% if message.tags == 'success' %}
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            {% elif message.tags == 'error' %}
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- STATS -->
+    <div class="bm-stats">
+        <div class="bm-stat">
+            <div class="bm-stat-icon" style="background: rgba(27,58,92,0.1); color: var(--navy);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            </div>
+            <div>
+                <div class="bm-stat-value">{{ total_reelles }}</div>
+                <div class="bm-stat-label">Banques partenaires</div>
+            </div>
+        </div>
+        <div class="bm-stat">
+            <div class="bm-stat-icon" style="background: rgba(26,122,74,0.1); color: var(--green);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+                <div class="bm-stat-value">{{ total_test }}</div>
+                <div class="bm-stat-label">Banques test créées</div>
+            </div>
+        </div>
+        <div class="bm-stat">
+            <div class="bm-stat-icon" style="background: rgba(200,150,46,0.1); color: var(--gold);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+                <div class="bm-stat-value" id="stat-pending">0</div>
+                <div class="bm-stat-label">En attente de création</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BANK CARDS GRID -->
+    <div class="bm-grid">
+        {% for item in data %}
+        <div class="bm-card">
+            <div class="bm-card-header">
+                <div>
+                    <h2 class="bm-card-title">{{ item.banque.nom_court|default:item.banque.nom_complet }}</h2>
+                    <div class="bm-card-code">{{ item.banque.code_banque }} → {{ item.code_test }}</div>
+                </div>
+                {% if item.has_test and item.synced %}
+                    <span class="bm-card-status status-active">Actif</span>
+                {% elif item.has_test and not item.synced %}
+                    <span class="bm-card-status status-desync">Désynchronisé</span>
+                {% else %}
+                    <span class="bm-card-status status-none">Non créé</span>
+                {% endif %}
+            </div>
+
+            <div class="bm-card-body">
+                {% if item.has_test %}
+                    <!-- Metrics -->
+                    <div class="bm-metrics">
+                        <div class="bm-metric">
+                            <div class="bm-metric-val">{{ item.nb_produits_test }}</div>
+                            <div class="bm-metric-lbl">Produits</div>
+                        </div>
+                        <div class="bm-metric">
+                            <div class="bm-metric-val">{{ item.users|length }}</div>
+                            <div class="bm-metric-lbl">Comptes</div>
+                        </div>
+                        <div class="bm-metric">
+                            <div class="bm-metric-val">{{ item.nb_agences }}</div>
+                            <div class="bm-metric-lbl">Agences</div>
+                        </div>
+                        <div class="bm-metric">
+                            <div class="bm-metric-val">{{ item.nb_simulations }}</div>
+                            <div class="bm-metric-lbl">Simulations</div>
+                        </div>
+                    </div>
+
+                    {% if not item.synced %}
+                    <div class="bm-msg bm-msg-warning" style="margin-bottom: 14px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Produits désynchronisés ({{ item.nb_produits_test }} test vs {{ item.nb_produits_reels }} réels)
+                    </div>
+                    {% endif %}
+
+                    <!-- Users -->
+                    <div class="bm-users">
+                        <div class="bm-users-title">Comptes de test</div>
+                        {% for user in item.users %}
+                        <div class="bm-user-row">
+                            <span class="bm-user-name">{{ user.username }}</span>
+                            <span class="bm-role-badge role-{{ user.role|lower }}">{{ user.role }}</span>
+                            <span class="bm-user-status {% if user.est_actif %}bm-user-active{% else %}bm-user-inactive{% endif %}">
+                                {% if user.est_actif %}Actif{% else %}Inactif{% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <!-- Empty state -->
+                    <div class="bm-empty">
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        <p>Aucune banque test créée</p>
+                        <p style="font-size: 12px;">{{ item.nb_produits_reels }} produit{{ item.nb_produits_reels|pluralize }} à copier</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="bm-card-actions">
+                {% if item.has_test %}
+                    <form method="post" action="{% url 'admin:banque_master_action' %}" style="display:contents;">
+                        {% csrf_token %}
+                        <input type="hidden" name="banque_id" value="{{ item.banque.id }}">
+
+                        <button type="submit" name="action" value="reset" class="bm-btn bm-btn-reset">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            Reset
+                        </button>
+
+                        {% if not item.synced %}
+                        <button type="submit" name="action" value="sync" class="bm-btn bm-btn-sync">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+                            Sync produits
+                        </button>
+                        {% endif %}
+
+                        <button type="button" class="bm-btn bm-btn-delete" onclick="confirmDelete('{{ item.banque.nom_court|default:item.banque.nom_complet|escapejs }}', '{{ item.code_test }}', '{{ item.banque.id }}', {{ item.nb_simulations }})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Supprimer
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'admin:banque_master_action' %}" style="display:contents;">
+                        {% csrf_token %}
+                        <input type="hidden" name="banque_id" value="{{ item.banque.id }}">
+                        <input type="hidden" name="action" value="create">
+
+                        <button type="submit" class="bm-btn bm-btn-create">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Créer banque test
+                        </button>
+
+                        <div class="bm-pwd-row">
+                            <input type="text" name="password" class="bm-pwd-input" placeholder="{{ default_password }}" title="Mot de passe (optionnel)">
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="bm-modal-overlay" id="deleteModal">
+    <div class="bm-modal">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#C0392B" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <h3>Supprimer <span id="modal-bank-name"></span> ?</h3>
+        <p id="modal-bank-detail"></p>
+        <div class="bm-modal-actions">
+            <button class="bm-modal-cancel" onclick="closeModal()">Annuler</button>
+            <form method="post" action="{% url 'admin:banque_master_action' %}" id="deleteForm" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="banque_id" id="modal-banque-id">
+                <input type="hidden" name="action" value="delete">
+                <button type="submit" class="bm-modal-confirm">Confirmer la suppression</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block extrabody %}
+<script>
+function confirmDelete(bankName, codeTest, banqueId, nbSims) {
+    document.getElementById('modal-bank-name').textContent = codeTest;
+    document.getElementById('modal-bank-detail').textContent =
+        'Cette action supprimera la banque test, ses comptes, agences et '
+        + nbSims + ' simulation(s). Cette action est irréversible.';
+    document.getElementById('modal-banque-id').value = banqueId;
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+// Compute pending stat
+document.getElementById('stat-pending').textContent = {{ total_reelles }} - {{ total_test }};
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+# Exemple : Banque avec grille par année (comme BGFI, BOA)
+# Usage : python manage.py load_tarification --banque=NOUVELLE_BANQUE --produit=emprunteur --fichier=grilles/exemple_emprunteur_par_annee.csv
+tranche_age,age_min,age_max,duree,taux,frais_accessoires
+29 ans et moins,18,29,1,0.370,5000
+29 ans et moins,18,29,2,0.490,5000
+29 ans et moins,18,29,3,0.610,5000
+30-39 ans,30,39,1,0.430,5000
+30-39 ans,30,39,2,0.610,5000
+30-39 ans,30,39,3,0.800,5000
+40-49 ans,40,49,1,0.640,5000
+40-49 ans,40,49,2,1.040,5000
+40-49 ans,40,49,3,1.470,5000
+50-59 ans,50,59,1,1.180,5000
+50-59 ans,50,59,2,2.090,5000
+50-59 ans,50,59,3,3.070,5000
+60-64 ans,60,64,1,2.450,5000
+60-64 ans,60,64,2,4.590,5000
+60-64 ans,60,64,3,6.860,5000

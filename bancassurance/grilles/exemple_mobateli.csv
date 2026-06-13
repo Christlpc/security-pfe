@@ -1,0 +1,12 @@
+# Exemple : Primes Mobateli / Prévoyance (DTC/IAD)
+# Usage : python manage.py load_tarification --banque=NOUVELLE_BANQUE --produit=mobateli --fichier=grilles/exemple_mobateli.csv
+capital_dtc_iad,tranche_age,age_min,age_max,prime_nette
+2000000,Moins de 45 ans,18,44,34900
+2000000,45-54 ans,45,54,45100
+2000000,55-64 ans,55,64,65100
+5000000,Moins de 45 ans,18,44,50800
+5000000,45-54 ans,45,54,76300
+5000000,55-64 ans,55,64,126300
+7500000,Moins de 45 ans,18,44,64050
+7500000,45-54 ans,45,54,102300
+7500000,55-64 ans,55,64,177300

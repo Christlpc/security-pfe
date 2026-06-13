@@ -1,0 +1,852 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static log %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --navy:       #1B3A5C;
+    --navy-light: #24507A;
+    --gold:       #C8962E;
+    --gold-light: #E8B84B;
+    --green:      #1A7A4A;
+    --red:        #C0392B;
+    --blue:       #2980B9;
+    --bg:         #F0F3F7;
+    --surface:    #FFFFFF;
+    --border:     #DDE2EA;
+    --text:       #1C2B3A;
+    --muted:      #7A8899;
+    --radius:     12px;
+    --shadow:     0 2px 16px rgba(27,58,92,0.08);
+    --shadow-lg:  0 8px 32px rgba(27,58,92,0.12);
+}
+
+.dashboard #content { padding: 0 !important; width: 100% !important; max-width: none !important; }
+.dashboard #content-main { width: 100%; padding: 0; }
+
+#nsia-dashboard {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    width: 100%;
+    min-height: 100vh;
+    padding: clamp(16px, 3vw, 40px);
+    box-sizing: border-box;
+}
+
+/* ===== HEADER ===== */
+.dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: clamp(20px, 3vw, 36px);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dash-header-title {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.dash-header-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 4px 0 0;
+    font-family: 'DM Mono', monospace;
+}
+
+.dash-badge-live {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 600;
+    box-shadow: var(--shadow);
+}
+
+.pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* ===== KPI GRID ===== */
+.dashboard-kpi {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 2vw, 24px);
+    margin-bottom: clamp(20px, 3vw, 36px);
+    width: 100%;
+}
+
+.kpi-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: clamp(16px, 2vw, 28px) clamp(14px, 1.8vw, 24px);
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 1.5vw, 20px);
+    box-shadow: var(--shadow);
+    border-top: 4px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.4));
+    pointer-events: none;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.kpi-card.kpi-draft    { border-top-color: var(--muted); }
+.kpi-card.kpi-calc     { border-top-color: var(--blue); }
+.kpi-card.kpi-proposal { border-top-color: var(--gold); }
+.kpi-card.kpi-contract { border-top-color: var(--green); }
+
+.kpi-icon {
+    width: clamp(44px, 5vw, 60px);
+    height: clamp(44px, 5vw, 60px);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-icon svg { width: clamp(20px, 2.2vw, 28px); height: clamp(20px, 2.2vw, 28px); }
+
+.kpi-draft .kpi-icon    { background: rgba(122,136,153,0.1); color: var(--muted); }
+.kpi-calc .kpi-icon     { background: rgba(41,128,185,0.1);  color: var(--blue); }
+.kpi-proposal .kpi-icon { background: rgba(200,150,46,0.1);  color: var(--gold); }
+.kpi-contract .kpi-icon { background: rgba(26,122,74,0.1);   color: var(--green); }
+
+.kpi-content { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+
+.kpi-value {
+    font-size: clamp(22px, 3vw, 38px);
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.1;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-label {
+    font-size: clamp(10px, 1.1vw, 13px);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== SECTION CARD ===== */
+.dashboard-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: clamp(16px, 2.5vw, 32px);
+    overflow: hidden;
+    width: 100%;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: clamp(16px, 2vw, 22px) clamp(18px, 2.5vw, 28px);
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border-bottom: 3px solid var(--gold);
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: clamp(14px, 1.5vw, 17px);
+    font-weight: 600;
+    color: #FFF;
+    letter-spacing: 0.2px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gold-light);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.back-link:hover { color: #FFF; }
+
+/* ===== FILTERS ===== */
+.table-filters {
+    padding: clamp(12px, 1.8vw, 18px) clamp(18px, 2.5vw, 28px);
+    background: #F7F9FC;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.table-filters form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+}
+
+.table-filters label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.table-filters input[type="date"],
+.table-filters select {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    background: #FFF;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.table-filters input[type="date"]:focus,
+.table-filters select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200,150,46,0.15);
+    outline: none;
+}
+
+.filter-btn {
+    background: var(--gold);
+    color: #FFF;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.filter-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+.reset-link {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.reset-link:hover { color: var(--red); }
+
+.search-box {
+    margin-left: auto;
+    position: relative;
+}
+
+.search-box input {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px 8px 36px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    width: clamp(180px, 20vw, 280px);
+    background: #FFF;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200,150,46,0.15);
+    outline: none;
+}
+
+.search-box::before {
+    content: "\1F50D";
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ===== TABLE ===== */
+.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+
+.enterprise-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.enterprise-table thead th {
+    background: var(--navy);
+    color: #FFF;
+    padding: clamp(12px, 1.5vw, 16px) clamp(14px, 1.8vw, 20px);
+    font-size: clamp(11px, 1.1vw, 13px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.enterprise-table thead th:not(:first-child) { text-align: center; }
+
+.enterprise-table tbody td {
+    padding: clamp(12px, 1.5vw, 16px) clamp(14px, 1.8vw, 20px);
+    font-size: clamp(13px, 1.4vw, 15px);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+.enterprise-table tbody td:first-child { font-weight: 600; color: var(--navy); }
+.enterprise-table tbody td:not(:first-child) { text-align: center; }
+.enterprise-table tbody tr:nth-child(even) { background: #F8FAFB; }
+.enterprise-table tbody tr:hover { background: #FDF5E6; }
+.enterprise-table tbody tr.hidden-row { display: none; }
+
+.enterprise-table tbody td:first-child a {
+    color: var(--navy);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--gold);
+    transition: color 0.2s, border-color 0.2s;
+}
+.enterprise-table tbody td:first-child a:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+}
+
+.rate-high { color: var(--green); font-weight: 700; }
+.rate-mid  { color: var(--gold);  font-weight: 700; }
+.rate-low  { color: var(--red);   font-weight: 700; }
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: clamp(11px, 1.1vw, 13px);
+    font-weight: 600;
+    display: inline-block;
+    color: #FFF;
+    min-width: 36px;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.badge-success  { background: var(--green); }
+.badge-danger   { background: var(--red); }
+.badge-warning  { background: var(--gold); }
+.badge-navy     { background: var(--navy); }
+.badge-blue     { background: var(--blue); }
+.badge-muted    { background: var(--muted); }
+
+.enterprise-table tfoot td {
+    padding: clamp(12px, 1.5vw, 16px) clamp(14px, 1.8vw, 20px);
+    font-weight: 700;
+    font-size: clamp(13px, 1.4vw, 15px);
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #FFF;
+    border: none;
+}
+.enterprise-table tfoot td:not(:first-child) { text-align: center; }
+
+.empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+.empty-state p { font-size: 15px; }
+
+/* ===== CHART ===== */
+.chart-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.chart-filter label { font-size: 13px; color: rgba(255,255,255,0.8); white-space: nowrap; }
+
+.chart-filter select {
+    background: rgba(255,255,255,0.15);
+    color: #FFF;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+}
+.chart-filter select option { background: var(--navy); color: #FFF; }
+
+.chart-body {
+    padding: clamp(16px, 2.5vw, 28px);
+    height: clamp(260px, 30vw, 420px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== ADMIN APP LIST ===== */
+.section-title {
+    font-size: clamp(14px, 1.5vw, 17px);
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 0 0 clamp(12px, 1.8vw, 20px);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+    .dashboard-kpi { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 760px) {
+    .dashboard-kpi { grid-template-columns: repeat(2, 1fr); }
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .table-filters { flex-direction: column; align-items: stretch; }
+    .table-filters form { width: 100%; flex-direction: column; align-items: flex-start; }
+    .table-filters input[type="date"], .table-filters select { width: 100%; }
+    .search-box { margin-left: 0; width: 100%; }
+    .search-box input { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .dashboard-kpi { grid-template-columns: 1fr; gap: 10px; }
+    .kpi-card { padding: 16px; }
+    .kpi-value { font-size: 28px; }
+    .enterprise-table thead th,
+    .enterprise-table tbody td,
+    .enterprise-table tfoot td { padding: 10px 12px; font-size: 12px; }
+    .badge { padding: 3px 9px; font-size: 11px; }
+    .chart-body { height: 240px; }
+}
+
+@media (min-width: 1800px) {
+    .kpi-value { font-size: 44px; }
+    .kpi-label { font-size: 14px; }
+    .chart-body { height: 500px; }
+}
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block coltype %}colMS{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="nsia-dashboard">
+
+    <!-- ========== HEADER ========== -->
+    <div class="dash-header">
+        <div>
+            <h1 class="dash-header-title">
+                {% if is_drilldown and drilldown_banque %}
+                    {{ drilldown_banque.nom_court|default:drilldown_banque.nom_complet }} — Production par agence
+                {% else %}
+                    Tableau de bord — Production
+                {% endif %}
+            </h1>
+            <p class="dash-header-subtitle">{{ now|date:"l d F Y, H:i" }}</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <a href="{% url 'admin:banque_master' %}" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface,#fff);border:1px solid var(--border,#DDE2EA);border-radius:50px;padding:8px 18px;font-size:13px;color:var(--navy,#1B3A5C);font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(27,58,92,0.06);transition:all 0.2s;" onmouseover="this.style.borderColor='#C8962E';this.style.color='#C8962E'" onmouseout="this.style.borderColor='#DDE2EA';this.style.color='#1B3A5C'">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Banques Master
+            </a>
+            <div class="dash-badge-live">
+                <span class="pulse-dot"></span>
+                Live
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 4 KPI CARDS ========== -->
+    <div class="dashboard-kpi">
+        <div class="kpi-card kpi-draft">
+            <div class="kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-value">{{ brouillon_count|default:"0" }}</span>
+                <span class="kpi-label">Brouillon</span>
+            </div>
+        </div>
+        <div class="kpi-card kpi-calc">
+            <div class="kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-value">{{ calculee_count|default:"0" }}</span>
+                <span class="kpi-label">Calculée</span>
+            </div>
+        </div>
+        <div class="kpi-card kpi-proposal">
+            <div class="kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-value">{{ validee_count|default:"0" }}</span>
+                <span class="kpi-label">Proposition</span>
+            </div>
+        </div>
+        <div class="kpi-card kpi-contract">
+            <div class="kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-value">{{ convertie_count|default:"0" }}</span>
+                <span class="kpi-label">Contrat</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ENTERPRISE / AGENCY TABLE ========== -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>
+                {% if is_drilldown and drilldown_banque %}
+                    Répartition par agence — {{ drilldown_banque.nom_court|default:drilldown_banque.nom_complet }}
+                {% else %}
+                    Répartition de la production par entreprise
+                {% endif %}
+            </h2>
+            {% if is_drilldown %}
+            <a href="." class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Retour vue globale
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="table-filters">
+            <form method="get" action=".">
+                {% if is_drilldown %}
+                <input type="hidden" name="banque" value="{{ filter_banque_id }}">
+                {% endif %}
+                <label for="date_start">Du</label>
+                <input type="date" name="date_start" id="date_start" value="{{ filter_date_start }}">
+                <label for="date_end">Au</label>
+                <input type="date" name="date_end" id="date_end" value="{{ filter_date_end }}">
+                <label for="produit">Produit</label>
+                <select name="produit" id="produit">
+                    <option value="">Tous</option>
+                    {% for p in produit_list %}
+                    <option value="{{ p }}" {% if p == filter_produit %}selected{% endif %}>{{ p|title }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="filter-btn">Filtrer</button>
+                {% if filter_date_start or filter_date_end or filter_produit %}
+                <a href="{% if is_drilldown %}?banque={{ filter_banque_id }}{% else %}.{% endif %}" class="reset-link">Réinitialiser</a>
+                {% endif %}
+            </form>
+            <div class="search-box">
+                <input type="text" id="search-enterprise" placeholder="Rechercher…">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="enterprise-table" id="enterprise-table">
+                <thead>
+                    <tr>
+                        <th>{% if is_drilldown %}Agence{% else %}Entreprise{% endif %}</th>
+                        <th>Total Sim.</th>
+                        <th>Brouillon</th>
+                        <th>Calculée</th>
+                        <th>Proposition</th>
+                        <th>Contrat</th>
+                        <th>Taux conversion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ent in banque_stats %}
+                    <tr data-enterprise="{{ ent.nom|lower }}">
+                        <td>
+                            {% if not is_drilldown %}
+                            <a href="?banque={{ ent.id }}{% if filter_date_start %}&date_start={{ filter_date_start }}{% endif %}{% if filter_date_end %}&date_end={{ filter_date_end }}{% endif %}{% if filter_produit %}&produit={{ filter_produit }}{% endif %}">
+                                {{ ent.nom }}
+                            </a>
+                            {% else %}
+                                {{ ent.nom }}
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ ent.total_sims }}</strong></td>
+                        <td><span class="badge badge-muted">{{ ent.brouillon }}</span></td>
+                        <td><span class="badge badge-blue">{{ ent.calculee }}</span></td>
+                        <td><span class="badge badge-warning">{{ ent.validee }}</span></td>
+                        <td><span class="badge badge-success">{{ ent.convertie }}</span></td>
+                        <td>
+                            <span class="{% if ent.conversion_rate >= 30 %}rate-high{% elif ent.conversion_rate >= 10 %}rate-mid{% else %}rate-low{% endif %}">
+                                {{ ent.conversion_rate }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <p>Aucune donnée disponible pour cette période</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if banque_stats %}
+                <tfoot>
+                    <tr>
+                        <td><strong>TOTAL</strong></td>
+                        <td id="total-sims">—</td>
+                        <td id="total-brouillon">—</td>
+                        <td id="total-calculee">—</td>
+                        <td id="total-validee">—</td>
+                        <td id="total-convertie">—</td>
+                        <td id="total-rate">—</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- ========== CHART ========== -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>
+                {% if is_drilldown and drilldown_banque %}
+                    Production — {{ drilldown_banque.nom_court|default:drilldown_banque.nom_complet }} — 30 derniers jours
+                {% else %}
+                    Production — 30 derniers jours
+                {% endif %}
+            </h2>
+            <div class="chart-filter">
+                <label for="chart-filter-banque">
+                    {% if is_drilldown %}Agence :{% else %}Entreprise :{% endif %}
+                </label>
+                <select id="chart-filter-banque">
+                    <option value="all">
+                        {% if is_drilldown %}Toutes les agences{% else %}Toutes les entreprises{% endif %}
+                    </option>
+                    {% for ent in banque_stats %}
+                    <option value="{{ ent.id }}">{{ ent.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="chart-body">
+            <canvas id="simLineChart"></canvas>
+            {{ chart_labels|json_script:"chart-labels-data" }}
+            {{ chart_datasets|json_script:"chart-datasets-data" }}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% trans 'Recent actions' %}</h2>
+        <h3>{% trans 'My actions' %}</h3>
+        {% get_admin_log 10 as admin_log for_user user %}
+        {% if not admin_log %}
+        <p>{% trans 'None available' %}</p>
+        {% else %}
+        <ul class="actionlist">
+        {% for entry in admin_log %}
+        <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+            {% if entry.is_deletion or not entry.get_admin_url %}
+                {{ entry.object_repr }}
+            {% else %}
+                <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+            {% endif %}
+            <br>
+            {% if entry.content_type %}
+                <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+            {% else %}
+                <span class="mini quiet">{% trans 'Unknown content' %}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extrabody %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ==========================================
+    // 1. SEARCH (client-side)
+    // ==========================================
+    var searchInput = document.getElementById('search-enterprise');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            var query = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('#enterprise-table tbody tr[data-enterprise]');
+            rows.forEach(function (row) {
+                var match = (row.getAttribute('data-enterprise') || '').indexOf(query) !== -1;
+                row.classList.toggle('hidden-row', !match);
+            });
+            computeTotals();
+        });
+    }
+
+    // ==========================================
+    // 2. TABLE TOTALS
+    // ==========================================
+    function computeTotals() {
+        var rows = document.querySelectorAll('#enterprise-table tbody tr[data-enterprise]:not(.hidden-row)');
+        var t = { sims: 0, brouillon: 0, calculee: 0, validee: 0, convertie: 0 };
+
+        rows.forEach(function (row) {
+            var cells = row.querySelectorAll('td');
+            if (cells.length >= 7) {
+                t.sims      += parseInt(cells[1].textContent.trim()) || 0;
+                t.brouillon += parseInt(cells[2].textContent.trim()) || 0;
+                t.calculee  += parseInt(cells[3].textContent.trim()) || 0;
+                t.validee   += parseInt(cells[4].textContent.trim()) || 0;
+                t.convertie += parseInt(cells[5].textContent.trim()) || 0;
+            }
+        });
+
+        var rate = t.sims > 0 ? ((t.convertie / t.sims) * 100).toFixed(1) : '0.0';
+        var rateClass = parseFloat(rate) >= 30 ? 'rate-high' : (parseFloat(rate) >= 10 ? 'rate-mid' : 'rate-low');
+
+        function set(id, html) {
+            var el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        }
+
+        set('total-sims',      '<strong>' + t.sims + '</strong>');
+        set('total-brouillon', '<span class="badge badge-muted">'   + t.brouillon + '</span>');
+        set('total-calculee',  '<span class="badge badge-blue">'    + t.calculee  + '</span>');
+        set('total-validee',   '<span class="badge badge-warning">' + t.validee   + '</span>');
+        set('total-convertie', '<span class="badge badge-success">' + t.convertie + '</span>');
+        set('total-rate',      '<span class="' + rateClass + '">'   + rate        + '%</span>');
+    }
+
+    computeTotals();
+
+    // ==========================================
+    // 3. LINE CHART
+    // ==========================================
+    var lineCtx = document.getElementById('simLineChart');
+    if (lineCtx) {
+        {# SECURITE : utiliser json_script au lieu de |safe pour éviter les XSS #}
+        var chartLabels   = JSON.parse(document.getElementById('chart-labels-data').textContent);
+        var chartDatasets = JSON.parse(document.getElementById('chart-datasets-data').textContent);
+
+        var lineChart = new Chart(lineCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Simulations',
+                    data: chartDatasets['all'] || [],
+                    borderColor: '#C8962E',
+                    backgroundColor: 'rgba(200,150,46,0.08)',
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#1B3A5C',
+                    pointBorderColor: '#C8962E',
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    borderWidth: 2.5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1B3A5C',
+                        titleFont: { size: 13, family: "'DM Sans', sans-serif" },
+                        bodyFont:  { size: 13, family: "'DM Sans', sans-serif" },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#7A8899', font: { size: 12 } },
+                        grid: { color: 'rgba(0,0,0,0.04)' }
+                    },
+                    x: {
+                        ticks: { color: '#7A8899', font: { size: 11 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 15 },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        var chartFilter = document.getElementById('chart-filter-banque');
+        if (chartFilter) {
+            chartFilter.addEventListener('change', function () {
+                var key  = this.value;
+                var data = chartDatasets[key] || chartDatasets['all'] || [];
+                lineChart.data.datasets[0].data  = data;
+                lineChart.data.datasets[0].label = key === 'all'
+                    ? 'Simulations'
+                    : this.options[this.selectedIndex].text;
+                lineChart.update();
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

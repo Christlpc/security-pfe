@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | NSIA Bancassurance{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% if not '/login/' in request.path %}
+<link rel="stylesheet" href="{% static 'admin/css/nsia_theme.css' %}">
+{% endif %}
+{% endblock %}
+
+{% block branding %}
+<style>
+:root,
+html[data-theme="light"] {
+    --nsia-navy: #1B3A5C;
+    --nsia-navy-dark: #122842;
+    --nsia-navy-light: #24507A;
+    --nsia-gold: #C8962E;
+    --nsia-gold-light: #E8B84B;
+    --nsia-gold-pale: #FDF3E0;
+    --nsia-silver: #8C8C8C;
+    --nsia-light-gray: #F4F6F9;
+    --nsia-white: #FFFFFF;
+    --nsia-text: #2C3E50;
+    --nsia-success: #1A7A4A;
+    --nsia-danger: #C0392B;
+
+    --primary: #1B3A5C;
+    --accent: #C8962E;
+    --secondary: #24507A;
+    --primary-fg: #FFFFFF;
+
+    --header-color: #FFFFFF;
+    --header-branding-color: #E8B84B;
+    --header-bg: #1B3A5C;
+    --header-link-color: #FFFFFF;
+
+    --breadcrumbs-fg: #FFFFFF;
+    --breadcrumbs-link-fg: #E8B84B;
+    --breadcrumbs-bg: #122842;
+
+    --link-fg: #24507A;
+    --link-hover-color: #C8962E;
+    --link-selected-fg: #C8962E;
+
+    --hairline-color: #E0E4E8;
+    --border-color: #D5D9DE;
+
+    --button-fg: #FFFFFF;
+    --button-bg: #1B3A5C;
+    --button-hover-bg: #24507A;
+    --default-button-bg: #C8962E;
+    --default-button-hover-bg: #E8B84B;
+
+    --close-button-bg: #8C8C8C;
+    --close-button-hover-bg: #6C6C6C;
+
+    --delete-button-bg: #C0392B;
+    --delete-button-hover-bg: #E74C3C;
+
+    --object-tools-fg: #FFFFFF;
+    --object-tools-bg: #24507A;
+    --object-tools-hover-bg: #1B3A5C;
+
+    --body-bg: #F4F6F9;
+    --body-fg: #2C3E50;
+    --body-quiet-color: #8C8C8C;
+    --body-medium-color: #555;
+    --body-loud-color: #1B3A5C;
+
+    --darkened-bg: #E8ECF0;
+    --selected-bg: #FDF3E0;
+    --selected-row: #FDF3E0;
+
+    --message-success-bg: #D4EDDA;
+    --message-warning-bg: #FFF3CD;
+    --message-error-bg: #F8D7DA;
+}
+
+#header {
+    background: linear-gradient(135deg, var(--nsia-navy) 0%, var(--nsia-navy-dark) 100%);
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(27, 58, 92, 0.3);
+}
+
+#header a:link,
+#header a:visited { color: var(--nsia-white); }
+
+#branding {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+#branding h1 {
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+}
+
+#branding .nsia-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+#user-tools {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+#user-tools a {
+    color: var(--nsia-gold-light) !important;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+#user-tools a:hover {
+    color: var(--nsia-gold) !important;
+    border-bottom-color: var(--nsia-gold);
+}
+
+#footer {
+    background: var(--nsia-navy-dark);
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+}
+</style>
+<div id="branding">
+    <img src="{% static 'bia/logos/nsia.png' %}" alt="NSIA" class="nsia-logo">
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">NSIA Bancassurance</a>
+    </h1>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block footer %}
+<div id="footer">
+    NSIA Vie Assurances &mdash; Plateforme Bancassurance &mdash; Administration
+</div>
+{% endblock %}

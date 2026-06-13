@@ -1,0 +1,22 @@
+# Grille PERSONNEL Express Union - Convention Emprunteur 08/06/2018
+# Taux d'intérêt annuel max 10%, taxes 18.90%
+# Usage : python manage.py load_tarification --banque=EXPRESS_UNION --produit=emprunteur --fichier=grilles/emprunteur_express_union_personnel.csv --type-tarif=personnel
+tranche_age,age_min,age_max,duree,taux,frais_accessoires
+29 ans et moins,18,29,1,0.160,2500
+29 ans et moins,18,29,2,0.300,2500
+29 ans et moins,18,29,3,0.460,2500
+30 ans - 39 ans,30,39,1,0.260,2500
+30 ans - 39 ans,30,39,2,0.510,2500
+30 ans - 39 ans,30,39,3,0.780,2500
+40 ans - 49 ans,40,49,1,0.540,2500
+40 ans - 49 ans,40,49,2,1.060,2500
+40 ans - 49 ans,40,49,3,1.610,2500
+50 ans - 59 ans,50,59,1,1.000,2500
+50 ans - 59 ans,50,59,2,1.970,2500
+50 ans - 59 ans,50,59,3,3.000,2500
+60 ans - 62 ans,60,62,1,1.530,2500
+60 ans - 62 ans,60,62,2,3.020,2500
+60 ans - 62 ans,60,62,3,4.590,2500
+63 ans,63,63,1,1.530,2500
+63 ans,63,63,2,3.020,2500
+64 ans,64,64,1,1.530,2500

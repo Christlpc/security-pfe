@@ -1,0 +1,10 @@
+# Grille Prévoyance Décès (Mobateli) Express Union - Convention signée 08/06/2018
+# Pas de tranche d'âge - prime forfaitaire par palier de capital
+# Garanties : DTC + IAD uniquement (complémentaires exclues)
+# Frais accessoires : 2 500 FCFA
+# Usage : python manage.py load_tarification --banque=EXPRESS_UNION --produit=mobateli --fichier=grilles/mobateli_express_union.csv
+capital_dtc_iad,tranche_age,age_min,age_max,prime_nette
+500000,18-65 ans,18,65,3000
+1000000,18-65 ans,18,65,5000
+3000000,18-65 ans,18,65,15000
+5000000,18-65 ans,18,65,25000
