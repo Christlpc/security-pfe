@@ -41,7 +41,9 @@
     sso_session_idle_timeout: "{{ nsia_security_baseline.sso_session_idle_lifespan }}"
     email_theme: "nsia-platform-theme"
     login_theme: "nsia-platform-theme"
-    frontend_url: "{{ keycloak_frontend_url }}"
+    attributes:
+      frontendUrl: "{{ keycloak_frontend_url }}"
+
 
 
 
