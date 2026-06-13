@@ -45,6 +45,16 @@
 
 
 
+# 1.5. PROVISIONNING DES RÔLES DE LA MATRICE RBAC MÉTIERS
+- name: "[Realm {{ target_realm }}] Provisionner les rôles de la matrice RBAC"
+  community.general.keycloak_role:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    name: "{{ item }}"
+    state: present
+  loop: "{{ nsia_rbac_roles }}"
+
 # 2. VÉRIFICATION DE L'EXISTENCE DU SECRET (Évite le reset de la prod au rejeu)
 - name: "[Realm {{ target_realm }}] Contrôle d'existence préalable du Broker IAM"
   ansible.builtin.uri:
