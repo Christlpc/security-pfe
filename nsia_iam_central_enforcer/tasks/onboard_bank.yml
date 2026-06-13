@@ -247,5 +247,10 @@
     msg: "WARN: L'infrastructure n'a pas pu acheminer le mail d'onboarding pour {{ target_realm }}. Tracing requis."
   when: smtp_delivery.failed
 
+- name: "[📧 SMTP INFO] Notification de succès du relai SMTP NSIA"
+  ansible.builtin.debug:
+    msg: "SUCCESS: L'e-mail d'onboarding a été envoyé avec succès pour {{ target_realm }} !"
+  when: not smtp_delivery.failed
+
 # Phase de sécurisation avancée FGAP V2
 - ansible.builtin.include_tasks: fgap_lockdown.yml
