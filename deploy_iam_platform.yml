@@ -1,0 +1,12 @@
+---
+- name: "[NSIA INFRASTRUCTURE] Déploiement de la IAM Fabric Multi-Tenant"
+  hosts: localhost
+  gather_facts: false
+
+  vars_prompt:
+    - name: "keycloak_admin_password"
+      prompt: "🛡️ Veuillez saisir le mot de passe de Keycloak"
+      private: yes
+
+  roles:
+    - nsia_iam_central_enforcer
