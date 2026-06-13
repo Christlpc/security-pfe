@@ -58,44 +58,52 @@ python3 scripts/transform.py
 ```
 Cela produit ou met à jour le fichier `config/kong.yaml`.
 
-### 3. Valider et Déployer
-Le pipeline de CI/CD GitHub Actions (`.github/workflows/`) se charge de :
-- Valider la syntaxe avec `deck validate`
-- Tester la présence obligatoire de `x-security-profile` sur chaque route (Security Linting)
-- Synchroniser l'état désiré avec l'API Gateway via `deck sync` sur fusion dans `main`.
+### 3. Configurer l'intégration OIDC (Keycloak -> Kong)
+Pour que Kong valide les JWT émis par Keycloak, vous devez importer la clé publique JWKS du realm concerné et l'enregistrer dans Kong :
+```bash
+# Configurer un realm spécifique (ex: BANK_ECOBANK)
+python3 api-security-fabric/scripts/setup_keycloak_jwt.py BANK_ECOBANK
+
+# Ou configurer tous les realms enregistrés dans l'Ansible Registry (defaults/main.yml)
+python3 api-security-fabric/scripts/setup_keycloak_jwt.py --all
+```
 
 ---
 
 ## Guide d'Exécution des Tests Manuels
 
-Un utilisateur de test (`test-partner`) et des identifiants JWT ont été provisionnés sur la Gateway pour vous permettre de réaliser des tests concrets de sécurité.
+Des utilisateurs de test et des configurations JWT ont été provisionnés sur la Gateway pour réaliser des tests concrets de sécurité dans notre nouvel environnement multi-tenant.
 
 ### Étape 1 : Générer le Jeton JWT Autorisé
 Vous pouvez obtenir un jeton de test de deux manières :
 
-#### Option A : Depuis votre serveur Keycloak local (Recommandé)
-Pour obtenir un vrai jeton JWT émis par votre serveur Keycloak (compte admin de test de votre docker-compose), exécutez la commande suivante :
+#### Option A : Depuis votre serveur Keycloak (Recommandé)
+Pour obtenir un vrai jeton JWT émis par Keycloak pour une banque spécifique (ex: `BANK_ECOBANK`) avec son compte d'administration local :
 ```bash
-# Récupération du JWT de Keycloak et extraction du jeton d'accès
-curl -s -X POST http://localhost:8080/realms/master/protocol/openid-connect/token \
-  -d "client_id=admin-cli" \
-  -d "username=super_admin" \
-  -d "password=222_Jme_0075" \
+# Exemple pour BANK_ECOBANK avec son utilisateur d'administration local
+curl -s -X POST http://localhost:8080/realms/BANK_ECOBANK/protocol/openid-connect/token \
+  -d "client_id=nsia-bancassurance-frontend" \
+  -d "username=ecobank_admin" \
+  -d "password=MOT_DE_PASSE_CI_DESSUS" \
   -d "grant_type=password" | python3 -c "import sys, json; print(json.load(sys.stdin)['access_token'])" > api-security-fabric/token.txt
 ```
-Le jeton de Keycloak est sauvegardé dans `api-security-fabric/token.txt`.
+> [!NOTE]
+> Le mot de passe temporaire généré par Ansible est écrit dans `secrets_ecobank.txt` (si non encore changé par l'action requise).
 
-#### Option B : Générateur autonome (Jeton HS256 factice)
-Pour générer un jeton rapide à l'aide d'une clé secrète partagée sur la Gateway :
+#### Option B : Générateur autonome (Jeton HS256 factice Multi-Tenant)
+Pour générer un jeton rapide simulant un conseiller d'une banque et agence donnée avec la clé secrète partagée sur la Gateway :
 ```bash
-python3 api-security-fabric/scripts/generate_test_token.py
+# Format : python3 api-security-fabric/scripts/generate_test_token.py <bank_id> <agency_id> [expired]
+# Exemple pour Ecobank, agence Plateau :
+python3 api-security-fabric/scripts/generate_test_token.py ecobank Plateau
 ```
-Le jeton est également sauvegardé dans `api-security-fabric/token.txt`.
+Le jeton est sauvegardé dans `api-security-fabric/token.txt`.
 
 Pour générer un jeton expiré (afin de tester le rejet d'authentification) :
 ```bash
-python3 api-security-fabric/scripts/generate_test_token.py expired
+python3 api-security-fabric/scripts/generate_test_token.py ecobank Plateau expired
 ```
+
 
 ---
 

@@ -2,7 +2,8 @@ import os
 import re
 
 # Base paths
-base_dir = "/Users/precieuxntsala/Documents/Christ LANDZI/PFE_NSIA_IAM/api-security-fabric"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(script_dir)
 spec_path = os.path.join(base_dir, "contracts/api-spec.yaml")
 profiles_dir = os.path.join(base_dir, "config/security-profiles")
 output_path = os.path.join(base_dir, "config/kong.yaml")
