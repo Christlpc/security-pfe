@@ -135,7 +135,7 @@
 
 - name: "[Realm {{ target_realm }}] Obtenir l'ID du groupe racine SIÈGE"
   ansible.builtin.uri:
-    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups"
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups?max=100"
     method: GET
     headers:
       Authorization: "{{ auth_header }}"
@@ -147,7 +147,7 @@
 
 - name: "[Realm {{ target_realm }}] Récupérer les sous-agences existantes"
   ansible.builtin.uri:
-    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups/{{ parent_group_id }}/children"
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups/{{ parent_group_id }}/children?max=100"
     method: GET
     headers:
       Authorization: "{{ auth_header }}"
