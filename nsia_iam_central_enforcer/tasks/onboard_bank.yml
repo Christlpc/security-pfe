@@ -30,6 +30,7 @@
   community.general.keycloak_realm:
     token: "{{ nsia_auth_token }}"
     auth_keycloak_url: "{{ keycloak_admin_url }}"
+    id: "{{ target_realm }}"
     realm: "{{ target_realm }}"
     state: present
     enabled: true
