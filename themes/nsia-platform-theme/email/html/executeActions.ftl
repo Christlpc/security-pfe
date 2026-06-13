@@ -1,6 +1,10 @@
 <html>
-<#assign linkExpirationMinutes = (linkExpiration?string?number)!0>
-<#assign linkExpirationHours = linkExpirationMinutes / 60>
+<#if linkExpirationHours??>
+  <#assign expirationHours = linkExpirationHours>
+<#else>
+  <#assign expirationSeconds = linkExpiration!43200>
+  <#assign expirationHours = expirationSeconds / 3600>
+</#if>
 <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 40px;">
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #FFCC00;">
         <tr>
@@ -29,7 +33,7 @@
                     </tr>
                 </table>
 
-                <p style="font-size: 13px; color: #888888;">Ce lien de sécurité est éphémère et expirera dans ${linkExpirationHours?string("0.##")} ${((linkExpirationHours > 1)?string("heures", "heure"))}.</p>
+                <p style="font-size: 13px; color: #888888;">Ce lien de sécurité est éphémère et expirera dans ${expirationHours?string("0.##")} ${((expirationHours > 1)?string("heures", "heure"))}.</p>
             </td>
         </tr>
         <tr>
