@@ -1,6 +1,8 @@
 ---
 # Plan de contrôle d'administration Keycloak
 keycloak_admin_url: "http://localhost:8080"
+# Configuration du coffre-fort HashiCorp Vault (nsia-keyvault)
+nsia_vault_url: "{{ lookup('env', 'VAULT_ADDR') | default('http://localhost:8200', true) }}"
 keycloak_admin_user: "{{ lookup('env', 'KEYCLOAK_ADMIN') | default('super_admin', true) }}"
 keycloak_admin_password: "{{ lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) }}"
 

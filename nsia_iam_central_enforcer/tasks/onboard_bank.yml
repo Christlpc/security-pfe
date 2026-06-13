@@ -96,7 +96,7 @@
 # 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
 - name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"
   ansible.builtin.uri:
-    url: "https://vault.nsia.cg/v1/secret/data/tenants/{{ current_bank.name }}"
+    url: "{{ nsia_vault_url }}/v1/secret/data/tenants/{{ current_bank.name }}"
     method: POST
     headers:
       X-Vault-Token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN') }}"
