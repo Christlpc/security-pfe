@@ -4,6 +4,8 @@ import urllib.parse
 import subprocess
 import tempfile
 import os
+import sys
+
 
 # Base URLs dynamically resolved from environment variables
 KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "http://localhost:8080").rstrip("/")
