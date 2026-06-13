@@ -1,8 +1,8 @@
 ---
 # Plan de contrôle d'administration Keycloak
 keycloak_admin_url: "http://localhost:8080"
-keycloak_admin_user: "super_admin"
-# keycloak_admin_password est injecté via une variable d'environnement ou Ansible Vault
+keycloak_admin_user: "{{ lookup('env', 'KEYCLOAK_ADMIN') | default('super_admin', true) }}"
+keycloak_admin_password: "{{ lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) }}"
 
 # Mode d'exécution par défaut (all, single, interactive)
 nsia_run_mode: "all"
