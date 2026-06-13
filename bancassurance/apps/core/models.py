@@ -424,7 +424,9 @@ class Utilisateur(AbstractUser):
     
     def save(self, *args, **kwargs):
         """Override save pour valider avant la sauvegarde"""
-        self.full_clean()
+        # Exclure le mot de passe de la validation automatique car les utilisateurs
+        # authentifiés via Keycloak/IAM n'ont pas de mot de passe stocké localement.
+        self.full_clean(exclude=['password'])
         super().save(*args, **kwargs)
 
 

@@ -125,7 +125,7 @@ class CalculateurEtudes(CalculateurBase):
         debut_service = age_enfant + duree_paiement
         fin_service = debut_service + duree_service
 
-        periodicite = parametres['periodicite']
+        periodicite = parametres.get('periodicite', 'mensuelle')
         frais_accesoires = 1000
         montant_cotisation = 0
         cotisation_totale = 0

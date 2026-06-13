@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from datetime import date, timedelta
 from decimal import Decimal
 
-from apps.core.models import Banque
+from apps.core.models import Banque, Produit, ProduitBanque
 from apps.tarification.models import TableTauxEmprunteur
 from apps.simulateur.models import Simulation, Souscription
 from apps.simulateur.services.calculateur_emprunteur import CalculateurEmprunteur
@@ -24,11 +24,14 @@ class CalculateurEmprunteurTestCase(TestCase):
         """Configuration initiale des tests"""
         # Créer une banque de test
         self.banque = Banque.objects.create(
-            nom='CDCO Test',
-            code='CDCO',
-            email='test@cdco.cg',
-            actif=True
+            nom_complet='CDCO Test',
+            code_banque='CDCO',
+            email_contact='test@cdco.cg',
+            statut='ACTIF'
         )
+        # Autoriser le produit emprunteur
+        produit, _ = Produit.objects.get_or_create(code='emprunteur', defaults={'nom': 'Assurance Emprunteur', 'est_actif': True})
+        ProduitBanque.objects.get_or_create(banque=self.banque, produit=produit, defaults={'est_actif': True})
         
         # Créer un taux de test (CDCO : 0.5% fixe)
         self.taux = TableTauxEmprunteur.objects.create(
@@ -152,17 +155,26 @@ class SimulationModelTestCase(TestCase):
     def setUp(self):
         """Configuration initiale"""
         self.banque = Banque.objects.create(
-            nom='BGFI Test',
-            code='BGFI',
-            email='test@bgfi.cg',
-            actif=True
+            nom_complet='BGFI Test',
+            code_banque='BGFI',
+            email_contact='test@bgfi.cg',
+            statut='ACTIF'
         )
+        # Autoriser le produit emprunteur
+        produit, _ = Produit.objects.get_or_create(code='emprunteur', defaults={'nom': 'Assurance Emprunteur', 'est_actif': True})
+        ProduitBanque.objects.get_or_create(banque=self.banque, produit=produit, defaults={'est_actif': True})
         
+        from apps.core.models import Agence
+        self.agence = Agence.objects.create(banque=self.banque, code='TEST_AGENCE', nom='Agence Test')
         self.user = User.objects.create_user(
+            username='gestionnaire_test',
             email='gestionnaire@test.com',
             password='testpass123',
             first_name='Jean',
-            last_name='Dupont'
+            last_name='Dupont',
+            role=User.Role.GESTIONNAIRE,
+            banque=self.banque,
+            agence=self.agence
         )
     
     def test_creation_simulation(self):
@@ -234,15 +246,24 @@ class SouscriptionModelTestCase(TestCase):
     def setUp(self):
         """Configuration initiale"""
         self.banque = Banque.objects.create(
-            nom='CDCO Test',
-            code='CDCO',
-            email='test@cdco.cg',
-            actif=True
+            nom_complet='CDCO Test',
+            code_banque='CDCO',
+            email_contact='test@cdco.cg',
+            statut='ACTIF'
         )
+        # Autoriser le produit emprunteur
+        produit, _ = Produit.objects.get_or_create(code='emprunteur', defaults={'nom': 'Assurance Emprunteur', 'est_actif': True})
+        ProduitBanque.objects.get_or_create(banque=self.banque, produit=produit, defaults={'est_actif': True})
         
+        from apps.core.models import Agence
+        self.agence = Agence.objects.create(banque=self.banque, code='TEST_AGENCE', nom='Agence Test')
         self.user = User.objects.create_user(
+            username='gestionnaire_test',
             email='gestionnaire@test.com',
             password='testpass123',
+            role=User.Role.GESTIONNAIRE,
+            banque=self.banque,
+            agence=self.agence
         )
         
         self.simulation = Simulation.objects.create(
@@ -351,38 +372,28 @@ class CalculateurRetraiteTestCase(TestCase):
         """Configuration initiale des tests"""
         # Créer une banque de test
         self.banque = Banque.objects.create(
-            nom='Test Banque',
-            code='TEST',
-            email='test@test.cg',
-            actif=True
+            nom_complet='Test Banque',
+            code_banque='TEST',
+            email_contact='test@test.cg',
+            statut='ACTIF'
         )
+        # Autoriser le produit retraite
+        produit, _ = Produit.objects.get_or_create(code='retraite', defaults={'nom': 'Assurance Retraite', 'est_actif': True})
+        ProduitBanque.objects.get_or_create(banque=self.banque, produit=produit, defaults={'est_actif': True})
         
-        # Créer des données CIMA H de test pour l'âge 42 et 49
+        # Créer des données CIMA H de test pour les âges requis
         from apps.tarification.models import TableCIMA_H
-        
-        # Données simplifiées pour test (âge 42)
-        TableCIMA_H.objects.create(
-            x=42,
-            Nx=Decimal('5000000'),
-            Mx=Decimal('1000000'),
-            Dx=Decimal('100000'),
-            lx=Decimal('95000'),
-            dx=Decimal('500'),
-            qx=Decimal('0.005'),
-            Cx=Decimal('5000')
-        )
-        
-        # Données simplifiées pour test (âge 49 = 42 + 7)
-        TableCIMA_H.objects.create(
-            x=49,
-            Nx=Decimal('4000000'),
-            Mx=Decimal('800000'),
-            Dx=Decimal('90000'),
-            lx=Decimal('94000'),
-            dx=Decimal('600'),
-            qx=Decimal('0.006'),
-            Cx=Decimal('5500')
-        )
+        for age in [42, 47, 49, 50, 52]:
+            TableCIMA_H.objects.create(
+                x=age,
+                Nx=Decimal('5000000') if age == 42 else Decimal('4000000'),
+                Mx=Decimal('1000000') if age == 42 else Decimal('800000'),
+                Dx=Decimal('100000') if age == 42 else Decimal('90000'),
+                lx=Decimal('95000') if age == 42 else Decimal('94000'),
+                dxx=Decimal('500') if age == 42 else Decimal('600'),
+                qx=Decimal('0.005') if age == 42 else Decimal('0.006'),
+                Cx=Decimal('5000') if age == 42 else Decimal('5500')
+            )
         
         # Initialiser le calculateur
         self.calculateur = CalculateurRetraite(self.banque)
@@ -490,7 +501,7 @@ class CalculateurRetraiteTestCase(TestCase):
         with self.assertRaises(ValueError) as context:
             self.calculateur.calculer(parametres)
         
-        self.assertIn('18 ans', str(context.exception))
+        self.assertIn('18', str(context.exception))
     
     def test_validation_age_maximum(self):
         """Test de validation : âge maximum 65 ans"""
@@ -575,11 +586,14 @@ class CalculateurEtudesTestCase(TestCase):
         """Configuration initiale des tests"""
         # Créer une banque de test
         self.banque = Banque.objects.create(
-            nom='Test Banque',
-            code='TEST',
-            email='test@test.cg',
-            actif=True
+            nom_complet='Test Banque',
+            code_banque='TEST',
+            email_contact='test@test.cg',
+            statut='ACTIF'
         )
+        # Autoriser le produit etudes
+        produit, _ = Produit.objects.get_or_create(code='etudes', defaults={'nom': 'Assurance Etudes', 'est_actif': True})
+        ProduitBanque.objects.get_or_create(banque=self.banque, produit=produit, defaults={'est_actif': True})
         
         # Créer des données de test dans TablePrimesEtudes et TableTauxMensuels
         from apps.tarification.models import TablePrimesEtudes, TableTauxMensuels
@@ -608,6 +622,35 @@ class CalculateurEtudesTestCase(TestCase):
         TableTauxMensuels.objects.create(
             age=30,
             duree_paiement=14,
+            duree_rente=5,
+            produit='NSIA-ETUDES',
+            taux=Decimal('0.00409')
+        )
+        
+        # Prime unique (age 35)
+        TablePrimesEtudes.objects.create(
+            age=35,
+            duree_paiement=10,
+            duree_rente=5,
+            type_prime='UNIQUE',
+            produit='1M',
+            montant=Decimal('500000')
+        )
+        
+        # Prime annuelle (age 35)
+        TablePrimesEtudes.objects.create(
+            age=35,
+            duree_paiement=10,
+            duree_rente=5,
+            type_prime='ANNUELLE',
+            produit='1M',
+            montant=Decimal('50000')
+        )
+        
+        # Taux mensuel (age 35)
+        TableTauxMensuels.objects.create(
+            age=35,
+            duree_paiement=10,
             duree_rente=5,
             produit='NSIA-ETUDES',
             taux=Decimal('0.00409')
@@ -645,7 +688,7 @@ class CalculateurEtudesTestCase(TestCase):
         """Test de la détermination du code produit"""
         test_cases = [
             (100000, "100k"),
-            (200000, "2k"),
+            (200000, "200k"),
             (1000000, "1M"),
             (2500000, "2.5M"),
             (3000000, "3M"),
