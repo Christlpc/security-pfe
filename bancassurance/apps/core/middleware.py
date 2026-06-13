@@ -88,7 +88,45 @@ class MultiTenantMiddleware(MiddlewareMixin):
         set_current_user(None)
         self._set_db_session_vars(None, False)
 
-        # Si l'utilisateur est authentifié
+        # 1. Tenter d'extraire la banque directement depuis le jeton JWT (Anti-BOLA pour les requêtes API/DRF)
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                token = parts[1]
+                try:
+                    import jwt
+                    from django.db import models
+                    from apps.core.models import Banque
+                    from apps.core.authentication import BANK_CODE_MAP
+                    
+                    # Décodage sans vérification de signature (Kong Gateway la valide déjà en amont)
+                    payload = jwt.decode(token, options={"verify_signature": False})
+                    bank_code = payload.get('bank_id') or payload.get('bank')
+                    
+                    if bank_code:
+                        lookup_code = BANK_CODE_MAP.get(bank_code.lower(), bank_code)
+                        banque = Banque.objects.filter(
+                            models.Q(code_banque__iexact=lookup_code) | 
+                            models.Q(nom_court__iexact=lookup_code) | 
+                            models.Q(nom_complet__icontains=lookup_code)
+                        ).first()
+                        
+                        if banque:
+                            set_current_banque(banque)
+                            
+                            # Extraction et vérification des rôles pour le bypass RLS (Super Admins)
+                            token_roles = payload.get('roles', [])
+                            if not token_roles and 'realm_access' in payload:
+                                token_roles = payload['realm_access'].get('roles', [])
+                                
+                            bypass_rls = any(role in ['NSIA_SUPER_ADMIN', 'NSIA_ADMIN'] for role in token_roles)
+                            self._set_db_session_vars(banque, bypass_rls)
+                            return
+                except Exception:
+                    pass
+
+        # 2. Repli classique (pour l'admin Django ou les requêtes Web avec session)
         if request.user and request.user.is_authenticated:
             set_current_user(request.user)
             

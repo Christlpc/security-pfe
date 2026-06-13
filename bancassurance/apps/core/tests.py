@@ -91,6 +91,57 @@ class KeycloakJWTAuthTestCase(TestCase):
         self.assertEqual(user.agence.banque, self.banque)
 
 
+class MultiTenantMiddlewareTestCase(TestCase):
+    """
+    Tests d'intégration pour le MultiTenantMiddleware (Anti-BOLA).
+    Valide l'extraction directe du bank_id depuis l'en-tête Authorization.
+    """
+    def setUp(self):
+        self.banque = Banque.objects.create(
+            code_banque="ECOBANK",
+            nom_complet="Ecobank Congo",
+            email_contact="contact@ecobank.com"
+        )
+        from apps.core.middleware import MultiTenantMiddleware
+        self.middleware = MultiTenantMiddleware(get_response=lambda r: None)
+
+    def test_middleware_jwt_extraction_and_rls_setup(self):
+        # 1. Générer un jeton JWT de test contenant la banque ECOBANK
+        token_payload = {
+            'sub': str(uuid.uuid4()),
+            'bank_id': 'ECOBANK',
+            'roles': ['BANK_AGENCY_OPERATOR']
+        }
+        token = jwt.encode(token_payload, "secret", algorithm="HS256")
+
+        # 2. Simuler une requête HTTP entrante avec l'en-tête Bearer
+        class MockRequest:
+            def __init__(self, token_str):
+                self.headers = {'Authorization': f'Bearer {token_str}'}
+                self.user = None
+
+        request = MockRequest(token)
+
+        # 3. Passer la requête à travers le middleware
+        self.middleware.process_request(request)
+
+        # 4. Vérifier que la banque a été injectée dans le contexte thread local
+        from apps.core.middleware import get_current_banque
+        current_banque = get_current_banque()
+        self.assertIsNotNone(current_banque)
+        self.assertEqual(current_banque.code_banque, "ECOBANK")
+
+        # 5. Vérifier que les variables de session PostgreSQL ont été configurées
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW app.current_banque_id;")
+            db_banque_id = cursor.fetchone()[0]
+            self.assertEqual(db_banque_id, str(self.banque.id))
+
+            cursor.execute("SHOW app.bypass_rls;")
+            db_bypass = cursor.fetchone()[0]
+            self.assertEqual(db_bypass, "false")
+
+
 class MultiTenancyORMAccessTestCase(TestCase):
     """
     Tests de l'isolation multi-tenant au niveau de l'ORM.
