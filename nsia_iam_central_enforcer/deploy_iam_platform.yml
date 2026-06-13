@@ -4,17 +4,37 @@
   gather_facts: false
 
   pre_tasks:
-    - name: Demander le mot de passe Keycloak si non fourni par l'environnement
+    - name: Déterminer le chemin du fichier .env
+      set_fact:
+        env_file_path: "{{ lookup('first_found', paths, errors='ignore') }}"
+      vars:
+        paths:
+          - "{{ playbook_dir }}/.env"
+          - "{{ playbook_dir }}/../.env"
+
+    - name: Lire les variables depuis le fichier .env
+      set_fact:
+        keycloak_admin_user: "{{ lookup('ini', 'KEYCLOAK_ADMIN type=properties file=' + env_file_path) | default('super_admin', true) }}"
+        keycloak_admin_password: "{{ lookup('ini', 'KEYCLOAK_ADMIN_PASSWORD type=properties file=' + env_file_path) | default('', true) }}"
+      when: env_file_path is not none and env_file_path != ''
+
+    - name: Utiliser les variables d'environnement si non définies dans .env
+      set_fact:
+        keycloak_admin_user: "{{ lookup('env', 'KEYCLOAK_ADMIN') | default(keycloak_admin_user | default('super_admin'), true) }}"
+        keycloak_admin_password: "{{ lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default(keycloak_admin_password | default(''), true) }}"
+      when: keycloak_admin_password | default('') == ''
+
+    - name: Demander le mot de passe Keycloak si non fourni
       pause:
         prompt: "🛡️ Veuillez saisir le mot de passe de Keycloak"
         echo: no
       register: prompt_result
-      when: lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) == ''
+      when: keycloak_admin_password | default('') == ''
 
     - name: Assigner le mot de passe saisi
       set_fact:
         keycloak_admin_password: "{{ prompt_result.user_input }}"
-      when: lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) == ''
+      when: keycloak_admin_password | default('') == ''
 
   roles:
     - nsia_iam_central_enforcer
