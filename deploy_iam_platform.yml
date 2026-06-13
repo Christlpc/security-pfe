@@ -3,10 +3,18 @@
   hosts: localhost
   gather_facts: false
 
-  vars_prompt:
-    - name: "keycloak_admin_password"
-      prompt: "🛡️ Veuillez saisir le mot de passe de Keycloak"
-      private: yes
+  pre_tasks:
+    - name: Demander le mot de passe Keycloak si non fourni par l'environnement
+      pause:
+        prompt: "🛡️ Veuillez saisir le mot de passe de Keycloak"
+        echo: no
+      register: prompt_result
+      when: lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) == ''
+
+    - name: Assigner le mot de passe saisi
+      set_fact:
+        keycloak_admin_password: "{{ prompt_result.user_input }}"
+      when: lookup('env', 'KEYCLOAK_ADMIN_PASSWORD') | default('', true) == ''
 
   roles:
     - nsia_iam_central_enforcer
