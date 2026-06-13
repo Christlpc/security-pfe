@@ -189,14 +189,35 @@
         values: ["BANK"]
   register: user_output
 
+- name: "[Realm {{ target_realm }}] Récupérer l'ID du rôle BANK_SUPER_ADMIN"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/roles/BANK_SUPER_ADMIN"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: target_role_output
+
+- name: "[Realm {{ target_realm }}] Vérifier les rôles déjà assignés à l'utilisateur"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/users/{{ user_output.end_state.id }}/role-mappings/realm"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: user_roles_output
+
 - name: "[Realm {{ target_realm }}] Élection du compte au rôle BANK_SUPER_ADMIN"
-  community.general.keycloak_user_rolemapping:
-    token: "{{ nsia_auth_token }}"
-    auth_keycloak_url: "{{ keycloak_admin_url }}"
-    realm: "{{ target_realm }}"
-    uid: "{{ user_output.end_state.id }}"
-    roles:
-      - name: "BANK_SUPER_ADMIN"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/users/{{ user_output.end_state.id }}/role-mappings/realm"
+    method: POST
+    headers:
+      Authorization: "{{ auth_header }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      - id: "{{ target_role_output.json.id }}"
+        name: "{{ target_role_output.json.name }}"
+    status_code: [204]
+  when: target_role_output.json.id not in (user_roles_output.json | default([]) | map(attribute='id') | list)
 
 # 8. SÉCURISATION DU DISPOSITIF SMTP (VÉRIFICATION STRICTE)
 - name: "[Realm {{ target_realm }}] Déclenchement de l'e-mail d'onboarding"
