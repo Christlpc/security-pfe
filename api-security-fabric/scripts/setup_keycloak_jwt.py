@@ -148,10 +148,12 @@ def reload_kong_dbless(yaml_content):
     url = f"{KONG_ADMIN_URL}/config"
     print(f"Attempting DB-less reload on Kong Admin API at {url}...")
     
+    # We wrap the YAML content in a JSON payload accepted by Kong: {"config": yaml_content}
+    payload = json.dumps({"config": yaml_content}).encode('utf-8')
     req = urllib.request.Request(
         url,
-        data=yaml_content.encode('utf-8'),
-        headers={"Content-Type": "application/yaml"},
+        data=payload,
+        headers={"Content-Type": "application/json"},
         method="POST"
     )
     try:
@@ -168,6 +170,7 @@ def reload_kong_dbless(yaml_content):
     except Exception as e:
         print(f"DB-less reload failed: {e}")
         return False
+
 
 def configure_kong_db_mode(realm, pem):
     normalized_realm = realm.lower().replace("_", "-")
