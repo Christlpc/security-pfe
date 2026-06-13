@@ -1,0 +1,25 @@
+name: CI/CD VM Auto-Update
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to VM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute remote commands via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_SSH_HOST }}
+          username: ${{ secrets.VM_SSH_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          script: |
+            echo "🚀 Début du déploiement..."
+            cd ~/pfe-nsia-bancassurance/security-pfe
+            git pull origin main
+            echo "✅ Code mis à jour avec succès !"
