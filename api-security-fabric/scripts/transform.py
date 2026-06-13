@@ -113,10 +113,20 @@ for r in routes:
                     # re-indent
                     yaml_output.append("          " + config_line)
 
+# Append Keycloak service to restore access through the gateway
+yaml_output.append('  - name: keycloak-service')
+yaml_output.append('    url: http://keycloak-iam:8080')
+yaml_output.append('    routes:')
+yaml_output.append('      - name: keycloak-ui-route')
+yaml_output.append('        paths:')
+yaml_output.append('          - /')
+yaml_output.append('        strip_path: false')
+
 # Ensure the output directory exists
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 with open(output_path, "w", encoding="utf-8") as f:
     f.write("\n".join(yaml_output) + "\n")
+
 
 print(f"Generated {output_path} successfully with {len(routes)} routes!")
