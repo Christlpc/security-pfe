@@ -58,15 +58,27 @@ python3 api-security-fabric/scripts/transform.py
 ```
 Cela produit ou met à jour le fichier `config/kong.yaml`.
 
-### 3. Configurer l'intégration OIDC (Keycloak -> Kong)
-Pour que Kong valide les JWT émis par Keycloak, vous devez importer la clé publique JWKS du realm concerné et l'enregistrer dans Kong :
+### 3. Injecter les clés publiques OIDC (Keycloak -> kong.yaml)
+Pour que Kong valide les JWT émis par Keycloak, vous devez importer les clés publiques JWKS du ou des realms concernés et les injecter dans la configuration de Kong :
 ```bash
-# Configurer un realm spécifique (ex: BANK_ECOBANK)
+# Importer et injecter les clés pour un realm spécifique (ex: BANK_ECOBANK) dans kong.yaml
 python3 api-security-fabric/scripts/setup_keycloak_jwt.py BANK_ECOBANK
 
-# Ou configurer tous les realms enregistrés dans l'Ansible Registry (defaults/main.yml)
+# Ou importer et injecter les clés de tous les realms du registre Ansible dans kong.yaml
 python3 api-security-fabric/scripts/setup_keycloak_jwt.py --all
 ```
+Ce script extrait les clés de Keycloak et génère de manière déclarative la section `consumers:` avec leurs credentials JWT OIDC et le partenaire HS256 à la fin de `api-security-fabric/config/kong.yaml`.
+
+### 4. Déployer et Synchroniser avec decK
+Synchronisez l'état déclaré dans le fichier `kong.yaml` avec l'API Gateway Kong (en mode DB ou DB-less) :
+```bash
+# Valider le schéma du fichier
+deck validate -s api-security-fabric/config/kong.yaml
+
+# Synchroniser l'état avec la Gateway
+deck sync -s api-security-fabric/config/kong.yaml --kong-addr http://localhost:8001
+```
+
 
 ---
 

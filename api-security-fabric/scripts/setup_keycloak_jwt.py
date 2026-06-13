@@ -1,6 +1,5 @@
 import urllib.request
 import json
-import urllib.parse
 import subprocess
 import tempfile
 import os
@@ -9,7 +8,6 @@ import re
 
 # Base URLs dynamically resolved from environment variables
 KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "http://localhost:8080").rstrip("/")
-KONG_ADMIN_URL = os.environ.get("KONG_ADMIN_URL", "http://localhost:8001").rstrip("/")
 
 def parse_realms_from_defaults():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -144,177 +142,6 @@ def update_kong_yaml(consumers_yaml):
         print(f"Error updating kong.yaml: {e}")
         return None
 
-def reload_kong_dbless(yaml_content):
-    url = f"{KONG_ADMIN_URL}/config"
-    print(f"Attempting DB-less reload on Kong Admin API at {url}...")
-    
-    # We wrap the YAML content in a JSON payload accepted by Kong: {"config": yaml_content}
-    payload = json.dumps({"config": yaml_content}).encode('utf-8')
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        with urllib.request.urlopen(req) as response:
-            print("Successfully reloaded Kong Gateway configuration (DB-less mode)!")
-            return True
-    except urllib.error.HTTPError as e:
-        print(f"DB-less reload unsupported or failed: HTTP {e.code} - {e.reason}")
-        try:
-            print(f"Response body: {e.read().decode('utf-8')}")
-        except Exception:
-            pass
-        return False
-    except Exception as e:
-        print(f"DB-less reload failed: {e}")
-        return False
-
-
-def configure_kong_db_mode(realm, pem):
-    normalized_realm = realm.lower().replace("_", "-")
-    consumer_name = f"keycloak-consumer-{normalized_realm}"
-    issuer_url = f"{KEYCLOAK_URL}/realms/{realm}"
-    
-    print(f"Configuring Kong Gateway in DB mode for consumer '{consumer_name}'...")
-    
-    # 1. Create consumer
-    consumer_data = json.dumps({"username": consumer_name}).encode('utf-8')
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers",
-        data=consumer_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Consumer '{consumer_name}' created.")
-    except urllib.error.HTTPError as e:
-        if e.code == 409:
-            print(f"Consumer '{consumer_name}' already exists.")
-        else:
-            print(f"HTTP Error creating consumer '{consumer_name}': {e.code} - {e.read().decode('utf-8')}")
-    except Exception as e:
-        print(f"General error creating consumer: {e}")
-
-    # 2. Add consumer to ACL group 'partners'
-    acl_data = json.dumps({"group": "partners"}).encode('utf-8')
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers/{consumer_name}/acls",
-        data=acl_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Consumer '{consumer_name}' added to ACL group 'partners'.")
-    except urllib.error.HTTPError as e:
-        if e.code == 409:
-            print(f"Consumer '{consumer_name}' already belongs to ACL group 'partners'.")
-        else:
-            print(f"HTTP Error adding consumer '{consumer_name}' to ACL group 'partners': {e.code} - {e.read().decode('utf-8')}")
-    except Exception as e:
-        print(f"General error adding consumer to ACL: {e}")
-
-    # 3. Register Keycloak Public Certificate in Kong JWT credentials list
-    try:
-        with urllib.request.urlopen(f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt") as response:
-            existing = json.loads(response.read().decode('utf-8'))
-            for cred in existing.get("data", []):
-                del_req = urllib.request.Request(
-                    f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt/{cred['id']}",
-                    method="DELETE"
-                )
-                urllib.request.urlopen(del_req)
-        print(f"Cleaned up old JWT credentials in Kong for '{consumer_name}'.")
-    except Exception:
-        pass
-
-    jwt_data = json.dumps({
-        "key": issuer_url,
-        "algorithm": "RS256",
-        "rsa_public_key": pem
-    }).encode('utf-8')
-    
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt",
-        data=jwt_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Keycloak OIDC JWT credential successfully registered on Kong for '{consumer_name}'!")
-    except urllib.error.HTTPError as e:
-        print(f"Error registering OIDC certificate in Kong: {e}")
-        print(f"Response body: {e.read().decode('utf-8')}")
-    except Exception as e:
-        print(f"General error registering OIDC certificate: {e}")
-
-def configure_test_partner_db_mode():
-    print("Configuring test-partner in DB mode...")
-    consumer_name = "test-partner"
-    
-    # 1. Create consumer
-    consumer_data = json.dumps({"username": consumer_name}).encode('utf-8')
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers",
-        data=consumer_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Consumer '{consumer_name}' created.")
-    except Exception:
-        pass
-
-    # 2. Add consumer to ACL group 'partners'
-    acl_data = json.dumps({"group": "partners"}).encode('utf-8')
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers/{consumer_name}/acls",
-        data=acl_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Consumer '{consumer_name}' added to ACL group 'partners'.")
-    except Exception:
-        pass
-
-    # 3. Register HS256 credential
-    try:
-        with urllib.request.urlopen(f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt") as response:
-            existing = json.loads(response.read().decode('utf-8'))
-            for cred in existing.get("data", []):
-                del_req = urllib.request.Request(
-                    f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt/{cred['id']}",
-                    method="DELETE"
-                )
-                urllib.request.urlopen(del_req)
-    except Exception:
-        pass
-
-    jwt_data = json.dumps({
-        "key": "test-iss",
-        "algorithm": "HS256",
-        "secret": "secret_partage_poc_nsia"
-    }).encode('utf-8')
-    
-    req = urllib.request.Request(
-        f"{KONG_ADMIN_URL}/consumers/{consumer_name}/jwt",
-        data=jwt_data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    try:
-        urllib.request.urlopen(req)
-        print(f"Test partner HS256 credential registered.")
-    except Exception as e:
-        print(f"Error registering HS256 secret: {e}")
-
 if __name__ == "__main__":
     realms_to_process = []
     
@@ -327,9 +154,9 @@ if __name__ == "__main__":
                 realms_to_process = ["master"]
         elif arg in ("--help", "-h"):
             print("Usage:")
-            print("  python3 setup_keycloak_jwt.py [realm_name]  # Configure a specific realm (e.g. BANK_ECOBANK)")
-            print("  python3 setup_keycloak_jwt.py --all         # Configure all realms from defaults/main.yml")
-            print("  python3 setup_keycloak_jwt.py               # Defaults to configuring 'master' realm")
+            print("  python3 setup_keycloak_jwt.py [realm_name]  # Fetch & inject a specific realm (e.g. BANK_ECOBANK)")
+            print("  python3 setup_keycloak_jwt.py --all         # Fetch & inject all realms from defaults/main.yml")
+            print("  python3 setup_keycloak_jwt.py               # Defaults to 'master' realm")
             sys.exit(0)
         else:
             realms_to_process = [arg]
@@ -338,7 +165,6 @@ if __name__ == "__main__":
         realms_to_process = ["master"]
         
     print(f"Keycloak URL: {KEYCLOAK_URL}")
-    print(f"Kong Admin URL: {KONG_ADMIN_URL}")
     print(f"Realms to configure: {realms_to_process}")
     
     # Fetch all keys first
@@ -350,27 +176,11 @@ if __name__ == "__main__":
             realms_keys[r] = pem
             
     if not realms_keys:
-        print("No public keys could be fetched. Aborting Kong configuration.")
+        print("No public keys could be fetched. Aborting.")
         sys.exit(1)
         
     # Generate the declarative consumers block
     consumers_yaml = generate_consumers_yaml(realms_keys)
     
-    # Update local kong.yaml (used for GitOps and DB-less configuration)
-    yaml_content = update_kong_yaml(consumers_yaml)
-    
-    if yaml_content:
-        # Try DB-less reload first via POST /config
-        success = reload_kong_dbless(yaml_content)
-        
-        # If DB-less reload fails/not supported, fallback to configuring Kong in DB mode
-        if not success:
-            print("\nFalling back to Kong Admin API DB mode configuration...")
-            configure_test_partner_db_mode()
-            for r, pem in realms_keys.items():
-                configure_kong_db_mode(r, pem)
-    else:
-        print("Could not update kong.yaml file. Falling back to DB mode direct setup...")
-        configure_test_partner_db_mode()
-        for r, pem in realms_keys.items():
-            configure_kong_db_mode(r, pem)
+    # Update local kong.yaml (declarative configuration)
+    update_kong_yaml(consumers_yaml)
