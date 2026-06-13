@@ -1,0 +1,230 @@
+---
+# Plan de contrôle d'administration Keycloak
+keycloak_admin_url: "http://localhost:8080"
+keycloak_admin_user: "super_admin"
+# keycloak_admin_password est injecté via une variable d'environnement ou Ansible Vault
+
+# Mode d'exécution par défaut (all, single, interactive)
+nsia_run_mode: "all"
+
+# 📧 Configuration SMTP additionnelle (Optionnel)
+# Keycloak ne renvoyant pas le mot de passe SMTP via son API REST (GET /realms/master),
+# vous devez spécifier ici le mot de passe de connexion SMTP pour que les nouveaux realms puissent s'authentifier.
+nsia_smtp_config:
+  # password: "votre_mot_de_passe_smtp"
+
+
+# Baseline de Sécurité NSIA endurcie (Conformité Loi n° 26-2019)
+nsia_security_baseline:
+  brute_force_protected: true
+  max_login_failures: 3
+  wait_increment_seconds: 60
+  password_policy: "length(14) and digits(2) and upperCase(2) and specialChars(2) and passwordHistory(5)"
+  
+  # 🔐 Stratégie de rotation et cycle de vie des jetons (Atténuation Token Replay)
+  access_token_lifespan: 300       # 5 minutes (TTL court obligatoire)
+  sso_session_max_lifespan: 900    # 15 minutes avant ré-authentification
+  sso_session_idle_lifespan: 600   # 10 minutes d'inactivité max
+
+# Matrice RBAC réglementaire Bancassurance
+nsia_rbac_roles:
+  - BANK_SUPER_ADMIN
+  - BANK_AUDITOR
+  - BANK_SUPPORT
+  - BANK_AGENCY_MANAGER
+  - BANK_AGENCY_OPERATOR
+
+# 🏦 REGISTRE CENTRALISÉ DES TENANTS (Solution au problème de découverte dynamique)
+nsia_tenant_registry:
+  - name: "ecobank"
+    realm: "BANK_ECOBANK"
+    admin_username: "ecobank_admin"
+    admin_email: "manuedja16@gmail.com"
+    branches:
+      - "Plateau"
+      - "Poto-Poto"
+      - "Tsiengui"
+      - "Mpila"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Ouesso"
+      - "Makoua"
+      - "Dolisie"
+      - "Sibiti"
+      - "Oyo"
+      - "Ngoyo"
+      - "Djambala"
+      - "Mossendjo"
+      - "Ewo"
+
+  - name: "bgfi"
+    realm: "BANK_BGFI"
+    admin_username: "bgfi_admin"
+    admin_email: "manuedja16@gmail.com"
+    branches:
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Ouesso"
+      - "Makoua"
+      - "Dolisie"
+      - "Sibiti"
+      - "Oyo"
+      - "Ngoyo"
+      - "Djambala"
+      - "Mossendjo"
+      - "Ewo"
+      - "Kelle"
+
+  - name: "credit_du_congo"
+    realm: "BANK_CREDIT_DU_CONGO"
+    admin_username: "credit_du_congo_admin"
+    admin_email: "manuedja16@gmail.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Ollengo"
+      - "Mfilou"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+
+  - name: "bci"
+    realm: "BANK_BCI"
+    admin_username: "bci_admin"
+    admin_email: "manuedja16@gmail.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Ollengo"
+      - "Mfilou"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+
+  - name: "boa"
+    realm: "BANK_BOA"
+    admin_username: "boa_admin"
+    admin_email: "manuedja16@gmail.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Ollengo"
+      - "Mfilou"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Ouesso"
+      - "Makoua"
+      - "Dolisie"
+      - "Sibiti"
+      - "Oyo"
+      - "Ngoyo"
+      - "Djambala"
+      - "Mossendjo"
+      - "Ewo"
+
+  - name: "capped"
+    realm: "BANK_CAPPED"
+    admin_username: "capped_admin"
+    admin_email: "security-admin@capped.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "cofinco"
+    realm: "BANK_COFINCO"
+    admin_username: "cofinco_admin"
+    admin_email: "security-admin@cofinco.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "comifi"
+    realm: "BANK_COMIFI"
+    admin_username: "comifi_admin"
+    admin_email: "security-admin@comifi.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "charden_farrel"
+    realm: "BANK_CHARDEN_FARREL"
+    admin_username: "charden_farrel_admin"
+    admin_email: "security-admin@chardenfarrel.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "express_union"
+    realm: "BANK_EXPRESS_UNION"
+    admin_username: "express_union_admin"
+    admin_email: "security-admin@expressunion.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "finam"
+    realm: "BANK_FINAM"
+    admin_username: "finam_admin"
+    admin_email: "security-admin@finam.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"
+
+  - name: "hope_congo"
+    realm: "BANK_HOPE_CONGO"
+    admin_username: "hope_congo_admin"
+    admin_email: "security-admin@hopecongo.com"
+    branches:
+      - "Moungali"
+      - "Diata"
+      - "Talangai"
+      - "Bacongo"
+      - "Brazzaville-Centre"
+      - "Pointe-Noire"
+      - "Dolisie"
+      - "Sibiti"
+      - "Ngoyo"

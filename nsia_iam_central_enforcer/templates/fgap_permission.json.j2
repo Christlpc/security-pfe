@@ -1,0 +1,16 @@
+{
+  "name": "Permission-Scope-Organization-{{ current_bank.name | upper }}",
+  "type": "scope",
+  "logic": "POSITIVE",
+  "decisionStrategy": "UNANIMOUS",
+  "resources": [
+    "{{ current_bank.name | upper }}-ORGANIZATION-RESOURCE"
+  ],
+  "scopes": [
+    "view",
+    "manage"
+  ],
+  "policies": [
+    "Policy-Only-Admin-{{ current_bank.name | upper }}"
+  ]
+}

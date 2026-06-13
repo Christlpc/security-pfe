@@ -1,0 +1,63 @@
+---
+- name: Check if Vault PKI Secrets Engine is enabled
+  uri:
+    url: "{{ vault_addr }}/v1/sys/mounts/{{ vault_pki_path }}"
+    method: GET
+    headers:
+      X-Vault-Token: "{{ vault_token }}"
+    status_code: [200, 404]
+  register: vault_pki_check
+
+- name: Enable Vault PKI Secrets Engine (if not enabled)
+  uri:
+    url: "{{ vault_addr }}/v1/sys/mounts/{{ vault_pki_path }}"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ vault_token }}"
+    body_format: json
+    body:
+      type: pki
+      config:
+        max_lease_ttl: "87600h"
+    status_code: 204
+  when: vault_pki_check.status == 404
+
+- name: Generate Root CA certificate in Vault
+  uri:
+    url: "{{ vault_addr }}/v1/{{ vault_pki_path }}/root/generate/internal"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ vault_token }}"
+    body_format: json
+    body:
+      common_name: "NSIA Bancassurance Root CA"
+      ttl: "87600h"
+    status_code: [200, 204]
+  register: root_ca_gen
+
+- name: Configure CA CRL and URLs
+  uri:
+    url: "{{ vault_addr }}/v1/{{ vault_pki_path }}/config/urls"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ vault_token }}"
+    body_format: json
+    body:
+      issuing_certificates: "{{ vault_addr }}/v1/{{ vault_pki_path }}/ca"
+      crl_distribution_points: "{{ vault_addr }}/v1/{{ vault_pki_path }}/crl"
+    status_code: 204
+
+- name: Create Vault Role for Partner Banks Certs
+  uri:
+    url: "{{ vault_addr }}/v1/{{ vault_pki_path }}/roles/partner-bank"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ vault_token }}"
+    body_format: json
+    body:
+      allowed_domains: "nsia.com,partner-bank.com"
+      allow_subdomains: true
+      max_ttl: "720h"
+      key_type: "rsa"
+      key_bits: 2048
+    status_code: 204

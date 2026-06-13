@@ -1,0 +1,18 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for nsia_iam_central_enforcer
+# Endpoints structurels de l'architecture d'Identité NSIA
+keycloak_auth_endpoint: "{{ keycloak_admin_url }}/realms/master/protocol/openid-connect/token"
+keycloak_admin_api_base: "{{ keycloak_admin_url }}/admin/realms"
+
+# Définition des profils d'en-têtes HTTP réutilisables (Security Hardening)
+api_json_headers:
+  Authorization: "{{ auth_header }}"
+  Content-Type: "application/json"
+
+api_form_headers:
+  Content-Type: "application/x-www-form-urlencoded"
+
+# Pistes d'audit internes (Destinées au SIEM Wazuh de la Phase 4)
+nsia_audit_channel: "syslog"
+nsia_log_facility: "local6"

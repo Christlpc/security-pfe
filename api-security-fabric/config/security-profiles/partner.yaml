@@ -1,0 +1,19 @@
+_format_version: "3.0"
+_transform: true
+
+plugins:
+  - name: jwt
+    config:
+      claims_to_verify:
+        - exp
+  - name: rate-limiting
+    config:
+      minute: 5
+      policy: local
+  - name: acl
+    config:
+      allow:
+        - partners
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 1

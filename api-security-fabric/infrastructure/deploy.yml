@@ -1,0 +1,12 @@
+---
+- name: Deploy API Security Fabric Infrastructure
+  hosts: gateways
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: vault_config
+      tags: [vault, security]
+
+    - role: kong_install
+      tags: [kong, gateway]

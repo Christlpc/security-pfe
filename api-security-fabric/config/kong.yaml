@@ -1,0 +1,1022 @@
+_format_version: "3.0"
+services:
+  - name: nsia-backend-service
+    url: http://nsia_backend:8000
+    routes:
+      - name: api-v1-banques-get
+        paths:
+          - /api/v1/banques/
+        methods:
+          - GET
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-post
+        paths:
+          - /api/v1/banques/
+        methods:
+          - POST
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-id-get
+        paths:
+          - ~/api/v1/banques/(?<id>[^/]+)/
+        methods:
+          - GET
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-id-put
+        paths:
+          - ~/api/v1/banques/(?<id>[^/]+)/
+        methods:
+          - PUT
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-id-patch
+        paths:
+          - ~/api/v1/banques/(?<id>[^/]+)/
+        methods:
+          - PATCH
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-id-delete
+        paths:
+          - ~/api/v1/banques/(?<id>[^/]+)/
+        methods:
+          - DELETE
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-banques-id-utilisateurs-get
+        paths:
+          - ~/api/v1/banques/(?<id>[^/]+)/utilisateurs/
+        methods:
+          - GET
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-simulations-elikia-post
+        paths:
+          - /api/v1/simulations/elikia/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-emprunteur-post
+        paths:
+          - /api/v1/simulations/emprunteur/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-etudes-post
+        paths:
+          - /api/v1/simulations/etudes/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-get
+        paths:
+          - /api/v1/simulations/historique/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-post
+        paths:
+          - /api/v1/simulations/historique/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-get
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-put
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/
+        methods:
+          - PUT
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-patch
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/
+        methods:
+          - PATCH
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-delete
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/
+        methods:
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-souscrire-post
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/souscrire/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-historique-id-valider-post
+        paths:
+          - ~/api/v1/simulations/historique/(?<id>[^/]+)/valider/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-mobateli-post
+        paths:
+          - /api/v1/simulations/mobateli/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-get
+        paths:
+          - /api/v1/simulations/questionnaires-medicaux/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-post
+        paths:
+          - /api/v1/simulations/questionnaires-medicaux/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-get
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-put
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
+        methods:
+          - PUT
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-patch
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
+        methods:
+          - PATCH
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-delete
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
+        methods:
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-appliquer-a-simulation-post
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/appliquer-a-simulation/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-id-recalculer-surprime-post
+        paths:
+          - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/recalculer-surprime/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-questionnaires-medicaux-bareme-get
+        paths:
+          - /api/v1/simulations/questionnaires-medicaux/bareme/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-retraite-post
+        paths:
+          - /api/v1/simulations/retraite/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-simulations-simulation_id-bia-info-get
+        paths:
+          - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/bia-info/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-simulations-simulation_id-export-bia-get
+        paths:
+          - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/export-bia/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-simulations-simulation_id-preview-bia-get
+        paths:
+          - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/preview-bia/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-get
+        paths:
+          - /api/v1/simulations/souscriptions/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-post
+        paths:
+          - /api/v1/simulations/souscriptions/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-get
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-put
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
+        methods:
+          - PUT
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-patch
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
+        methods:
+          - PATCH
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-delete
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
+        methods:
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-rejeter-post
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/rejeter/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-simulations-souscriptions-id-valider-post
+        paths:
+          - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/valider/
+        methods:
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: local
+
+          - name: acl
+            config:
+              allow:
+                - partners
+
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 1
+      - name: api-v1-utilisateurs-get
+        paths:
+          - /api/v1/utilisateurs/
+        methods:
+          - GET
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-post
+        paths:
+          - /api/v1/utilisateurs/
+        methods:
+          - POST
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-get
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/
+        methods:
+          - GET
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-put
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/
+        methods:
+          - PUT
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-patch
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/
+        methods:
+          - PATCH
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-delete
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/
+        methods:
+          - DELETE
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-reset_password-post
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/reset_password/
+        methods:
+          - POST
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins
+      - name: api-v1-utilisateurs-id-toggle_status-post
+        paths:
+          - ~/api/v1/utilisateurs/(?<id>[^/]+)/toggle_status/
+        methods:
+          - POST
+        plugins:
+          - name: key-auth
+            config:
+              key_names:
+                - apikey
+
+          - name: acl
+            config:
+              allow:
+                - admins

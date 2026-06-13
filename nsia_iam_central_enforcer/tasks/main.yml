@@ -1,0 +1,94 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for nsia_iam_central_enforcer
+
+- name: "[NSIA] Authentification unique auprès du Master Control Plane"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      grant_type: "password"
+      client_id: "admin-cli"
+  register: login_token_output
+
+- name: "[NSIA] Extraction et sécurisation du jeton de session volatile"
+  ansible.builtin.set_fact:
+    nsia_auth_token: "{{ login_token_output.json.access_token }}"
+    auth_header: "Bearer {{ login_token_output.json.access_token }}"
+  no_log: true
+
+- name: "[NSIA] Récupération de la configuration SMTP du Master Realm"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/master"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: master_realm_output
+
+- name: "[NSIA] Extraction et propagation de la configuration SMTP"
+  ansible.builtin.set_fact:
+    nsia_master_smtp: "{{ master_realm_output.json.smtpServer | default({}) }}"
+
+
+# --- Sélection du Mode de Traitement ---
+
+- name: "[NSIA MODE] Configuration pour le mode interactif"
+  block:
+    - name: "Saisie interactive - Nom de la banque"
+      ansible.builtin.pause:
+        prompt: "Entrez le nom court de la banque (ex: lcb)"
+      register: input_bank_name
+
+    - name: "Saisie interactive - Nom administrateur"
+      ansible.builtin.pause:
+        prompt: "Entrez l'identifiant de l'admin banque (ex: lcb_admin)"
+      register: input_admin_username
+
+    - name: "Saisie interactive - Email administrateur"
+      ansible.builtin.pause:
+        prompt: "Entrez l'adresse e-mail de l'admin banque (ex: admin@lcb.com)"
+      register: input_admin_email
+
+    - name: "Saisie interactive - Agences physiques"
+      ansible.builtin.pause:
+        prompt: "Entrez les agences de la banque, séparées par des virgules (ex: Brazzaville,Pointe-Noire)"
+      register: input_branches
+
+    - name: "Construction du dictionnaire de la banque"
+      ansible.builtin.set_fact:
+        banks_to_process:
+          - name: "{{ input_bank_name.user_input | trim }}"
+            realm: "BANK_{{ input_bank_name.user_input | trim | upper }}"
+            admin_username: "{{ input_admin_username.user_input | trim }}"
+            admin_email: "{{ input_admin_email.user_input | trim }}"
+            branches: "{{ (input_branches.user_input | trim).split(',') | map('trim') | list }}"
+  when: nsia_run_mode | default('all') == 'interactive'
+
+- name: "[NSIA MODE] Configuration pour le mode au cas par cas (single)"
+  block:
+    - name: "Filtrage par nom de banque depuis defaults"
+      ansible.builtin.set_fact:
+        banks_to_process: "{{ nsia_tenant_registry | selectattr('name', 'equalto', target_bank_name) | list }}"
+      when: target_bank_name is defined
+
+    - name: "Utilisation de l'objet banque fourni"
+      ansible.builtin.set_fact:
+        banks_to_process: ["{{ target_bank }}"]
+      when: target_bank is defined and target_bank_name is not defined
+  when: nsia_run_mode | default('all') == 'single'
+
+- name: "[NSIA MODE] Configuration pour le mode global (all)"
+  ansible.builtin.set_fact:
+    banks_to_process: "{{ nsia_tenant_registry }}"
+  when: nsia_run_mode | default('all') == 'all'
+
+# --- Lancement du Provisioning ---
+
+- name: "[NSIA CONTROL PLANE] Itération unifiée sur le Registre des Tenants"
+  ansible.builtin.include_tasks: onboard_bank.yml
+  loop: "{{ banks_to_process }}"
+  loop_control:
+    loop_var: current_bank

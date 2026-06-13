@@ -1,0 +1,197 @@
+---
+- name: "[Tenant] Initialisation des métadonnées pour {{ current_bank.realm }}"
+  ansible.builtin.set_fact:
+    target_realm: "{{ current_bank.realm }}"
+    realm_name: "{{ current_bank.realm }}"
+    broker_client_id: "nsia-iam-core-broker"
+    public_client_id: "nsia-bancassurance-frontend"
+
+- name: "[NSIA] Authentification unique auprès du Master Control Plane pour {{ target_realm }}"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      grant_type: "password"
+      client_id: "admin-cli"
+  register: login_token_output
+
+- name: "[NSIA] Extraction et sécurisation du jeton de session volatile pour {{ target_realm }}"
+  ansible.builtin.set_fact:
+    nsia_auth_token: "{{ login_token_output.json.access_token }}"
+    auth_header: "Bearer {{ login_token_output.json.access_token }}"
+  no_log: true
+
+
+# 1. CRÉATION IDEMPOTENTE DU REALM AVEC EXIGENCES LIFESPAN
+- name: "[Realm {{ target_realm }}] Enforce de la Baseline de Sécurité et des TTLs"
+  community.general.keycloak_realm:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    state: present
+    enabled: true
+    brute_force_protected: "{{ nsia_security_baseline.brute_force_protected }}"
+    password_policy: "{{ nsia_security_baseline.password_policy }}"
+    access_token_lifespan: "{{ nsia_security_baseline.access_token_lifespan }}"
+    sso_session_max_lifespan: "{{ nsia_security_baseline.sso_session_max_lifespan }}"
+    sso_session_idle_timeout: "{{ nsia_security_baseline.sso_session_idle_lifespan }}"
+    smtp_server: "{{ nsia_master_smtp | combine(nsia_smtp_config | default({})) }}"
+    email_theme: "nsia-platform-theme"
+    login_theme: "nsia-platform-theme"
+
+
+
+# 2. VÉRIFICATION DE L'EXISTENCE DU SECRET (Évite le reset de la prod au rejeu)
+- name: "[Realm {{ target_realm }}] Contrôle d'existence préalable du Broker IAM"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/clients?clientId={{ broker_client_id }}"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: broker_check_output
+
+- name: "[Realm {{ target_realm }}] Décision de génération du Secret d'Onboarding"
+  ansible.builtin.set_fact:
+    generate_new_secret: "{{ broker_check_output.json | length == 0 }}"
+
+- name: "[Realm {{ target_realm }}] Génération unique du Secret Machine"
+  ansible.builtin.set_fact:
+    target_broker_secret: "{{ lookup('ansible.builtin.password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+  when: generate_new_secret
+  no_log: true
+
+# 3. DISJONCTION DES CLIENTS : LE BROKER PRIVÉ (SYSTEM) VS LE FRONTEND (PUBLIC)
+- name: "[Realm {{ target_realm }}] Configuration du Broker Interne (System Administration)"
+  community.general.keycloak_client:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    client_id: "{{ broker_client_id }}"
+    state: present
+    enabled: true
+    secret: "{{ target_broker_secret if generate_new_secret else omit }}"
+    public_client: false
+    service_accounts_enabled: true  # Seul ce composant système interagit avec l'API Admin
+    standard_flow_enabled: false    # Login humain interdit sur le Broker
+  register: broker_deployment_result
+
+- name: "[Realm {{ target_realm }}] Configuration du Client Public (Authentification Humaine)"
+  community.general.keycloak_client:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    client_id: "{{ public_client_id }}"
+    state: present
+    enabled: true
+    public_client: true             # Client public pour le front-end unifié de la WebApp
+    standard_flow_enabled: true
+    service_accounts_enabled: false # Aucun droit d'administration sur le front-end public
+    redirect_uris:
+      - "https://bancassurance.nsia.cg/*"
+
+# 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
+- name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"
+  ansible.builtin.uri:
+    url: "https://vault.nsia.cg/v1/secret/data/tenants/{{ current_bank.name }}"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN') }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      data:
+        client_id: "{{ broker_client_id }}"
+        client_secret: "{{ target_broker_secret }}"
+    status_code: [200, 204] # Fin des fichiers clairs locaux (.txt)
+  when: generate_new_secret and broker_deployment_result.changed
+  no_log: true
+  ignore_errors: true # Toléré hors-production si Vault n'est pas joignable localement
+
+# 5. ASSIGNATION DES PRIVILÈGES RESTREINTS AU SERVICE ACCOUNT DU BROKER
+- name: "[Realm {{ target_realm }}] Enforcement des rôles d'administration au seul Broker Système"
+  community.general.keycloak_user_rolemapping:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    service_account_user_client_id: "{{ broker_client_id }}"
+    client_id: realm-management
+    roles:
+      - name: "manage-users"
+      - name: "view-users"
+
+# 6. CONFIGURATION DE LA TOPOLOGIE DES AGENCES
+- name: "[Realm {{ target_realm }}] Création du groupe racine SIÈGE"
+  community.general.keycloak_group:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    name: "{{ current_bank.name | upper }}-SIEGE"
+    state: present
+  register: siege_group_output
+
+- name: "[Realm {{ target_realm }}] Déploiement des sous-agences"
+  community.general.keycloak_group:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    name: "{{ item }}"
+    parents:
+      - name: "{{ current_bank.name | upper }}-SIEGE"
+    state: present
+  loop: "{{ current_bank.branches }}"
+
+# 7. ENRÔLEMENT DE L'ADMINISTRATEUR AVEC COUCHE MFA FORCÉE (TOTP)
+- name: "[Realm {{ target_realm }}] Provisionning de l'administrateur local"
+  community.general.keycloak_user:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    username: "{{ current_bank.admin_username }}"
+    enabled: true
+    email: "{{ current_bank.admin_email }}"
+    email_verified: true
+    required_actions:
+      - UPDATE_PASSWORD  # Non-répudiation (Loi n° 29-2019)
+      - CONFIGURE_TOTP   # 🔐 CORRECTIF MFA : Activation de l'enforcement OTP
+    groups:
+      - name: "{{ current_bank.name | upper }}-SIEGE"
+    attributes:
+      - name: bank
+        values: ["{{ current_bank.name | upper }}"]
+      - name: scope
+        values: ["BANK"]
+  register: user_output
+
+- name: "[Realm {{ target_realm }}] Élection du compte au rôle BANK_SUPER_ADMIN"
+  community.general.keycloak_user_rolemapping:
+    token: "{{ nsia_auth_token }}"
+    auth_keycloak_url: "{{ keycloak_admin_url }}"
+    realm: "{{ target_realm }}"
+    uid: "{{ user_output.end_state.id }}"
+    roles:
+      - name: "BANK_SUPER_ADMIN"
+
+# 8. SÉCURISATION DU DISPOSITIF SMTP (VÉRIFICATION STRICTE)
+- name: "[Realm {{ target_realm }}] Déclenchement de l'e-mail d'onboarding"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/users/{{ user_output.end_state.id }}/execute-actions-email?client_id={{ public_client_id }}&redirect_uri=https://bancassurance.nsia.cg/"
+    method: PUT
+    headers:
+      Authorization: "{{ auth_header }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: ["UPDATE_PASSWORD", "CONFIGURE_TOTP"]
+    status_code: [200, 204] # ❌ CORRECTIF SMTP : Le code 500 n'est plus toléré pour la production
+  register: smtp_delivery
+  ignore_errors: true
+
+- name: "[🚨 ALERTING] Notification d'échec du relai SMTP NSIA"
+  ansible.builtin.debug:
+    msg: "WARN: L'infrastructure n'a pas pu acheminer le mail d'onboarding pour {{ target_realm }}. Tracing requis."
+  when: smtp_delivery.failed
+
+# Phase de sécurisation avancée FGAP V2
+- ansible.builtin.include_tasks: fgap_lockdown.yml

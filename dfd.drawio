@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DFD NSIA" id="dfd-nsia">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ACTEUR EXTERNE -->
+        <mxCell id="actor1" value="Banque Partenaire / Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- DMZ -->
+        <mxCell id="dmz" value="ZONE DMZ" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="400" height="300" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="waf" value="WAF" style="rounded=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="330" y="140" width="100" height="60"/>
+        </mxCell>
+
+        <mxCell id="lb" value="Load Balancer" style="rounded=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="460" y="140" width="120" height="60"/>
+        </mxCell>
+
+        <mxCell id="gateway" value="API Gateway" style="rounded=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="140" width="100" height="60"/>
+        </mxCell>
+
+        <!-- ZONE INTERNE -->
+        <mxCell id="internal" value="ZONE INTERNE (ZERO TRUST)" style="rounded=1;strokeColor=#008000;" vertex="1" parent="1">
+          <mxGeometry x="750" y="100" width="400" height="300"/>
+        </mxCell>
+
+        <mxCell id="iam" value="IAM (Keycloak)" style="rounded=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="780" y="140" width="120" height="60"/>
+        </mxCell>
+
+        <mxCell id="api" value="API Métier NSIA" style="rounded=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="930" y="140" width="150" height="60"/>
+        </mxCell>
+
+        <!-- DATA -->
+        <mxCell id="data" value="ZONE DATA" style="rounded=1;strokeColor=#ffa500;" vertex="1" parent="1">
+          <mxGeometry x="750" y="420" width="400" height="200"/>
+        </mxCell>
+
+        <mxCell id="db" value="Base de données (AES-256)" style="shape=cylinder;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="780" y="460" width="120" height="80"/>
+        </mxCell>
+
+        <mxCell id="vault" value="HashiCorp Vault" style="rounded=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="930" y="460" width="150" height="80"/>
+        </mxCell>
+
+        <!-- SOC -->
+        <mxCell id="soc" value="ZONE SOC" style="rounded=1;strokeColor=#0000ff;" vertex="1" parent="1">
+          <mxGeometry x="50" y="450" width="300" height="200"/>
+        </mxCell>
+
+        <mxCell id="siem" value="SIEM (Wazuh)" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="200" height="80"/>
+        </mxCell>
+
+        <!-- FLUX -->
+        <mxCell id="flow1" style="endArrow=block;" edge="1" parent="1" source="actor1" target="waf">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow2" style="endArrow=block;" edge="1" parent="1" source="waf" target="lb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow3" style="endArrow=block;" edge="1" parent="1" source="lb" target="gateway">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow4" style="endArrow=block;" edge="1" parent="1" source="gateway" target="iam">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow5" style="endArrow=block;" edge="1" parent="1" source="gateway" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow6" style="endArrow=block;" edge="1" parent="1" source="api" target="db">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow7" style="endArrow=block;dashed=1;" edge="1" parent="1" source="api" target="siem">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

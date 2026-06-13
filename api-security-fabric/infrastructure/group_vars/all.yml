@@ -1,0 +1,20 @@
+---
+# global variables for the api security fabric infrastructure provisioning
+
+# Kong settings
+kong_admin_port: 8001
+kong_proxy_port: 8000
+kong_pg_host: "kong-database"
+kong_pg_port: 5432
+kong_pg_user: "kong"
+kong_pg_password: "kong_password"
+kong_pg_database: "kong"
+
+# Vault settings
+vault_addr: "http://vault:8200"
+vault_token: "vault_root_token_poc"
+vault_pki_path: "pki_nsia"
+
+# OIDC settings
+keycloak_issuer: "http://nsia_keycloak:8080/realms/nsia"
+keycloak_client_id: "nsia-gateway"

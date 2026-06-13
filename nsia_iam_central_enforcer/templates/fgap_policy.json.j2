@@ -1,0 +1,6 @@
+{
+  "name": "Policy-Only-Admin-{{ current_bank.name | upper }}",
+  "type": "user",
+  "logic": "POSITIVE",
+  "users": ["{{ current_bank.admin_username }}"]
+}

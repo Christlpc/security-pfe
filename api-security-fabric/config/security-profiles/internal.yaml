@@ -1,0 +1,12 @@
+_format_version: "3.0"
+_transform: true
+
+plugins:
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+  - name: acl
+    config:
+      allow:
+        - admins

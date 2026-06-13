@@ -1,0 +1,65 @@
+name: Security Linting
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-spec:
+    name: Lint OpenAPI Security Profiles
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-python-version: '3.10'
+
+      - name: Verify Security Profile Coverage
+        run: |
+          python -c "
+          import re
+          spec = 'api-security-fabric/contracts/api-spec.yaml'
+          missing = []
+          current_path = None
+          current_method = None
+          has_profile = False
+          
+          with open(spec, 'r') as f:
+              for line in f:
+                  path_match = re.match(r'^  (/api/v1/\S+):', line)
+                  if path_match:
+                      if current_path and current_method and not has_profile:
+                          missing.append(f'{current_path} [{current_method}]')
+                      current_path = path_match.group(1)
+                      current_method = None
+                      has_profile = False
+                      continue
+                      
+                  if current_path:
+                      method_match = re.match(r'^    (get|post|put|patch|delete):', line)
+                      if method_match:
+                          if current_method and not has_profile:
+                              missing.append(f'{current_path} [{current_method}]')
+                          current_method = method_match.group(1)
+                          has_profile = False
+                          continue
+                          
+                      if 'x-security-profile:' in line:
+                          has_profile = True
+                          
+          if current_path and current_method and not has_profile:
+              missing.append(f'{current_path} [{current_method}]')
+              
+          if missing:
+              print('ERR: The following endpoints are missing an x-security-profile annotation:')
+              for m in missing:
+                  print(f' - {m}')
+              exit(1)
+          else:
+              print('OK: All endpoints have a security profile defined.')
+          "

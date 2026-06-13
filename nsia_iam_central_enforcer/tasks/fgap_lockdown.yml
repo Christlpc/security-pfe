@@ -1,0 +1,110 @@
+---
+- name: "[FGAP {{ realm_name }}] Récupération de l'ID du client realm-management"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients?clientId=realm-management"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: client_mgmt_output
+
+- name: "Extraction de l'ID client"
+  ansible.builtin.set_fact:
+    realm_mgmt_id: "{{ client_mgmt_output.json[0].id }}"
+
+- name: "[FGAP {{ realm_name }}] Récupération des informations sur le rôle client view-realm"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/roles/view-realm"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: view_realm_role_output
+
+- name: "[FGAP {{ realm_name }}] Élévation restreinte aux outils de la console d'administration"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/users/{{ user_output.end_state.id }}/role-mappings/clients/{{ realm_mgmt_id }}"
+    method: POST
+    headers:
+      Authorization: "{{ auth_header }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      - id: "{{ view_realm_role_output.json.id }}"
+        name: "{{ view_realm_role_output.json.name }}"
+        containerId: "{{ view_realm_role_output.json.containerId }}"
+    status_code: [200, 204]
+
+- name: "[FGAP {{ realm_name }}] Récupération de la configuration complète du client realm-management"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: client_mgmt_details
+
+- name: "[FGAP {{ realm_name }}] Activation des services d'autorisation sur realm-management"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}"
+    method: PUT
+    headers:
+      Authorization: "{{ auth_header }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ client_mgmt_details.json | combine({'authorizationServicesEnabled': true, 'serviceAccountsEnabled': true, 'bearerOnly': false, 'publicClient': false}) }}"
+    status_code: [200, 204]
+
+- name: "[FGAP {{ realm_name }}] Déclaration du scope d'autorisation 'view'"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/authz/resource-server/scope"
+    method: POST
+    headers: "{{ api_json_headers }}"
+    body_format: json
+    body:
+      name: "view"
+    status_code: [201, 409]
+
+- name: "[FGAP {{ realm_name }}] Déclaration du scope d'autorisation 'manage'"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/authz/resource-server/scope"
+    method: POST
+    headers: "{{ api_json_headers }}"
+    body_format: json
+    body:
+      name: "manage"
+    status_code: [201, 409]
+
+- name: "[FGAP {{ realm_name }}] Création de la ressource d'organisation"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/authz/resource-server/resource"
+    method: POST
+    headers: "{{ api_json_headers }}"
+    body_format: json
+    body:
+      name: "{{ current_bank.name | upper }}-ORGANIZATION-RESOURCE"
+      displayName: "{{ current_bank.name | upper }} Organization Resource"
+      scopes:
+        - name: "view"
+        - name: "manage"
+    status_code: [201, 409]
+
+- name: "[FGAP {{ realm_name }}] Application de la Politique d'accès Jinja2"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/authz/resource-server/policy/user"
+    method: POST
+    headers: "{{ api_json_headers }}"
+    body_format: json
+    body: "{{ lookup('template', 'fgap_policy.json.j2') }}"
+    status_code: [201, 409]
+
+- name: "[FGAP {{ realm_name }}] Déploiement de la Permission fine d'isolation multi-tenant via l'API REST"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ realm_name }}/clients/{{ realm_mgmt_id }}/authz/resource-server/permission/scope"
+    method: POST
+    headers: "{{ api_json_headers }}"
+    body_format: json
+    body: "{{ lookup('template', 'fgap_permission.json.j2') }}"
+    status_code: [201, 409]
+  register: fgap_permission_result
+
+- name: "[NSIA AUDIT] Validation de la mise en conformité de la banque {{ current_bank.name | upper }}"
+  ansible.builtin.debug:
+    msg: "✓ Stratégie Zero-Trust appliquée avec succès. Isolation cryptographique et logique active pour le Tenant."

@@ -1,0 +1,47 @@
+---
+- name: Install dependencies
+  apt:
+    name:
+      - curl
+      - gnupg2
+      - lsb-release
+    state: present
+    update_cache: yes
+
+- name: Add Kong apt GPG Key
+  apt_key:
+    url: https://download.konghq.com/gateway-3.x-ubuntu-{{ ansible_distribution_release }}/repository.key
+    state: present
+
+- name: Add Kong repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.konghq.com/gateway-3.x-ubuntu-{{ ansible_distribution_release }} default all"
+    state: present
+
+- name: Install Kong Gateway
+  apt:
+    name: kong
+    state: present
+    update_cache: yes
+
+- name: Configure Kong env variables template
+  template:
+    src: kong.conf.j2
+    dest: /etc/kong/kong.conf
+  notify: restart kong
+
+- name: Run Kong database migrations
+  command: kong migrations bootstrap
+  run_once: true
+  environment:
+    KONG_DATABASE: postgres
+    KONG_PG_HOST: "{{ kong_pg_host }}"
+    KONG_PG_USER: "{{ kong_pg_user }}"
+    KONG_PG_PASSWORD: "{{ kong_pg_password }}"
+    KONG_PG_DATABASE: "{{ kong_pg_database }}"
+
+- name: Ensure Kong service is started and enabled
+  systemd:
+    name: kong
+    state: started
+    enabled: yes

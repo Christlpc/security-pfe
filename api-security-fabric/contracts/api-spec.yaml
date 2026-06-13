@@ -1,0 +1,3490 @@
+openapi: 3.0.3
+info:
+  title: NSIA Assurances API
+  version: 1.0.0
+  description: API Backend pour le simulateur multi-tenant NSIA
+paths:
+  /api/v1/banques/:
+    get:
+      x-security-profile: internal_api
+      operationId: v1_banques_list
+      description: ViewSet pour la gestion des banques
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBanqueList'
+          description: ''
+    post:
+      x-security-profile: internal_api
+      operationId: v1_banques_create
+      description: ViewSet pour la gestion des banques
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Banque'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Banque'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Banque'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banque'
+          description: ''
+  /api/v1/banques/{id}/:
+    get:
+      x-security-profile: internal_api
+      operationId: v1_banques_retrieve
+      description: ViewSet pour la gestion des banques
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Banque.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banque'
+          description: ''
+    put:
+      x-security-profile: internal_api
+      operationId: v1_banques_update
+      description: ViewSet pour la gestion des banques
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Banque.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Banque'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Banque'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Banque'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banque'
+          description: ''
+    patch:
+      x-security-profile: internal_api
+      operationId: v1_banques_partial_update
+      description: ViewSet pour la gestion des banques
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Banque.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBanque'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBanque'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBanque'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banque'
+          description: ''
+    delete:
+      x-security-profile: internal_api
+      operationId: v1_banques_destroy
+      description: ViewSet pour la gestion des banques
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Banque.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/banques/{id}/utilisateurs/:
+    get:
+      x-security-profile: internal_api
+      operationId: v1_banques_utilisateurs_retrieve
+      description: Récupère tous les utilisateurs d'une banque
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Banque.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banque'
+          description: ''
+  /api/v1/simulations/elikia/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_elikia_create
+      description: |-
+        Calcule une simulation Elikia (BCI)
+
+        POST /api/v1/simulateur/elikia/
+
+        Body:
+        {
+            "rente_annuelle": 200000,
+            "age_parent": 35,
+            "duree_rente": 5,
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "email": "jean.dupont@example.com",
+            "telephone": "+242123456789",
+            "sauvegarder": true
+        }
+
+        Returns:
+        {
+            "simulation": {...},
+            "resultats": {
+                "prime_nette_annuelle": 5000,
+                "prime_mensuelle": 417,
+                "prime_totale": 25000,
+                "capital_garanti": 953308,
+                "rente_annuelle": 200000,
+                "age_parent": 35,
+                "duree_rente": 5,
+                "tranche_age": "45 ans et moins",
+                ...
+            },
+            "message": "Simulation calculée avec succès"
+        }
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/simulations/emprunteur/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_emprunteur_create
+      description: |-
+        Calcule une simulation emprunteur
+
+        POST /api/v1/simulateur/emprunteur/
+
+        Body:
+        {
+            "montant_pret": 650000,
+            "duree_mois": 9,
+            "date_naissance": "1982-03-26",
+            "date_effet": "2022-01-17",
+            "taux_surprime": 0,
+            "nom": "Doe",
+            "prenom": "John",
+            "email": "john.doe@example.com",
+            "telephone": "+242123456789",
+            "sauvegarder": true
+        }
+
+        Returns:
+        {
+            "simulation": {...},  // Si sauvegarder=true
+            "resultats": {
+                "age_emprunteur": 39,
+                "taux_applique": 0.5,
+                "prime_nette": 2438,
+                "surprime": 0,
+                "frais_accessoires": 2500,
+                "prime_totale": 4938,
+                "net_a_debourser": 645062,
+                ...
+            },
+            "message": "Simulation calculée avec succès"
+        }
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/simulations/etudes/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_etudes_create
+      description: |-
+        Calcule une simulation études
+
+        POST /api/v1/simulateur/etudes/
+
+        Body:
+        {
+            "age_parent": 30,
+            "age_enfant": 0,
+            "montant_rente": 1100000,
+            "duree_paiement": 14,
+            "duree_service": 5,
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "email": "jean.dupont@example.com",
+            "telephone": "+242123456789",
+            "sauvegarder": true
+        }
+
+        Returns:
+        {
+            "simulation": {...},
+            "resultats": {
+                "prime_unique": 500000,
+                "prime_annuelle": 50000,
+                "prime_mensuelle": 4500,
+                "montant_rente_annuel": 1100000,
+                "age_parent": 30,
+                "age_enfant": 0,
+                "duree_paiement": 14,
+                "duree_service": 5,
+                "debut_service": 14,
+                "fin_service": 19,
+                ...
+            },
+            "message": "Simulation calculée avec succès"
+        }
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/simulations/historique/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_list
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSimulationList'
+          description: ''
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_create
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+          description: ''
+  /api/v1/simulations/historique/{id}/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_retrieve
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationDetail'
+          description: ''
+    put:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_update
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+          description: ''
+    patch:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_partial_update
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSimulation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSimulation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSimulation'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+          description: ''
+    delete:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_destroy
+      description: |-
+        ViewSet pour gérer les simulations (CRUD)
+
+        Endpoints:
+        - GET    /api/v1/simulateur/historique/         : Liste des simulations
+        - GET    /api/v1/simulateur/historique/{id}/    : Détail d'une simulation
+        - PATCH  /api/v1/simulateur/historique/{id}/    : Modifier une simulation
+        - DELETE /api/v1/simulateur/historique/{id}/    : Supprimer une simulation
+        - POST   /api/v1/simulateur/historique/{id}/souscrire/ : Convertir en souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/simulations/historique/{id}/souscrire/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_souscrire_create
+      description: |-
+        Convertit une simulation en souscription
+
+        POST /api/v1/simulateur/historique/{id}/souscrire/
+
+        Body:
+        {
+            "nom": "Doe",
+            "prenom": "John",
+            "date_naissance": "1982-03-26",
+            "email": "john.doe@example.com",
+            "telephone": "+242123456789",
+            "adresse": "123 Rue de la Paix, Brazzaville",
+            "profession": "Ingénieur",
+            "employeur": "TechCorp",
+            "numero_compte": "123456789",
+            "date_effet_contrat": "2025-02-01"
+        }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+          description: ''
+  /api/v1/simulations/historique/{id}/valider/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_historique_valider_create
+      description: |-
+        Valide une simulation
+
+        POST /api/v1/simulateur/historique/{id}/valider/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Simulation.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+          description: ''
+  /api/v1/simulations/mobateli/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_mobateli_create
+      description: |-
+        Calcule une simulation Mobateli (BCI)
+
+        POST /api/v1/simulateur/mobateli/
+
+        Body:
+        {
+            "capital_dtc_iad": 2000000,
+            "age": 40,
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "email": "jean.dupont@example.com",
+            "telephone": "+242123456789",
+            "sauvegarder": true
+        }
+
+        Returns:
+        {
+            "simulation": {...},
+            "resultats": {
+                "prime_nette": 45100,
+                "prime_mensuelle": 3758,
+                "capital_dtc_iad": 2000000,
+                "age": 40,
+                "tranche_age": "35-44 ans",
+                ...
+            },
+            "message": "Simulation calculée avec succès"
+        }
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/simulations/questionnaires-medicaux/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_list
+      description: |-
+        ViewSet pour gérer les questionnaires médicaux
+
+        Endpoints:
+        - GET /api/v1/questionnaires-medicaux/ : Liste des questionnaires
+        - POST /api/v1/questionnaires-medicaux/ : Créer un questionnaire
+        - GET /api/v1/questionnaires-medicaux/{id}/ : Détail questionnaire
+        - PUT/PATCH /api/v1/questionnaires-medicaux/{id}/ : Modifier questionnaire
+        - DELETE /api/v1/questionnaires-medicaux/{id}/ : Supprimer questionnaire
+
+        Actions custom:
+        - POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/ : Recalcul
+        - GET /api/v1/questionnaires-medicaux/bareme/ : Voir le barème
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionnaireMedicalList'
+          description: ''
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_create
+      description: |-
+        Création d'un questionnaire médical
+        Calcul automatique de la surprime
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedicalCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedicalCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedicalCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedicalCreate'
+          description: ''
+  /api/v1/simulations/questionnaires-medicaux/{id}/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_retrieve
+      description: |-
+        ViewSet pour gérer les questionnaires médicaux
+
+        Endpoints:
+        - GET /api/v1/questionnaires-medicaux/ : Liste des questionnaires
+        - POST /api/v1/questionnaires-medicaux/ : Créer un questionnaire
+        - GET /api/v1/questionnaires-medicaux/{id}/ : Détail questionnaire
+        - PUT/PATCH /api/v1/questionnaires-medicaux/{id}/ : Modifier questionnaire
+        - DELETE /api/v1/questionnaires-medicaux/{id}/ : Supprimer questionnaire
+
+        Actions custom:
+        - POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/ : Recalcul
+        - GET /api/v1/questionnaires-medicaux/bareme/ : Voir le barème
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedicalDetail'
+          description: ''
+    put:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_update
+      description: |-
+        ViewSet pour gérer les questionnaires médicaux
+
+        Endpoints:
+        - GET /api/v1/questionnaires-medicaux/ : Liste des questionnaires
+        - POST /api/v1/questionnaires-medicaux/ : Créer un questionnaire
+        - GET /api/v1/questionnaires-medicaux/{id}/ : Détail questionnaire
+        - PUT/PATCH /api/v1/questionnaires-medicaux/{id}/ : Modifier questionnaire
+        - DELETE /api/v1/questionnaires-medicaux/{id}/ : Supprimer questionnaire
+
+        Actions custom:
+        - POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/ : Recalcul
+        - GET /api/v1/questionnaires-medicaux/bareme/ : Voir le barème
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedical'
+          description: ''
+    patch:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_partial_update
+      description: |-
+        ViewSet pour gérer les questionnaires médicaux
+
+        Endpoints:
+        - GET /api/v1/questionnaires-medicaux/ : Liste des questionnaires
+        - POST /api/v1/questionnaires-medicaux/ : Créer un questionnaire
+        - GET /api/v1/questionnaires-medicaux/{id}/ : Détail questionnaire
+        - PUT/PATCH /api/v1/questionnaires-medicaux/{id}/ : Modifier questionnaire
+        - DELETE /api/v1/questionnaires-medicaux/{id}/ : Supprimer questionnaire
+
+        Actions custom:
+        - POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/ : Recalcul
+        - GET /api/v1/questionnaires-medicaux/bareme/ : Voir le barème
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionnaireMedical'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionnaireMedical'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionnaireMedical'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedical'
+          description: ''
+    delete:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_destroy
+      description: |-
+        ViewSet pour gérer les questionnaires médicaux
+
+        Endpoints:
+        - GET /api/v1/questionnaires-medicaux/ : Liste des questionnaires
+        - POST /api/v1/questionnaires-medicaux/ : Créer un questionnaire
+        - GET /api/v1/questionnaires-medicaux/{id}/ : Détail questionnaire
+        - PUT/PATCH /api/v1/questionnaires-medicaux/{id}/ : Modifier questionnaire
+        - DELETE /api/v1/questionnaires-medicaux/{id}/ : Supprimer questionnaire
+
+        Actions custom:
+        - POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/ : Recalcul
+        - GET /api/v1/questionnaires-medicaux/bareme/ : Voir le barème
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/simulations/questionnaires-medicaux/{id}/appliquer-a-simulation/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_appliquer_a_simulation_create
+      description: |-
+        Applique la surprime calculée à la simulation
+        Recalcule la prime totale
+
+        POST /api/v1/questionnaires-medicaux/{id}/appliquer-a-simulation/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedical'
+          description: ''
+  /api/v1/simulations/questionnaires-medicaux/{id}/recalculer-surprime/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_recalculer_surprime_create
+      description: |-
+        Recalcule la surprime pour un questionnaire existant
+
+        POST /api/v1/questionnaires-medicaux/{id}/recalculer-surprime/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Questionnaire médical.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireMedical'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedical'
+          description: ''
+  /api/v1/simulations/questionnaires-medicaux/bareme/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_questionnaires_medicaux_bareme_retrieve
+      description: |-
+        Retourne le barème complet de calcul de surprime
+
+        GET /api/v1/questionnaires-medicaux/bareme/
+
+        Utile pour :
+        - Documentation
+        - Affichage dans l'interface
+        - Transparence du calcul
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireMedical'
+          description: ''
+  /api/v1/simulations/retraite/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_retraite_create
+      description: |-
+        Calcule une simulation retraite
+
+        POST /api/v1/simulateur/retraite/
+
+        Body:
+        {
+            "prime_periodique_commerciale": 80000,
+            "capital_deces": 0,
+            "duree": 7,
+            "age": 42,
+            "periodicite": "S",
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "email": "jean.dupont@example.com",
+            "telephone": "+242123456789",
+            "sauvegarder": true
+        }
+
+        Returns:
+        {
+            "simulation": {...},
+            "resultats": {
+                "prime_periodique_commerciale": 81000,
+                "capital_garanti": 654321,
+                "prime_deces": 5000,
+                "prime_epargne": 75000,
+                "prime_totale": 567000,
+                "periodicite": "S",
+                "periodicite_libelle": "Semestrielle",
+                ...
+            },
+            "message": "Simulation calculée avec succès"
+        }
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/simulations/simulations/{simulation_id}/bia-info/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_simulations_bia_info_retrieve
+      description: |-
+        Retourne les informations sur l'export BIA
+
+        Args:
+            simulation_id: ID de la simulation
+
+        Returns:
+            dict: Informations sur l'export
+      parameters:
+      - in: path
+        name: simulation_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/simulations/simulations/{simulation_id}/export-bia/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_simulations_export_bia_retrieve
+      description: |-
+        Génère et retourne le BIA en PDF
+
+        Args:
+            simulation_id: ID de la simulation à exporter
+
+        Returns:
+            HttpResponse avec le PDF en pièce jointe
+      parameters:
+      - in: path
+        name: simulation_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/simulations/simulations/{simulation_id}/preview-bia/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_simulations_preview_bia_retrieve
+      description: |-
+        Génère et affiche le BIA dans le navigateur
+
+        Args:
+            simulation_id: ID de la simulation
+
+        Returns:
+            HttpResponse avec le PDF en inline
+      parameters:
+      - in: path
+        name: simulation_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/simulations/souscriptions/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_list
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSouscriptionList'
+          description: ''
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_create
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+  /api/v1/simulations/souscriptions/{id}/:
+    get:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_retrieve
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+    put:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_update
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+    patch:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_partial_update
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSouscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSouscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSouscription'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+    delete:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_destroy
+      description: |-
+        ViewSet pour gérer les souscriptions
+
+        Endpoints:
+        - GET    /api/v1/souscriptions/              : Liste des souscriptions
+        - GET    /api/v1/souscriptions/{id}/         : Détail d'une souscription
+        - PATCH  /api/v1/souscriptions/{id}/         : Modifier une souscription
+        - POST   /api/v1/souscriptions/{id}/valider/ : Valider une souscription
+        - POST   /api/v1/souscriptions/{id}/rejeter/ : Rejeter une souscription
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/simulations/souscriptions/{id}/rejeter/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_rejeter_create
+      description: |-
+        Rejette une souscription
+
+        POST /api/v1/souscriptions/{id}/rejeter/
+
+        Body:
+        {
+            "motif": "Documents incomplets"
+        }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+  /api/v1/simulations/souscriptions/{id}/valider/:
+    post:
+      x-security-profile: partner_api
+      operationId: v1_simulations_souscriptions_valider_create
+      description: |-
+        Valide une souscription et génère le numéro de police
+
+        POST /api/v1/souscriptions/{id}/valider/
+
+        Body (optionnel):
+        {
+            "numero_police": "POL-BGFI-2025-00001"
+        }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Souscription.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Souscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Souscription'
+          description: ''
+  /api/v1/utilisateurs/:
+    get:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_list
+      description: ViewSet pour la gestion des utilisateurs
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUtilisateurList'
+          description: ''
+    post:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_create
+      description: ViewSet pour la gestion des utilisateurs
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UtilisateurCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UtilisateurCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UtilisateurCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilisateurCreate'
+          description: ''
+  /api/v1/utilisateurs/{id}/:
+    get:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_retrieve
+      description: ViewSet pour la gestion des utilisateurs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+    put:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_update
+      description: ViewSet pour la gestion des utilisateurs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+    patch:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_partial_update
+      description: ViewSet pour la gestion des utilisateurs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUtilisateur'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUtilisateur'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUtilisateur'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+    delete:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_destroy
+      description: ViewSet pour la gestion des utilisateurs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/utilisateurs/{id}/reset_password/:
+    post:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_reset_password_create
+      description: Réinitialiser le mot de passe d'un utilisateur
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+  /api/v1/utilisateurs/{id}/toggle_status/:
+    post:
+      x-security-profile: internal_api
+      operationId: v1_utilisateurs_toggle_status_create
+      description: Activer/Désactiver un utilisateur
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Utilisateur.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Utilisateur'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+          description: ''
+components:
+  schemas:
+    Banque:
+      type: object
+      description: Serializer pour le modèle Banque
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code_banque:
+          type: string
+          description: 'Code unique de la banque (ex: ECOBANK, BGFI, CDCO)'
+          maxLength: 20
+        nom_complet:
+          type: string
+          maxLength: 200
+        nom_court:
+          type: string
+          maxLength: 50
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        couleur_primaire:
+          type: string
+          description: 'Format hexadécimal (ex: #003366)'
+          pattern: ^#[0-9A-Fa-f]{6}$
+          maxLength: 7
+        couleur_secondaire:
+          type: string
+          description: 'Format hexadécimal (ex: #FF9900)'
+          pattern: ^#[0-9A-Fa-f]{6}$
+          maxLength: 7
+        police_principale:
+          type: string
+          description: Nom de la police à utiliser dans les documents
+          maxLength: 100
+        email_contact:
+          type: string
+          format: email
+          title: Email de contact
+          maxLength: 254
+        telephone_contact:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        adresse:
+          type: string
+          title: Adresse complète
+        statut:
+          $ref: '#/components/schemas/BanqueStatutEnum'
+        est_active:
+          type: boolean
+          readOnly: true
+        date_partenariat:
+          type: string
+          format: date
+          nullable: true
+          title: Date de partenariat
+        parametres_specifiques:
+          title: Paramètres spécifiques
+          description: Paramètres personnalisés pour cette banque (commission, frais,
+            etc.)
+        nb_utilisateurs:
+          type: integer
+          readOnly: true
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de modification
+      required:
+      - code_banque
+      - date_creation
+      - date_modification
+      - email_contact
+      - est_active
+      - id
+      - nb_utilisateurs
+      - nom_complet
+    BanqueSimple:
+      type: object
+      description: Serializer simplifié pour les références à Banque
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code_banque:
+          type: string
+          description: 'Code unique de la banque (ex: ECOBANK, BGFI, CDCO)'
+          maxLength: 20
+        nom_complet:
+          type: string
+          maxLength: 200
+        nom_court:
+          type: string
+          maxLength: 50
+      required:
+      - code_banque
+      - id
+      - nom_complet
+    BanqueStatutEnum:
+      enum:
+      - ACTIF
+      - INACTIF
+      - SUSPENDU
+      type: string
+      description: |-
+        * `ACTIF` - Actif
+        * `INACTIF` - Inactif
+        * `SUSPENDU` - Suspendu
+    CustomTokenObtainPair:
+      type: object
+      description: Serializer JWT custom qui ajoute des informations dans le token
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    PaginatedBanqueList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Banque'
+    PaginatedQuestionnaireMedicalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionnaireMedical'
+    PaginatedSimulationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Simulation'
+    PaginatedSouscriptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Souscription'
+    PaginatedUtilisateurList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Utilisateur'
+    PatchedBanque:
+      type: object
+      description: Serializer pour le modèle Banque
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code_banque:
+          type: string
+          description: 'Code unique de la banque (ex: ECOBANK, BGFI, CDCO)'
+          maxLength: 20
+        nom_complet:
+          type: string
+          maxLength: 200
+        nom_court:
+          type: string
+          maxLength: 50
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        couleur_primaire:
+          type: string
+          description: 'Format hexadécimal (ex: #003366)'
+          pattern: ^#[0-9A-Fa-f]{6}$
+          maxLength: 7
+        couleur_secondaire:
+          type: string
+          description: 'Format hexadécimal (ex: #FF9900)'
+          pattern: ^#[0-9A-Fa-f]{6}$
+          maxLength: 7
+        police_principale:
+          type: string
+          description: Nom de la police à utiliser dans les documents
+          maxLength: 100
+        email_contact:
+          type: string
+          format: email
+          title: Email de contact
+          maxLength: 254
+        telephone_contact:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        adresse:
+          type: string
+          title: Adresse complète
+        statut:
+          $ref: '#/components/schemas/BanqueStatutEnum'
+        est_active:
+          type: boolean
+          readOnly: true
+        date_partenariat:
+          type: string
+          format: date
+          nullable: true
+          title: Date de partenariat
+        parametres_specifiques:
+          title: Paramètres spécifiques
+          description: Paramètres personnalisés pour cette banque (commission, frais,
+            etc.)
+        nb_utilisateurs:
+          type: integer
+          readOnly: true
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de modification
+    PatchedQuestionnaireMedical:
+      type: object
+      description: Serializer complet pour le questionnaire médical
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation liée
+        date_remplissage:
+          type: string
+          format: date-time
+          readOnly: true
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+        taille_cm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Taille (cm)
+          description: 'Taille en centimètres (ex: 175.5)'
+        poids_kg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Poids (kg)
+          description: 'Poids en kilogrammes (ex: 75.5)'
+        imc:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_imc:
+          type: string
+          readOnly: true
+        tension_arterielle:
+          type: string
+          title: Tension artérielle
+          description: 'Format: 120/80 (optionnel)'
+          maxLength: 20
+        fumeur:
+          type: boolean
+        nb_cigarettes_jour:
+          type: integer
+          maximum: 100
+          minimum: 0
+          nullable: true
+          title: Nombre de cigarettes par jour
+          description: Si fumeur, indiquer le nombre (0-100)
+        consomme_alcool:
+          type: boolean
+          title: Consomme de l'alcool régulièrement
+        distractions:
+          type: string
+          title: Distractions / Loisirs
+          description: Activités de loisirs (optionnel)
+          maxLength: 200
+        pratique_sport:
+          type: boolean
+          title: Pratique du sport
+        type_sport:
+          type: string
+          title: Type de sport pratiqué
+          description: Si sport, préciser lequel
+          maxLength: 100
+        a_infirmite:
+          type: boolean
+          title: Êtes-vous atteint d'une infirmité ?
+        malade_6_derniers_mois:
+          type: boolean
+          title: Avez-vous été malade au cours des 6 derniers mois ?
+        souvent_fatigue:
+          type: boolean
+          title: Êtes-vous souvent fatigué(e) ?
+        perte_poids_recente:
+          type: boolean
+          title: Avez-vous maigri depuis les 6 derniers mois ?
+        prise_poids_recente:
+          type: boolean
+          title: Avez-vous grossi depuis les 6 derniers mois ?
+        a_ganglions:
+          type: boolean
+          title: Avez-vous des ganglions, des furoncles, des abcès ou des maladies
+            de la peau ?
+        fievre_persistante:
+          type: boolean
+          title: Toussez-vous depuis quelques temps avec en plus de la fièvre ?
+        plaies_buccales:
+          type: boolean
+          title: Avez-vous des plaies dans la bouche ?
+        diarrhee_frequente:
+          type: boolean
+          title: Faites-vous souvent la diarrhée ?
+        ballonnement:
+          type: boolean
+          title: Êtes-vous souvent ballonné(e) ?
+        oedemes_membres_inferieurs:
+          type: boolean
+          title: Avez-vous eu des œdèmes des Membres Inférieurs (O.M.I) ?
+        essoufflement:
+          type: boolean
+          title: Êtes-vous essoufflé(e) au moindre effort ?
+        a_eu_perfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une perfusion ?
+        a_eu_transfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une transfusion de sang ?
+        infos_complementaires:
+          type: string
+          title: Informations complémentaires sur votre état de santé
+          description: Toute information médicale pertinente (optionnel)
+        nb_antecedents_medicaux:
+          type: string
+          readOnly: true
+        score_risque:
+          type: integer
+          readOnly: true
+        taux_surprime:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_risque:
+          type: string
+          readOnly: true
+        statut:
+          type: string
+          readOnly: true
+        commentaire_medical:
+          type: string
+          title: Commentaire médical
+          description: Remarques du validateur médical (si expertise requise)
+        createur:
+          type: string
+          format: uuid
+          nullable: true
+          title: Créé par
+    PatchedSimulation:
+      type: object
+      description: Serializer pour le modèle Simulation (liste/détail)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: 'Ex: SIM-BGFI-20250106-001'
+        banque:
+          type: string
+          format: uuid
+        banque_nom:
+          type: string
+          readOnly: true
+        banque_code:
+          type: string
+          readOnly: true
+        gestionnaire:
+          type: string
+          format: uuid
+          nullable: true
+          title: Gestionnaire créateur
+        gestionnaire_nom:
+          type: string
+          readOnly: true
+        produit:
+          allOf:
+          - $ref: '#/components/schemas/ProduitEnum'
+          title: Type de produit
+        produit_display:
+          type: string
+          readOnly: true
+        statut:
+          $ref: '#/components/schemas/StatutC22Enum'
+        statut_display:
+          type: string
+          readOnly: true
+        donnees_entree:
+          title: Données d'entrée
+          description: Inputs de l'utilisateur (montant, durée, âge...)
+        resultats_calcul:
+          title: Résultats du calcul
+          description: Outputs du calculateur (primes, taux...)
+        nom_client:
+          type: string
+          title: Nom
+          maxLength: 100
+        prenom_client:
+          type: string
+          title: Prénom
+          maxLength: 100
+        email_client:
+          type: string
+          format: email
+          title: Email
+          maxLength: 254
+        telephone_client:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Dernière modification
+        date_validation:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de validation
+        montant_prime:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: Notes internes
+    PatchedSouscription:
+      type: object
+      description: Serializer pour le modèle Souscription
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: 'Ex: SOUSCR-BGFI-20250106-001'
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation d'origine
+        simulation_reference:
+          type: string
+          readOnly: true
+        banque:
+          type: string
+          format: uuid
+        banque_nom:
+          type: string
+          readOnly: true
+        banque_code:
+          type: string
+          readOnly: true
+        gestionnaire:
+          type: string
+          format: uuid
+          nullable: true
+        gestionnaire_nom:
+          type: string
+          readOnly: true
+        statut:
+          $ref: '#/components/schemas/SouscriptionStatutEnum'
+        statut_display:
+          type: string
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          title: Prénom
+          maxLength: 100
+        date_naissance:
+          type: string
+          format: date
+          title: Date de naissance
+        age_souscripteur:
+          type: string
+          readOnly: true
+        lieu_naissance:
+          type: string
+          title: Lieu de naissance
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        adresse:
+          type: string
+          title: Adresse postale
+        profession:
+          type: string
+          maxLength: 100
+        employeur:
+          type: string
+          maxLength: 200
+        numero_compte:
+          type: string
+          title: N° compte
+          maxLength: 50
+        documents:
+          title: Documents attachés
+          description: Liste des documents fournis (CNI, justificatifs...)
+        numero_police:
+          type: string
+          readOnly: true
+          nullable: true
+          title: Numéro de police
+        date_effet_contrat:
+          type: string
+          format: date
+          nullable: true
+          title: Date d'effet du contrat
+        date_echeance_contrat:
+          type: string
+          format: date
+          nullable: true
+          title: Date d'échéance du contrat
+        montant_prime:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          title: Montant de la prime (FCFA)
+        donnees_produit:
+          title: Données spécifiques au produit
+        date_souscription:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de souscription
+        date_validation:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de validation
+        date_rejet:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de rejet
+        motif_rejet:
+          type: string
+          title: Motif de rejet
+        notes:
+          type: string
+          title: Notes internes
+        commentaires:
+          type: string
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Dernière modification
+    PatchedUtilisateur:
+      type: object
+      description: Serializer pour le modèle Utilisateur
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Adresse électronique
+          maxLength: 254
+        first_name:
+          type: string
+          title: Prénom
+          maxLength: 150
+        last_name:
+          type: string
+          title: Nom
+          maxLength: 150
+        nom_complet:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          title: Rôle
+        banque:
+          type: string
+          format: uuid
+          nullable: true
+          description: Banque de rattachement (obligatoire pour Responsable et Gestionnaire)
+        banque_details:
+          allOf:
+          - $ref: '#/components/schemas/BanqueSimple'
+          readOnly: true
+        matricule:
+          type: string
+          nullable: true
+          maxLength: 50
+        telephone:
+          type: string
+          nullable: true
+          title: Téléphone
+          maxLength: 20
+        est_actif:
+          type: boolean
+          title: Actif
+        is_staff:
+          type: boolean
+          title: Statut équipe
+          description: Précise si l’utilisateur peut se connecter à ce site d'administration.
+        is_superuser:
+          type: boolean
+          title: Statut super-utilisateur
+          description: Précise que l’utilisateur possède toutes les permissions sans
+            les assigner explicitement.
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de modification
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Dernière connexion
+    ProduitEnum:
+      enum:
+      - emprunteur
+      - retraite
+      - etudes
+      - elikia
+      - mobateli
+      - epargne_plus
+      type: string
+      description: |-
+        * `emprunteur` - Assurance Emprunteur
+        * `retraite` - Confort Retraite
+        * `etudes` - Confort Études
+        * `elikia` - Elikia Scolaire
+        * `mobateli` - Mobateli
+        * `epargne_plus` - Épargne Plus
+    QuestionnaireMedical:
+      type: object
+      description: Serializer complet pour le questionnaire médical
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation liée
+        date_remplissage:
+          type: string
+          format: date-time
+          readOnly: true
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+        taille_cm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Taille (cm)
+          description: 'Taille en centimètres (ex: 175.5)'
+        poids_kg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Poids (kg)
+          description: 'Poids en kilogrammes (ex: 75.5)'
+        imc:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_imc:
+          type: string
+          readOnly: true
+        tension_arterielle:
+          type: string
+          title: Tension artérielle
+          description: 'Format: 120/80 (optionnel)'
+          maxLength: 20
+        fumeur:
+          type: boolean
+        nb_cigarettes_jour:
+          type: integer
+          maximum: 100
+          minimum: 0
+          nullable: true
+          title: Nombre de cigarettes par jour
+          description: Si fumeur, indiquer le nombre (0-100)
+        consomme_alcool:
+          type: boolean
+          title: Consomme de l'alcool régulièrement
+        distractions:
+          type: string
+          title: Distractions / Loisirs
+          description: Activités de loisirs (optionnel)
+          maxLength: 200
+        pratique_sport:
+          type: boolean
+          title: Pratique du sport
+        type_sport:
+          type: string
+          title: Type de sport pratiqué
+          description: Si sport, préciser lequel
+          maxLength: 100
+        a_infirmite:
+          type: boolean
+          title: Êtes-vous atteint d'une infirmité ?
+        malade_6_derniers_mois:
+          type: boolean
+          title: Avez-vous été malade au cours des 6 derniers mois ?
+        souvent_fatigue:
+          type: boolean
+          title: Êtes-vous souvent fatigué(e) ?
+        perte_poids_recente:
+          type: boolean
+          title: Avez-vous maigri depuis les 6 derniers mois ?
+        prise_poids_recente:
+          type: boolean
+          title: Avez-vous grossi depuis les 6 derniers mois ?
+        a_ganglions:
+          type: boolean
+          title: Avez-vous des ganglions, des furoncles, des abcès ou des maladies
+            de la peau ?
+        fievre_persistante:
+          type: boolean
+          title: Toussez-vous depuis quelques temps avec en plus de la fièvre ?
+        plaies_buccales:
+          type: boolean
+          title: Avez-vous des plaies dans la bouche ?
+        diarrhee_frequente:
+          type: boolean
+          title: Faites-vous souvent la diarrhée ?
+        ballonnement:
+          type: boolean
+          title: Êtes-vous souvent ballonné(e) ?
+        oedemes_membres_inferieurs:
+          type: boolean
+          title: Avez-vous eu des œdèmes des Membres Inférieurs (O.M.I) ?
+        essoufflement:
+          type: boolean
+          title: Êtes-vous essoufflé(e) au moindre effort ?
+        a_eu_perfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une perfusion ?
+        a_eu_transfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une transfusion de sang ?
+        infos_complementaires:
+          type: string
+          title: Informations complémentaires sur votre état de santé
+          description: Toute information médicale pertinente (optionnel)
+        nb_antecedents_medicaux:
+          type: string
+          readOnly: true
+        score_risque:
+          type: integer
+          readOnly: true
+        taux_surprime:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_risque:
+          type: string
+          readOnly: true
+        statut:
+          type: string
+          readOnly: true
+        commentaire_medical:
+          type: string
+          title: Commentaire médical
+          description: Remarques du validateur médical (si expertise requise)
+        createur:
+          type: string
+          format: uuid
+          nullable: true
+          title: Créé par
+      required:
+      - categorie_imc
+      - categorie_risque
+      - date_modification
+      - date_remplissage
+      - id
+      - imc
+      - nb_antecedents_medicaux
+      - poids_kg
+      - score_risque
+      - simulation
+      - statut
+      - taille_cm
+      - taux_surprime
+    QuestionnaireMedicalCreate:
+      type: object
+      description: |-
+        Serializer simplifié pour la création
+        N'expose que les champs nécessaires à la saisie
+      properties:
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation liée
+        taille_cm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Taille (cm)
+          description: 'Taille en centimètres (ex: 175.5)'
+        poids_kg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Poids (kg)
+          description: 'Poids en kilogrammes (ex: 75.5)'
+        tension_arterielle:
+          type: string
+          title: Tension artérielle
+          description: 'Format: 120/80 (optionnel)'
+          maxLength: 20
+        fumeur:
+          type: boolean
+        nb_cigarettes_jour:
+          type: integer
+          maximum: 100
+          minimum: 0
+          nullable: true
+          title: Nombre de cigarettes par jour
+          description: Si fumeur, indiquer le nombre (0-100)
+        consomme_alcool:
+          type: boolean
+          title: Consomme de l'alcool régulièrement
+        distractions:
+          type: string
+          title: Distractions / Loisirs
+          description: Activités de loisirs (optionnel)
+          maxLength: 200
+        pratique_sport:
+          type: boolean
+          title: Pratique du sport
+        type_sport:
+          type: string
+          title: Type de sport pratiqué
+          description: Si sport, préciser lequel
+          maxLength: 100
+        a_infirmite:
+          type: boolean
+          title: Êtes-vous atteint d'une infirmité ?
+        malade_6_derniers_mois:
+          type: boolean
+          title: Avez-vous été malade au cours des 6 derniers mois ?
+        souvent_fatigue:
+          type: boolean
+          title: Êtes-vous souvent fatigué(e) ?
+        perte_poids_recente:
+          type: boolean
+          title: Avez-vous maigri depuis les 6 derniers mois ?
+        prise_poids_recente:
+          type: boolean
+          title: Avez-vous grossi depuis les 6 derniers mois ?
+        a_ganglions:
+          type: boolean
+          title: Avez-vous des ganglions, des furoncles, des abcès ou des maladies
+            de la peau ?
+        fievre_persistante:
+          type: boolean
+          title: Toussez-vous depuis quelques temps avec en plus de la fièvre ?
+        plaies_buccales:
+          type: boolean
+          title: Avez-vous des plaies dans la bouche ?
+        diarrhee_frequente:
+          type: boolean
+          title: Faites-vous souvent la diarrhée ?
+        ballonnement:
+          type: boolean
+          title: Êtes-vous souvent ballonné(e) ?
+        oedemes_membres_inferieurs:
+          type: boolean
+          title: Avez-vous eu des œdèmes des Membres Inférieurs (O.M.I) ?
+        essoufflement:
+          type: boolean
+          title: Êtes-vous essoufflé(e) au moindre effort ?
+        a_eu_perfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une perfusion ?
+        a_eu_transfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une transfusion de sang ?
+        infos_complementaires:
+          type: string
+          title: Informations complémentaires sur votre état de santé
+          description: Toute information médicale pertinente (optionnel)
+      required:
+      - poids_kg
+      - simulation
+      - taille_cm
+    QuestionnaireMedicalDetail:
+      type: object
+      description: Serializer détaillé avec informations de la simulation
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation liée
+        date_remplissage:
+          type: string
+          format: date-time
+          readOnly: true
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+        taille_cm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Taille (cm)
+          description: 'Taille en centimètres (ex: 175.5)'
+        poids_kg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Poids (kg)
+          description: 'Poids en kilogrammes (ex: 75.5)'
+        imc:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_imc:
+          type: string
+          readOnly: true
+        tension_arterielle:
+          type: string
+          title: Tension artérielle
+          description: 'Format: 120/80 (optionnel)'
+          maxLength: 20
+        fumeur:
+          type: boolean
+        nb_cigarettes_jour:
+          type: integer
+          maximum: 100
+          minimum: 0
+          nullable: true
+          title: Nombre de cigarettes par jour
+          description: Si fumeur, indiquer le nombre (0-100)
+        consomme_alcool:
+          type: boolean
+          title: Consomme de l'alcool régulièrement
+        distractions:
+          type: string
+          title: Distractions / Loisirs
+          description: Activités de loisirs (optionnel)
+          maxLength: 200
+        pratique_sport:
+          type: boolean
+          title: Pratique du sport
+        type_sport:
+          type: string
+          title: Type de sport pratiqué
+          description: Si sport, préciser lequel
+          maxLength: 100
+        a_infirmite:
+          type: boolean
+          title: Êtes-vous atteint d'une infirmité ?
+        malade_6_derniers_mois:
+          type: boolean
+          title: Avez-vous été malade au cours des 6 derniers mois ?
+        souvent_fatigue:
+          type: boolean
+          title: Êtes-vous souvent fatigué(e) ?
+        perte_poids_recente:
+          type: boolean
+          title: Avez-vous maigri depuis les 6 derniers mois ?
+        prise_poids_recente:
+          type: boolean
+          title: Avez-vous grossi depuis les 6 derniers mois ?
+        a_ganglions:
+          type: boolean
+          title: Avez-vous des ganglions, des furoncles, des abcès ou des maladies
+            de la peau ?
+        fievre_persistante:
+          type: boolean
+          title: Toussez-vous depuis quelques temps avec en plus de la fièvre ?
+        plaies_buccales:
+          type: boolean
+          title: Avez-vous des plaies dans la bouche ?
+        diarrhee_frequente:
+          type: boolean
+          title: Faites-vous souvent la diarrhée ?
+        ballonnement:
+          type: boolean
+          title: Êtes-vous souvent ballonné(e) ?
+        oedemes_membres_inferieurs:
+          type: boolean
+          title: Avez-vous eu des œdèmes des Membres Inférieurs (O.M.I) ?
+        essoufflement:
+          type: boolean
+          title: Êtes-vous essoufflé(e) au moindre effort ?
+        a_eu_perfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une perfusion ?
+        a_eu_transfusion:
+          type: boolean
+          title: Avez-vous déjà reçu une transfusion de sang ?
+        infos_complementaires:
+          type: string
+          title: Informations complémentaires sur votre état de santé
+          description: Toute information médicale pertinente (optionnel)
+        nb_antecedents_medicaux:
+          type: string
+          readOnly: true
+        score_risque:
+          type: integer
+          readOnly: true
+        taux_surprime:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        categorie_risque:
+          type: string
+          readOnly: true
+        statut:
+          type: string
+          readOnly: true
+        commentaire_medical:
+          type: string
+          title: Commentaire médical
+          description: Remarques du validateur médical (si expertise requise)
+        createur:
+          type: string
+          format: uuid
+          nullable: true
+          title: Créé par
+        simulation_reference:
+          type: string
+          readOnly: true
+        simulation_statut:
+          type: string
+          readOnly: true
+        emprunteur_nom:
+          type: string
+          readOnly: true
+        emprunteur_prenom:
+          type: string
+          readOnly: true
+        details_calcul:
+          type: string
+          readOnly: true
+      required:
+      - categorie_imc
+      - categorie_risque
+      - date_modification
+      - date_remplissage
+      - details_calcul
+      - emprunteur_nom
+      - emprunteur_prenom
+      - id
+      - imc
+      - nb_antecedents_medicaux
+      - poids_kg
+      - score_risque
+      - simulation
+      - simulation_reference
+      - simulation_statut
+      - statut
+      - taille_cm
+      - taux_surprime
+    RoleEnum:
+      enum:
+      - SUPER_ADMIN
+      - ADMIN_NSIA
+      - RESPONSABLE_BANQUE
+      - GESTIONNAIRE
+      - SUPPORT
+      type: string
+      description: |-
+        * `SUPER_ADMIN` - Super Admin NSIA
+        * `ADMIN_NSIA` - Admin NSIA
+        * `RESPONSABLE_BANQUE` - Responsable Banque
+        * `GESTIONNAIRE` - Gestionnaire
+        * `SUPPORT` - Support Technique
+    Simulation:
+      type: object
+      description: Serializer pour le modèle Simulation (liste/détail)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: 'Ex: SIM-BGFI-20250106-001'
+        banque:
+          type: string
+          format: uuid
+        banque_nom:
+          type: string
+          readOnly: true
+        banque_code:
+          type: string
+          readOnly: true
+        gestionnaire:
+          type: string
+          format: uuid
+          nullable: true
+          title: Gestionnaire créateur
+        gestionnaire_nom:
+          type: string
+          readOnly: true
+        produit:
+          allOf:
+          - $ref: '#/components/schemas/ProduitEnum'
+          title: Type de produit
+        produit_display:
+          type: string
+          readOnly: true
+        statut:
+          $ref: '#/components/schemas/StatutC22Enum'
+        statut_display:
+          type: string
+          readOnly: true
+        donnees_entree:
+          title: Données d'entrée
+          description: Inputs de l'utilisateur (montant, durée, âge...)
+        resultats_calcul:
+          title: Résultats du calcul
+          description: Outputs du calculateur (primes, taux...)
+        nom_client:
+          type: string
+          title: Nom
+          maxLength: 100
+        prenom_client:
+          type: string
+          title: Prénom
+          maxLength: 100
+        email_client:
+          type: string
+          format: email
+          title: Email
+          maxLength: 254
+        telephone_client:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Dernière modification
+        date_validation:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de validation
+        montant_prime:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: Notes internes
+      required:
+      - banque
+      - banque_code
+      - banque_nom
+      - date_creation
+      - date_modification
+      - gestionnaire_nom
+      - id
+      - montant_prime
+      - produit
+      - produit_display
+      - reference
+      - statut_display
+    SimulationDetail:
+      type: object
+      description: Serializer détaillé pour une simulation (inclut plus d'infos)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: 'Ex: SIM-BGFI-20250106-001'
+        banque:
+          type: string
+          format: uuid
+        banque_nom:
+          type: string
+          readOnly: true
+        banque_code:
+          type: string
+          readOnly: true
+        gestionnaire:
+          type: string
+          format: uuid
+          nullable: true
+          title: Gestionnaire créateur
+        gestionnaire_nom:
+          type: string
+          readOnly: true
+        produit:
+          allOf:
+          - $ref: '#/components/schemas/ProduitEnum'
+          title: Type de produit
+        produit_display:
+          type: string
+          readOnly: true
+        statut:
+          $ref: '#/components/schemas/StatutC22Enum'
+        statut_display:
+          type: string
+          readOnly: true
+        donnees_entree:
+          title: Données d'entrée
+          description: Inputs de l'utilisateur (montant, durée, âge...)
+        resultats_calcul:
+          title: Résultats du calcul
+          description: Outputs du calculateur (primes, taux...)
+        nom_client:
+          type: string
+          title: Nom
+          maxLength: 100
+        prenom_client:
+          type: string
+          title: Prénom
+          maxLength: 100
+        email_client:
+          type: string
+          format: email
+          title: Email
+          maxLength: 254
+        telephone_client:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Dernière modification
+        date_validation:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de validation
+        montant_prime:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: Notes internes
+        peut_etre_convertie:
+          type: string
+          readOnly: true
+        souscription:
+          type: string
+          readOnly: true
+        ip_address:
+          type: string
+          nullable: true
+          title: Adresse IP
+        user_agent:
+          type: string
+          maxLength: 255
+      required:
+      - banque
+      - banque_code
+      - banque_nom
+      - date_creation
+      - date_modification
+      - gestionnaire_nom
+      - id
+      - montant_prime
+      - peut_etre_convertie
+      - produit
+      - produit_display
+      - reference
+      - souscription
+      - statut_display
+    Souscription:
+      type: object
+      description: Serializer pour le modèle Souscription
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: 'Ex: SOUSCR-BGFI-20250106-001'
+        simulation:
+          type: string
+          format: uuid
+          title: Simulation d'origine
+        simulation_reference:
+          type: string
+          readOnly: true
+        banque:
+          type: string
+          format: uuid
+        banque_nom:
+          type: string
+          readOnly: true
+        banque_code:
+          type: string
+          readOnly: true
+        gestionnaire:
+          type: string
+          format: uuid
+          nullable: true
+        gestionnaire_nom:
+          type: string
+          readOnly: true
+        statut:
+          $ref: '#/components/schemas/SouscriptionStatutEnum'
+        statut_display:
+          type: string
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          title: Prénom
+          maxLength: 100
+        date_naissance:
+          type: string
+          format: date
+          title: Date de naissance
+        age_souscripteur:
+          type: string
+          readOnly: true
+        lieu_naissance:
+          type: string
+          title: Lieu de naissance
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          title: Téléphone
+          maxLength: 20
+        adresse:
+          type: string
+          title: Adresse postale
+        profession:
+          type: string
+          maxLength: 100
+        employeur:
+          type: string
+          maxLength: 200
+        numero_compte:
+          type: string
+          title: N° compte
+          maxLength: 50
+        documents:
+          title: Documents attachés
+          description: Liste des documents fournis (CNI, justificatifs...)
+        numero_police:
+          type: string
+          readOnly: true
+          nullable: true
+          title: Numéro de police
+        date_effet_contrat:
+          type: string
+          format: date
+          nullable: true
+          title: Date d'effet du contrat
+        date_echeance_contrat:
+          type: string
+          format: date
+          nullable: true
+          title: Date d'échéance du contrat
+        montant_prime:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          title: Montant de la prime (FCFA)
+        donnees_produit:
+          title: Données spécifiques au produit
+        date_souscription:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de souscription
+        date_validation:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de validation
+        date_rejet:
+          type: string
+          format: date-time
+          nullable: true
+          title: Date de rejet
+        motif_rejet:
+          type: string
+          title: Motif de rejet
+        notes:
+          type: string
+          title: Notes internes
+        commentaires:
+          type: string
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Dernière modification
+      required:
+      - adresse
+      - age_souscripteur
+      - banque
+      - banque_code
+      - banque_nom
+      - date_modification
+      - date_naissance
+      - date_souscription
+      - email
+      - gestionnaire_nom
+      - id
+      - montant_prime
+      - nom
+      - numero_police
+      - prenom
+      - reference
+      - simulation
+      - simulation_reference
+      - statut_display
+      - telephone
+    SouscriptionStatutEnum:
+      enum:
+      - en_cours
+      - validee
+      - rejetee
+      - suspendue
+      - active
+      - resiliee
+      type: string
+      description: |-
+        * `en_cours` - En cours de traitement
+        * `validee` - Validée
+        * `rejetee` - Rejetée
+        * `suspendue` - Suspendue
+        * `active` - Active
+        * `resiliee` - Résiliée
+    StatutC22Enum:
+      enum:
+      - brouillon
+      - calculee
+      - validee
+      - convertie
+      - abandonnee
+      type: string
+      description: |-
+        * `brouillon` - Brouillon
+        * `calculee` - Calculée
+        * `validee` - Validée
+        * `convertie` - Convertie en souscription
+        * `abandonnee` - Abandonnée
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    Utilisateur:
+      type: object
+      description: Serializer pour le modèle Utilisateur
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Adresse électronique
+          maxLength: 254
+        first_name:
+          type: string
+          title: Prénom
+          maxLength: 150
+        last_name:
+          type: string
+          title: Nom
+          maxLength: 150
+        nom_complet:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          title: Rôle
+        banque:
+          type: string
+          format: uuid
+          nullable: true
+          description: Banque de rattachement (obligatoire pour Responsable et Gestionnaire)
+        banque_details:
+          allOf:
+          - $ref: '#/components/schemas/BanqueSimple'
+          readOnly: true
+        matricule:
+          type: string
+          nullable: true
+          maxLength: 50
+        telephone:
+          type: string
+          nullable: true
+          title: Téléphone
+          maxLength: 20
+        est_actif:
+          type: boolean
+          title: Actif
+        is_staff:
+          type: boolean
+          title: Statut équipe
+          description: Précise si l’utilisateur peut se connecter à ce site d'administration.
+        is_superuser:
+          type: boolean
+          title: Statut super-utilisateur
+          description: Précise que l’utilisateur possède toutes les permissions sans
+            les assigner explicitement.
+        date_creation:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de création
+        date_modification:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date de modification
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Dernière connexion
+      required:
+      - banque_details
+      - date_creation
+      - date_modification
+      - id
+      - last_login
+      - nom_complet
+      - username
+    UtilisateurCreate:
+      type: object
+      description: Serializer pour la création d'utilisateurs (avec password)
+      properties:
+        username:
+          type: string
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Adresse électronique
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          title: Prénom
+          maxLength: 150
+        last_name:
+          type: string
+          title: Nom
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          title: Rôle
+        banque:
+          type: string
+          format: uuid
+          nullable: true
+          description: Banque de rattachement (obligatoire pour Responsable et Gestionnaire)
+        matricule:
+          type: string
+          nullable: true
+          maxLength: 50
+        telephone:
+          type: string
+          nullable: true
+          title: Téléphone
+          maxLength: 20
+        est_actif:
+          type: boolean
+          title: Actif
+      required:
+      - password
+      - password_confirm
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

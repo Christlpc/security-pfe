@@ -1,0 +1,35 @@
+name: Deploy Gateway Configuration
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'api-security-fabric/contracts/**'
+      - 'api-security-fabric/config/**'
+      - 'api-security-fabric/scripts/**'
+
+jobs:
+  validate-and-deploy:
+    name: Validate and Sync with decK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup decK
+        run: |
+          curl -sL https://github.com/kong/deck/releases/download/v1.25.0/deck_1.25.0_linux_amd64.tar.gz -o deck.tar.gz
+          tar -xf deck.tar.gz
+          sudo cp deck /usr/local/bin/
+
+      - name: Regenerate Declarative Config
+        run: |
+          python3 api-security-fabric/scripts/transform.py
+
+      - name: Validate Configuration (decK)
+        run: |
+          deck validate -s api-security-fabric/config/kong.yaml
+
+      - name: Synchronize to Kong Admin API
+        run: |
+          deck sync -s api-security-fabric/config/kong.yaml --kong-addr ${{ secrets.KONG_ADMIN_URL }}
