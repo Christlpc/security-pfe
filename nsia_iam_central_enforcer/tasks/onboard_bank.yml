@@ -39,7 +39,6 @@
     access_token_lifespan: "{{ nsia_security_baseline.access_token_lifespan }}"
     sso_session_max_lifespan: "{{ nsia_security_baseline.sso_session_max_lifespan }}"
     sso_session_idle_timeout: "{{ nsia_security_baseline.sso_session_idle_lifespan }}"
-    smtp_server: "{{ nsia_master_smtp | combine(nsia_smtp_config | default({})) }}"
     email_theme: "nsia-platform-theme"
     login_theme: "nsia-platform-theme"
 

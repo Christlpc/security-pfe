@@ -20,18 +20,6 @@
     auth_header: "Bearer {{ login_token_output.json.access_token }}"
   no_log: true
 
-- name: "[NSIA] Récupération de la configuration SMTP du Master Realm"
-  ansible.builtin.uri:
-    url: "{{ keycloak_admin_url }}/admin/realms/master"
-    method: GET
-    headers:
-      Authorization: "{{ auth_header }}"
-  register: master_realm_output
-
-- name: "[NSIA] Extraction et propagation de la configuration SMTP"
-  ansible.builtin.set_fact:
-    nsia_master_smtp: "{{ master_realm_output.json.smtpServer | default({}) }}"
-
 
 # --- Sélection du Mode de Traitement ---
 
