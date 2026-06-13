@@ -72,12 +72,19 @@ Ce script extrait les clés de Keycloak et génère de manière déclarative la 
 ### 4. Déployer et Synchroniser avec decK
 Synchronisez l'état déclaré dans le fichier `kong.yaml` avec l'API Gateway Kong (en mode DB ou DB-less) :
 ```bash
-# Valider le schéma du fichier
-deck validate -s api-security-fabric/config/kong.yaml
+# Valider le schéma du fichier (Syntaxe v3+)
+deck file validate api-security-fabric/config/kong.yaml
 
-# Synchroniser l'état avec la Gateway
-deck sync -s api-security-fabric/config/kong.yaml --kong-addr http://localhost:8001
+# Synchroniser la configuration (Détection automatique DB-less robuste v3+)
+deck gateway sync api-security-fabric/config/kong.yaml --kong-addr http://localhost:8001
 ```
+
+#### Alternative en cas de problème de détection decK (cURL direct)
+Si decK ne détecte pas correctement le mode DB-less et tente d'utiliser l'API CRUD classique (erreur HTTP 405), vous pouvez charger la configuration directement en envoyant le fichier à l'API Gateway Kong :
+```bash
+curl -i -X POST http://localhost:8001/config -F config=@api-security-fabric/config/kong.yaml
+```
+
 
 
 ---
