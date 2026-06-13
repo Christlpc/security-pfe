@@ -89,9 +89,13 @@ def configure_kong_for_realm(realm, pem):
     try:
         urllib.request.urlopen(req)
         print(f"Consumer '{consumer_name}' created.")
-    except Exception:
-        # Consumer might already exist, which is fine
-        print(f"Consumer '{consumer_name}' already exists or creation skipped.")
+    except urllib.error.HTTPError as e:
+        if e.code == 409:
+            print(f"Consumer '{consumer_name}' already exists.")
+        else:
+            print(f"HTTP Error creating consumer '{consumer_name}': {e.code} - {e.read().decode('utf-8')}")
+    except Exception as e:
+        print(f"General error creating consumer '{consumer_name}': {e}")
 
     # 2. Add consumer to ACL group 'partners'
     acl_data = json.dumps({"group": "partners"}).encode('utf-8')
@@ -104,8 +108,14 @@ def configure_kong_for_realm(realm, pem):
     try:
         urllib.request.urlopen(req)
         print(f"Consumer '{consumer_name}' added to ACL group 'partners'.")
-    except Exception:
-        print(f"Consumer '{consumer_name}' already belongs to ACL group 'partners' or setup skipped.")
+    except urllib.error.HTTPError as e:
+        if e.code == 409:
+            print(f"Consumer '{consumer_name}' already belongs to ACL group 'partners'.")
+        else:
+            print(f"HTTP Error adding consumer '{consumer_name}' to ACL group 'partners': {e.code} - {e.read().decode('utf-8')}")
+    except Exception as e:
+        print(f"General error adding consumer '{consumer_name}' to ACL group 'partners': {e}")
+
 
     # 3. Register Keycloak Public Certificate in Kong JWT credentials list
     # We first delete any existing JWT config for this consumer to prevent conflicts
