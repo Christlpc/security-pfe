@@ -106,6 +106,7 @@ def generate_consumers_yaml(realms_keys):
         yaml_lines.append("    jwt_secrets:")
         yaml_lines.append(f"      - key: {issuer_url}")
         yaml_lines.append("        algorithm: RS256")
+        yaml_lines.append(f"        secret: {consumer_name}-secret")  # Dummy secret to satisfy decK schema
         yaml_lines.append("        rsa_public_key: |")
         
         # Indent the PEM public key by 10 spaces
@@ -113,6 +114,7 @@ def generate_consumers_yaml(realms_keys):
             yaml_lines.append("          " + line)
             
     return "\n".join(yaml_lines)
+
 
 def update_kong_yaml(consumers_yaml):
     script_dir = os.path.dirname(os.path.abspath(__file__))
