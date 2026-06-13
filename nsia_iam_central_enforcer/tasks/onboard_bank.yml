@@ -41,6 +41,11 @@
     sso_session_idle_timeout: "{{ nsia_security_baseline.sso_session_idle_lifespan }}"
     email_theme: "nsia-platform-theme"
     login_theme: "nsia-platform-theme"
+    internationalization_enabled: true
+    supported_locales:
+      - fr
+      - en
+    default_locale: fr
     attributes:
       frontendUrl: "{{ keycloak_frontend_url }}"
 
