@@ -53,6 +53,11 @@
             admin_username: "{{ input_admin_username.user_input | trim }}"
             admin_email: "{{ input_admin_email.user_input | trim }}"
             branches: "{{ (input_branches.user_input | trim).split(',') | map('trim') | list }}"
+
+    - name: Valider les saisies interactives
+      ansible.builtin.fail:
+        msg: "Erreur: Le nom de la banque et l'identifiant administrateur ne peuvent pas être vides."
+      when: (input_bank_name.user_input | trim == '') or (input_admin_username.user_input | trim == '')
   when: nsia_run_mode | default('all') == 'interactive'
 
 - name: "[NSIA MODE] Configuration pour le mode au cas par cas (single)"
@@ -67,6 +72,13 @@
         banks_to_process: ["{{ target_bank }}"]
       when: target_bank is defined and target_bank_name is not defined
   when: nsia_run_mode | default('all') == 'single'
+
+- name: "[NSIA MODE] Validation des paramètres du mode single"
+  ansible.builtin.fail:
+    msg: "Erreur: En mode 'single', vous devez spécifier une banque existante via 'target_bank_name' (ex: -e target_bank_name=ecobank)."
+  when:
+    - nsia_run_mode | default('all') == 'single'
+    - (banks_to_process is not defined) or (banks_to_process | length == 0)
 
 - name: "[NSIA MODE] Configuration pour le mode global (all)"
   ansible.builtin.set_fact:

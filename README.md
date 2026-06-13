@@ -124,3 +124,18 @@ Le système utilise le principe de **Défense en Profondeur** (Zero Trust) :
 
 3. **Génération de configuration de la Gateway & Sync** :
    *Consultez le guide détaillé dans le [README de l'API Security Fabric](./api-security-fabric/README.md) pour compiler et déployer la configuration via decK, puis exécuter les tests de sécurité (JWT, injection de gros payload, blocage ACL).*
+
+4. **Orchestration de la IAM Fabric via Ansible** :
+   Le rôle [`nsia_iam_central_enforcer`](./nsia_iam_central_enforcer) propose trois modes d'exécution pour le provisionnement de l'identité multi-tenant sur Keycloak :
+   * **Mode Global (all)** : Configure toutes les banques déclarées dans le registre `nsia_tenant_registry` (dans `defaults/main.yml`) de manière idempotente.
+     ```bash
+     ansible-playbook deploy_iam_platform.yml -e "nsia_run_mode=all"
+     ```
+   * **Mode Au cas par cas (single)** : Onboarde ou met à jour une seule banque spécifique en spécifiant son nom.
+     ```bash
+     ansible-playbook deploy_iam_platform.yml -e "nsia_run_mode=single target_bank_name=ecobank"
+     ```
+   * **Mode Interactif (interactive)** : Vous invite à saisir interactivement dans le terminal le nom de la banque, l'identifiant de son admin, son adresse e-mail et la liste de ses agences physiques (séparées par des virgules).
+     ```bash
+     ansible-playbook deploy_iam_platform.yml -e "nsia_run_mode=interactive"
+     ```
