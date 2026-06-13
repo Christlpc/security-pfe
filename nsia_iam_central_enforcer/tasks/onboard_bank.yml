@@ -133,16 +133,39 @@
     state: present
   register: siege_group_output
 
-- name: "[Realm {{ target_realm }}] Déploiement des sous-agences"
-  community.general.keycloak_group:
-    token: "{{ nsia_auth_token }}"
-    auth_keycloak_url: "{{ keycloak_admin_url }}"
-    realm: "{{ target_realm }}"
-    name: "{{ item }}"
-    parents:
-      - name: "{{ current_bank.name | upper }}-SIEGE"
-    state: present
+- name: "[Realm {{ target_realm }}] Obtenir l'ID du groupe racine SIÈGE"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: all_groups_output
+
+- name: "[Realm {{ target_realm }}] Extraire l'ID du groupe racine SIÈGE"
+  ansible.builtin.set_fact:
+    parent_group_id: "{{ all_groups_output.json | selectattr('name', 'equalto', current_bank.name | upper + '-SIEGE') | map(attribute='id') | first }}"
+
+- name: "[Realm {{ target_realm }}] Récupérer les sous-agences existantes"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups/{{ parent_group_id }}/children"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: existing_subgroups_output
+
+- name: "[Realm {{ target_realm }}] Déploiement des sous-agences (via REST API)"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/groups/{{ parent_group_id }}/children"
+    method: POST
+    headers:
+      Authorization: "{{ auth_header }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item }}"
+    status_code: [201]
   loop: "{{ current_bank.branches }}"
+  when: item not in (existing_subgroups_output.json | default([]) | map(attribute='name') | list)
 
 # 7. ENRÔLEMENT DE L'ADMINISTRATEUR AVEC COUCHE MFA FORCÉE (TOTP)
 - name: "[Realm {{ target_realm }}] Provisionning de l'administrateur local"
