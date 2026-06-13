@@ -8,6 +8,7 @@ import re
 
 # Base URLs dynamically resolved from environment variables
 KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "http://localhost:8080").rstrip("/")
+KEYCLOAK_FRONTEND_URL = os.environ.get("KEYCLOAK_FRONTEND_URL", KEYCLOAK_URL).rstrip("/")
 
 def parse_realms_from_defaults():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -98,7 +99,8 @@ def generate_consumers_yaml(realms_keys):
     for realm, pem in realms_keys.items():
         normalized_realm = realm.lower().replace("_", "-")
         consumer_name = f"keycloak-consumer-{normalized_realm}"
-        issuer_url = f"{KEYCLOAK_URL}/realms/{realm}"
+        issuer_url = f"{KEYCLOAK_FRONTEND_URL}/realms/{realm}"
+
         
         yaml_lines.append(f"  - username: {consumer_name}")
         yaml_lines.append("    acls:")
