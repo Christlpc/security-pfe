@@ -62,7 +62,7 @@ nsia_tenant_registry:
   - name: "bgfi"
     realm: "BANK_BGFI"
     admin_username: "bgfi_admin"
-    admin_email: "manuedja16@gmail.com"
+    admin_email: "manuedja6@gmail.com"
     branches:
       - "Brazzaville-Centre"
       - "Pointe-Noire"
@@ -80,7 +80,7 @@ nsia_tenant_registry:
   - name: "credit_du_congo"
     realm: "BANK_CREDIT_DU_CONGO"
     admin_username: "credit_du_congo_admin"
-    admin_email: "manuedja16@gmail.com"
+    admin_email: "manuedja1@gmail.com"
     branches:
       - "Moungali"
       - "Diata"
@@ -93,7 +93,7 @@ nsia_tenant_registry:
   - name: "bci"
     realm: "BANK_BCI"
     admin_username: "bci_admin"
-    admin_email: "manuedja16@gmail.com"
+    admin_email: "christlandzi2003@gmail.com"
     branches:
       - "Moungali"
       - "Diata"
@@ -106,7 +106,7 @@ nsia_tenant_registry:
   - name: "boa"
     realm: "BANK_BOA"
     admin_username: "boa_admin"
-    admin_email: "manuedja16@gmail.com"
+    admin_email: "angedjanal3@gmail.com"
     branches:
       - "Moungali"
       - "Diata"
