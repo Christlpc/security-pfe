@@ -88,7 +88,7 @@ yaml_output = []
 yaml_output.append('_format_version: "3.0"')
 yaml_output.append('services:')
 yaml_output.append('  - name: nsia-backend-service')
-yaml_output.append('    url: http://nsia_backend:8000') # NSIA backend service inside docker
+yaml_output.append('    url: http://nsia-api-metier:8000') # NSIA backend service inside docker
 yaml_output.append('    routes:')
 
 for r in routes:

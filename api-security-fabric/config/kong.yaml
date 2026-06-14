@@ -1,7 +1,7 @@
 _format_version: "3.0"
 services:
   - name: nsia-backend-service
-    url: http://nsia_backend:8000
+    url: http://nsia-api-metier:8000
     routes:
       - name: api-v1-banques-get
         paths:
