@@ -1025,7 +1025,8 @@ services:
     routes:
       - name: nsia-metier-route
         paths:
-          - /
+          - /api
+        strip_path: false
         plugins:
           - name: jwt
   - name: keycloak-service
