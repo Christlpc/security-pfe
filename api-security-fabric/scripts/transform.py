@@ -119,7 +119,7 @@ yaml_output.append('    url: http://nsia-api-metier:8000')
 yaml_output.append('    routes:')
 yaml_output.append('      - name: nsia-metier-route')
 yaml_output.append('        paths:')
-yaml_output.append('          - /api/v1/simulations')
+yaml_output.append('          - /')
 yaml_output.append('        plugins:')
 yaml_output.append('          - name: jwt')
 
