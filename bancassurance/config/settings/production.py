@@ -20,8 +20,9 @@ ALLOWED_HOSTS = config(
 # ============================================
 # PROTECTION HTTPS & COOKIES
 # ============================================
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+APPEND_SLASH = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
