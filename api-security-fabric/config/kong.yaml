@@ -8,6 +8,7 @@ services:
           - /api/v1/banques/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -23,6 +24,7 @@ services:
           - /api/v1/banques/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -38,6 +40,7 @@ services:
           - ~/api/v1/banques/(?<id>[^/]+)/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -53,6 +56,7 @@ services:
           - ~/api/v1/banques/(?<id>[^/]+)/
         methods:
           - PUT
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -68,6 +72,7 @@ services:
           - ~/api/v1/banques/(?<id>[^/]+)/
         methods:
           - PATCH
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -83,6 +88,7 @@ services:
           - ~/api/v1/banques/(?<id>[^/]+)/
         methods:
           - DELETE
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -98,6 +104,7 @@ services:
           - ~/api/v1/banques/(?<id>[^/]+)/utilisateurs/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -113,6 +120,7 @@ services:
           - /api/v1/simulations/elikia/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -137,6 +145,7 @@ services:
           - /api/v1/simulations/emprunteur/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -161,6 +170,7 @@ services:
           - /api/v1/simulations/etudes/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -185,6 +195,7 @@ services:
           - /api/v1/simulations/historique/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -209,6 +220,7 @@ services:
           - /api/v1/simulations/historique/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -233,6 +245,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -257,6 +270,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/
         methods:
           - PUT
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -281,6 +295,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/
         methods:
           - PATCH
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -305,6 +320,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/
         methods:
           - DELETE
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -329,6 +345,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/souscrire/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -353,6 +370,7 @@ services:
           - ~/api/v1/simulations/historique/(?<id>[^/]+)/valider/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -377,6 +395,7 @@ services:
           - /api/v1/simulations/mobateli/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -401,6 +420,7 @@ services:
           - /api/v1/simulations/questionnaires-medicaux/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -425,6 +445,7 @@ services:
           - /api/v1/simulations/questionnaires-medicaux/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -449,6 +470,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -473,6 +495,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
         methods:
           - PUT
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -497,6 +520,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
         methods:
           - PATCH
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -521,6 +545,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
         methods:
           - DELETE
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -545,6 +570,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/appliquer-a-simulation/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -569,6 +595,7 @@ services:
           - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/recalculer-surprime/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -593,6 +620,7 @@ services:
           - /api/v1/simulations/questionnaires-medicaux/bareme/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -617,6 +645,7 @@ services:
           - /api/v1/simulations/retraite/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -641,6 +670,7 @@ services:
           - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/bia-info/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -665,6 +695,7 @@ services:
           - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/export-bia/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -689,6 +720,7 @@ services:
           - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/preview-bia/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -713,6 +745,7 @@ services:
           - /api/v1/simulations/souscriptions/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -737,6 +770,7 @@ services:
           - /api/v1/simulations/souscriptions/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -761,6 +795,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -785,6 +820,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
         methods:
           - PUT
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -809,6 +845,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
         methods:
           - PATCH
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -833,6 +870,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
         methods:
           - DELETE
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -857,6 +895,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/rejeter/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -881,6 +920,7 @@ services:
           - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/valider/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: jwt
             config:
@@ -905,6 +945,7 @@ services:
           - /api/v1/utilisateurs/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -920,6 +961,7 @@ services:
           - /api/v1/utilisateurs/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -935,6 +977,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/
         methods:
           - GET
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -950,6 +993,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/
         methods:
           - PUT
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -965,6 +1009,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/
         methods:
           - PATCH
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -980,6 +1025,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/
         methods:
           - DELETE
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -995,6 +1041,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/reset_password/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: key-auth
             config:
@@ -1010,6 +1057,7 @@ services:
           - ~/api/v1/utilisateurs/(?<id>[^/]+)/toggle_status/
         methods:
           - POST
+        strip_path: false
         plugins:
           - name: key-auth
             config:

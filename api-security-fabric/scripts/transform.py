@@ -100,6 +100,7 @@ for r in routes:
     yaml_output.append(f'          - {path_val}')
     yaml_output.append('        methods:')
     yaml_output.append(f'          - {r["method"]}')
+    yaml_output.append('        strip_path: false')
     
     # Load and inject plugins for this profile
     plugins = load_profile_plugins(r["profile"])
