@@ -1087,8 +1087,8 @@ certificates:
       37k5S/Fvdyf/m64fFHFycgy0
       -----END PRIVATE KEY-----
     snis:
-      - localhost
-      - nsia-pfe-api
+      - name: localhost
+      - name: nsia-pfe-api
 
 consumers:
   - username: test-partner
