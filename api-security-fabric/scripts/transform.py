@@ -133,6 +133,31 @@ yaml_output.append('        paths:')
 yaml_output.append('          - /')
 yaml_output.append('        strip_path: false')
 
+# Read and inject certificates if they exist
+cert_path = os.path.abspath(os.path.join(base_dir, "../kong.crt"))
+key_path = os.path.abspath(os.path.join(base_dir, "../kong.key"))
+
+if os.path.exists(cert_path) and os.path.exists(key_path):
+    try:
+        with open(cert_path, "r", encoding="utf-8") as f:
+            cert_content = f.read()
+        with open(key_path, "r", encoding="utf-8") as f:
+            key_content = f.read()
+            
+        yaml_output.append("certificates:")
+        yaml_output.append("  - cert: |")
+        for line in cert_content.strip().splitlines():
+            yaml_output.append("      " + line)
+        yaml_output.append("    key: |")
+        for line in key_content.strip().splitlines():
+            yaml_output.append("      " + line)
+        yaml_output.append("    snis:")
+        yaml_output.append("      - name: localhost")
+        yaml_output.append("      - name: nsia-pfe-api")
+        print("Certificates injected successfully into yaml_output!")
+    except Exception as e:
+        print(f"Error injecting certificates: {e}")
+
 # Ensure the output directory exists
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 

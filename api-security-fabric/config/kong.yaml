@@ -1036,6 +1036,59 @@ services:
         paths:
           - /
         strip_path: false
+certificates:
+  - cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDDzCCAfegAwIBAgIUORhgjWfi0RP4JcoxJ9MBAtGZHCkwDQYJKoZIhvcNAQEL
+      BQAwFzEVMBMGA1UEAwwMbnNpYS1wZmUtYXBpMB4XDTI2MDYxNDAyNDIxNloXDTI3
+      MDYxNDAyNDIxNlowFzEVMBMGA1UEAwwMbnNpYS1wZmUtYXBpMIIBIjANBgkqhkiG
+      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJQHy6vxY/K8qD+MEZmXjJpasONCjguuWVSe
+      geWq+l8ndqZNKIDTQ42fjma1tVXC1gr/icjL+phd2iEDoEdco/ypEAcTRCn5M6Mb
+      o5iKXVi2N2X0mcn1QEwNK3ntdH+Q+2Wa6UNx6ebD6z0/cYBITecv5Xwesx7/l3vc
+      Z3O8NOJ24oveqi3rT1oCV6BdOpnkX8A3do28CTCLM35uoQZSeaWsYvYUYginRilx
+      Yje5oPkk1hUbGx8nwaJOUxGEVdOZ3fqrC7YNg/Th5Hkyp3wEq4Z4ANp4bkxSTqbj
+      n5+PJBt30KGtAtdaZunxgi467/S66hKPxGpO92zzScqKsLR6TQIDAQABo1MwUTAd
+      BgNVHQ4EFgQUDTPCu/IYYDZYijP0j4/Tdl6nfxEwHwYDVR0jBBgwFoAUDTPCu/IY
+      YDZYijP0j4/Tdl6nfxEwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC
+      AQEAiVXqLbWyt1cks0Ga62Fzj8uan8d7ff79L+xq06/h1mHm+kwt0tUKPx/lFhnc
+      eB6KJfHPCkDN520LTwDDA1Bhinju5tDFu3tlVFjnY+MhhOreCvDF29yYdPCkMnYP
+      fIHXGWOKlUPfhZLXL84reA9du70BltrqRPTjxadLPWOnd+RU780f7cztvZ8/SBtx
+      F+4NxDFyhCxabegqSL0XylN6BrNhGClM9rbsFBxDMKvYFZ0JgFpc94gqEjb4Zf3o
+      AGR/wp/99JNXpetnuin4IZv9Ko3xZk/IH24J7RI+p4yW0O8K2A0QvtqfZKJ7Hm9S
+      Ai+nllfi6o5HfLEfp0yqMvOTuA==
+      -----END CERTIFICATE-----
+    key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCglAfLq/Fj8ryo
+      P4wRmZeMmlqw40KOC65ZVJ6B5ar6Xyd2pk0ogNNDjZ+OZrW1VcLWCv+JyMv6mF3a
+      IQOgR1yj/KkQBxNEKfkzoxujmIpdWLY3ZfSZyfVATA0ree10f5D7ZZrpQ3Hp5sPr
+      PT9xgEhN5y/lfB6zHv+Xe9xnc7w04nbii96qLetPWgJXoF06meRfwDd2jbwJMIsz
+      fm6hBlJ5paxi9hRiCKdGKXFiN7mg+STWFRsbHyfBok5TEYRV05nd+qsLtg2D9OHk
+      eTKnfASrhngA2nhuTFJOpuOfn48kG3fQoa0C11pm6fGCLjrv9LrqEo/Eak73bPNJ
+      yoqwtHpNAgMBAAECggEACpUW2m5PbzXNBw2BDpvfp+14MpYXicLtT4fLFmZrWSqy
+      MBiPly6+PYJ01G6iZPvs5iw9YPgxsScfcEOiuIpbaZc6EQtWUrStbqC+Lo7b94Dk
+      KUx3zTbJCd65M3dKldXeWSL+DYdbV33UxYj4yGMa4L9uoaIHZ+iQEYyhHtQ6wAVd
+      8WEilhIHpFNTvpMw11P+ZjduN9fNzwgPdf1yjK2HmGbOpBWa0vzGm2AwXuJGFwhI
+      1EOvek5ENNSS7nC1oqi4efLTjQH5hmdKOEDri+azgdY2NivcK8NFx1QUao8Lj/Kw
+      JUyhR7l9H4lmZiLVoWAss66SsCOVx4ZyaFqUe5TAYQKBgQDRiOmCtTCpzkeq5Mjr
+      oUqNqLlCfScgZeEXCCZipihwBGs2bgwvggJFDneTCBGl+OtAc7006JCW7krOWh0T
+      BoHYyy/olqlvss4OYeH+7FBgYQIeTJrylI237nj+uO3bd8bUcn3AzM0nKyUp3l74
+      lRrlWOJ17YTU40S/dTNQU/H2RQKBgQDEL+bDI5nA64ca78r4xRArfhNwEWeyDYkJ
+      tkkEzOzseqhZsJ3aK72Afz/XpmUV5AQt9/olBwGkvEwxYCufC/bSSD0CIFEp6njh
+      4ZjQdaDrNX3jBFJZ857cIhHQWteCxfshYgGg6dQXyd/P6ATbFsIAfUGBWN2oXUlX
+      DOaaq+AYaQKBgQCU2UnozIZRWnSW9ge1O9MWZvGURgvxe+42yldaZOb9DGaNOAf4
+      B8dM/0X6cRT4bqfQFWgnmb59ObJyfJmC1nCPbWgPNlgPPVob5XUB/yXqEX/Lvmek
+      Q9uY+hOCACUYbzIT4XFr8REb7g5se8fDl0iP/GCDncNq6DgCOmPFgJy2cQKBgQCn
+      5fLQuCwCrc8PX37Ojh/7iMdr1olvGSRZenZdNF/jNknTkFJXf62LRdvGW/IQ3PYy
+      vRGIFMn0SO3QJ+TNFbkjV41Wv3+WpsLTVXWpmbGg+kOFQJKVxugCrumd7dCYa4Uz
+      maOZKeRIg40WahOVyJE5R/kCkKIKT+PPKwxD/KopWQKBgBBQPaPb8j6N/WUGrm4C
+      3qbOCc7ptCQ2ZVLsz4f7B94H8Lyn5w6xMl0QufbA2faPfUXsgkOCthNVx9tlNZ4i
+      2pU8hOQfdMgVBtha2ntfvOX7EHPFIvF7SToml53tpq8wHyEFKU5ISiLyA+es/5T/
+      37k5S/Fvdyf/m64fFHFycgy0
+      -----END PRIVATE KEY-----
+    snis:
+      - name: localhost
+      - name: nsia-pfe-api
 
 consumers:
   - username: test-partner
