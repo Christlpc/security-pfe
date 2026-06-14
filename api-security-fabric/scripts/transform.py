@@ -152,8 +152,8 @@ if os.path.exists(cert_path) and os.path.exists(key_path):
         for line in key_content.strip().splitlines():
             yaml_output.append("      " + line)
         yaml_output.append("    snis:")
-        yaml_output.append("      - name: localhost")
-        yaml_output.append("      - name: nsia-pfe-api")
+        yaml_output.append("      - localhost")
+        yaml_output.append("      - nsia-pfe-api")
         print("Certificates injected successfully into yaml_output!")
     except Exception as e:
         print(f"Error injecting certificates: {e}")
