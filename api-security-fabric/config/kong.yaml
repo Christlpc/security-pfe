@@ -1020,6 +1020,14 @@ services:
             config:
                 allow:
                   - admins
+  - name: nsia-metier-service
+    url: http://nsia-api-metier:8000
+    routes:
+      - name: nsia-metier-route
+        paths:
+          - /api/v1/simulations
+        plugins:
+          - name: jwt
   - name: keycloak-service
     url: http://keycloak-iam:8080
     routes:

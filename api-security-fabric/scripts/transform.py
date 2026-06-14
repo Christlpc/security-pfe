@@ -113,6 +113,16 @@ for r in routes:
                     # re-indent
                     yaml_output.append("          " + config_line)
 
+# Append nsia-metier-service as requested by user
+yaml_output.append('  - name: nsia-metier-service')
+yaml_output.append('    url: http://nsia-api-metier:8000')
+yaml_output.append('    routes:')
+yaml_output.append('      - name: nsia-metier-route')
+yaml_output.append('        paths:')
+yaml_output.append('          - /api/v1/simulations')
+yaml_output.append('        plugins:')
+yaml_output.append('          - name: jwt')
+
 # Append Keycloak service to restore access through the gateway
 yaml_output.append('  - name: keycloak-service')
 yaml_output.append('    url: http://keycloak-iam:8080')
