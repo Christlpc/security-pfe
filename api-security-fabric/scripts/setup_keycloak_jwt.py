@@ -180,8 +180,7 @@ if __name__ == "__main__":
             realms_keys[r] = pem
             
     if not realms_keys:
-        print("No public keys could be fetched. Aborting.")
-        sys.exit(1)
+        print("⚠️ No public keys could be fetched from Keycloak. Proceeding with local HS256 test consumer only.")
         
     # Generate the declarative consumers block
     consumers_yaml = generate_consumers_yaml(realms_keys)

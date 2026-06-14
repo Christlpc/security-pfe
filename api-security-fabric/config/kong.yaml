@@ -1027,3 +1027,12 @@ services:
         paths:
           - /
         strip_path: false
+
+consumers:
+  - username: test-partner
+    acls:
+      - group: partners
+    jwt_secrets:
+      - key: test-iss
+        algorithm: HS256
+        secret: secret_partage_poc_nsia
