@@ -5,12 +5,14 @@
 - name: Déploiement sécurisé du Secret Keycloak depuis les variables d'environnement du pipeline
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', 'k8s/templates/secret-keycloak.yaml.j2') | from_yaml }}"
+    # On utilise playbook_dir pour remonter d'un dossier (../) puis cibler k8s/
+    definition: "{{ lookup('template', playbook_dir + '/../k8s/templates/secret-keycloak.yaml') | from_yaml }}"
 
 - name: Application du déploiement de l'infrastructure Keycloak
   kubernetes.core.k8s:
     state: present
-    src: k8s/deployment-keycloak.yaml
+    # Même principe pour le fichier de déploiement
+    src: "{{ playbook_dir }}/../k8s/deployment-keycloak.yaml"
 
 - name: "[NSIA] Authentification unique auprès du Master Control Plane"
   ansible.builtin.uri:

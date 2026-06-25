@@ -1146,3 +1146,18 @@ consumers:
       - key: test-iss
         algorithm: HS256
         secret: secret_partage_poc_nsia
+  
+  # Configuration pour valider les tokens émis par Keycloak (Multi-tenant)
+  - username: keycloak-master
+    jwt_secrets:
+      - key: http://localhost:8080/realms/master
+        algorithm: RS256
+        secret: "ignored_for_rs256"
+        rsa_public_key: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJQHy6vxY/K8qD+MEZmX\njJpasONCjguuWVSegeWq+l8ndqZNKIDTQ42fjma1tVXC1gr/icjL+phd2iEDoEdc\no/ypEAcTRCn5M6Mbo5iKXVi2N2X0mcn1QEwNK3ntdH+Q+2Wa6UNx6ebD6z0/cYBI\ntecv5Xwesx7/l3vcZ3O8NOJ24oveqi3rT1oCV6BdOpnkX8A3do28CTCLM35uoQZS\neaWsYvYUYginRilxYje5oPkk1hUbGx8nwaJOUxGEVdOZ3fqrC7YNg/Th5Hkyp3wE\nq4Z4ANp4bkxSTqbjn5+PJBt30KGtAtdaZunxgi467/S66hKPxGpO92zzScqKsLR6\nTQIDAQAB\n-----END PUBLIC KEY-----"
+
+  - username: keycloak-bank-lcb
+    jwt_secrets:
+      - key: http://localhost:8080/realms/BANK_LCB
+        algorithm: RS256
+        secret: "ignored_for_rs256"
+        rsa_public_key: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJQHy6vxY/K8qD+MEZmX\njJpasONCjguuWVSegeWq+l8ndqZNKIDTQ42fjma1tVXC1gr/icjL+phd2iEDoEdc\no/ypEAcTRCn5M6Mbo5iKXVi2N2X0mcn1QEwNK3ntdH+Q+2Wa6UNx6ebD6z0/cYBI\ntecv5Xwesx7/l3vcZ3O8NOJ24oveqi3rT1oCV6BdOpnkX8A3do28CTCLM35uoQZS\neaWsYvYUYginRilxYje5oPkk1hUbGx8nwaJOUxGEVdOZ3fqrC7YNg/Th5Hkyp3wE\nq4Z4ANp4bkxSTqbjn5+PJBt30KGtAtdaZunxgi467/S66hKPxGpO92zzScqKsLR6\nTQIDAQAB\n-----END PUBLIC KEY-----"
