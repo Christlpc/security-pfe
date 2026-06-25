@@ -1,5 +1,3 @@
----
-
 # Ansible Role: nsia_iam_central_enforcer
 
 =========
