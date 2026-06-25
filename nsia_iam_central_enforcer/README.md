@@ -1,5 +1,3 @@
-Voici le fichier `README.md` rédigé et structuré en respectant scrupuleusement le canevas standard généré par Ansible Galaxy, adapté précisément aux exigences DevSecOps, fonctionnelles et juridiques de ton projet de fin d'études pour NSIA Assurance.
-
 ---
 
 # Ansible Role: nsia_iam_central_enforcer
