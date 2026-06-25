@@ -38,4 +38,26 @@ jobs:
             echo "⚡ Redémarrage du serveur backend..."
             sudo systemctl restart bancassurance || sudo systemctl restart gunicorn || echo "⚠️ Service systemd non redémarré (redémarrage manuel requis)"
             
-            echo "✅ Déploiement du backend terminé avec succès !"
+            echo "📦 Construction de l'image Docker du frontend Next.js..."
+            cd ~/pfe-nsia-bancassurance/security-pfe/NSIA_Banque
+            sudo docker build \
+              --build-arg NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
+              --build-arg NEXT_PUBLIC_KEYCLOAK_CLIENT_ID="${{ secrets.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID }}" \
+              --build-arg KEYCLOAK_ISSUER="${{ secrets.KEYCLOAK_ISSUER }}" \
+              -t nsia-frontend:latest .
+
+            echo "⚡ Lancement du conteneur Docker frontend..."
+            sudo docker stop nsia-frontend || true
+            sudo docker rm nsia-frontend || true
+            sudo docker run -d \
+              --name nsia-frontend \
+              -p 3000:3000 \
+              --restart always \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e KEYCLOAK_CLIENT_SECRET="${{ secrets.KEYCLOAK_CLIENT_SECRET }}" \
+              -e KEYCLOAK_ISSUER="${{ secrets.KEYCLOAK_ISSUER }}" \
+              -e NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
+              nsia-frontend:latest
+
+            echo "✅ Déploiement du backend et du frontend terminé avec succès !"
