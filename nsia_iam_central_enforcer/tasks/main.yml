@@ -2,6 +2,16 @@
 ---
 # tasks file for nsia_iam_central_enforcer
 
+- name: Déploiement sécurisé du Secret Keycloak depuis les variables d'environnement du pipeline
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'k8s/templates/secret-keycloak.yaml.j2') | from_yaml }}"
+
+- name: Application du déploiement de l'infrastructure Keycloak
+  kubernetes.core.k8s:
+    state: present
+    src: k8s/deployment-keycloak.yaml
+
 - name: "[NSIA] Authentification unique auprès du Master Control Plane"
   ansible.builtin.uri:
     url: "{{ keycloak_admin_url }}/realms/master/protocol/openid-connect/token"
