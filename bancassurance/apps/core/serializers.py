@@ -196,15 +196,28 @@ class UtilisateurCreateSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        """Créer l'utilisateur avec password hashé"""
+        """Créer l'utilisateur avec password hashé et provisionnement Keycloak"""
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
         
-        user = Utilisateur.objects.create_user(
-            password=password,
-            **validated_data
-        )
+        # 1. Instancier l'utilisateur Django en mémoire
+        user = Utilisateur(**validated_data)
+        
+        # 2. Provisionner dans Keycloak
+        try:
+            from apps.core.keycloak_sync import sync_django_user_to_keycloak
+            user_id = sync_django_user_to_keycloak(user, password)
+            user.id = user_id
+        except Exception as e:
+            raise serializers.ValidationError({
+                'non_field_errors': [f"Échec de la synchronisation IAM (Keycloak) : {str(e)}"]
+            })
+            
+        # 3. Sauvegarder dans la DB locale
+        user.set_password(password)
+        user.save()
         return user
+
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

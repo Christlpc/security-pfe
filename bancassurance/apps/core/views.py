@@ -395,10 +395,22 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def toggle_status(self, request, pk=None):
         """
-        Activer/Désactiver un utilisateur
+        Activer/Désactiver un utilisateur avec Keycloak
         """
         utilisateur = self.get_object()
-        utilisateur.est_actif = not utilisateur.est_actif
+        new_status = not utilisateur.est_actif
+        
+        # Mettre à jour Keycloak
+        try:
+            from apps.core.keycloak_sync import update_keycloak_user_status
+            update_keycloak_user_status(utilisateur, new_status)
+        except Exception as e:
+            return Response(
+                {'error': f"Impossible de mettre à jour le statut dans Keycloak : {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        utilisateur.est_actif = new_status
         utilisateur.save()
         
         return Response({
@@ -411,14 +423,8 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
         """
         POST /api/v1/utilisateurs/{id}/reset_password/
 
-        Reset administratif du mot de passe d'un utilisateur.
+        Reset administratif du mot de passe d'un utilisateur avec Keycloak.
         Réservé aux Super Admin et Admin NSIA.
-
-        Sécurité :
-          • Seuls SUPER_ADMIN et ADMIN_NSIA peuvent utiliser cet endpoint
-          • Le nouveau MDP est validé par les validators Django
-          • Confirmation requise (new_password + confirm_password)
-          • Audit log de l'opération
         """
         # Vérification du rôle
         if not (request.user.est_super_admin or request.user.est_admin_nsia):
@@ -431,7 +437,19 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
         serializer = AdminPasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        utilisateur.set_password(serializer.validated_data['new_password'])
+        new_password = serializer.validated_data['new_password']
+
+        # Mettre à jour Keycloak
+        try:
+            from apps.core.keycloak_sync import reset_keycloak_user_password
+            reset_keycloak_user_password(utilisateur, new_password)
+        except Exception as e:
+            return Response(
+                {'error': f"Impossible de réinitialiser le mot de passe dans Keycloak : {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        utilisateur.set_password(new_password)
         utilisateur.save(update_fields=['password'])
 
         # Audit
@@ -447,6 +465,7 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
         return Response({
             'message': f'Mot de passe de {utilisateur.get_full_name()} réinitialisé avec succès.'
         })
+
     
 
 class AgenceViewSet(viewsets.ModelViewSet):

@@ -213,6 +213,12 @@ FRONTEND_BASE_URL = config(
     default='http://localhost:3000'
 )
 
+# Keycloak Administration Integration
+KEYCLOAK_URL = config('KEYCLOAK_URL', default='http://keycloak.nsia-iam.svc.cluster.local:8080')
+KEYCLOAK_ADMIN_USER = config('KEYCLOAK_ADMIN_USER', default='Nsia_admin')
+KEYCLOAK_ADMIN_PASSWORD = config('KEYCLOAK_ADMIN_PASSWORD', default='222_Jme_0075')
+
+
 # DRF Spectacular (Swagger/OpenAPI)
 SPECTACULAR_SETTINGS = {
     'TITLE': 'NSIA Assurances API',
