@@ -36,11 +36,11 @@ body, html {
 
 .login-left-panel {
     flex: 1;
-    background-color: #ffffff;
+    background: linear-gradient(to bottom, #f8fafc, #ffffff);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     padding: 40px 20px;
     overflow-y: auto;
 }
@@ -50,19 +50,57 @@ body, html {
     max-width: 440px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    margin-top: auto;
-    margin-bottom: auto;
+    align-items: center;
+    gap: 30px;
 }
 
 .login-right-panel {
     flex: 1.2;
-    background: linear-gradient(135deg, #002D62 0%, #1e3a8a 50%, #4f46e5 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #4338ca 50%, #6b21a8 100%);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 60px;
+}
+
+/* Blur Shapes on Right Panel */
+.blur-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    mix-blend-mode: multiply;
+    opacity: 0.15;
+    pointer-events: none;
+}
+.blur-shape-1 {
+    top: 15%;
+    left: 15%;
+    width: 350px;
+    height: 350px;
+    background-color: #60a5fa;
+    animation: pulse-slow 8s infinite alternate;
+}
+.blur-shape-2 {
+    bottom: 15%;
+    right: 15%;
+    width: 350px;
+    height: 350px;
+    background-color: #c084fc;
+    animation: pulse-slow 8s infinite alternate 2s;
+}
+.blur-shape-3 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    background-color: #818cf8;
+    opacity: 0.08;
+}
+@keyframes pulse-slow {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
 }
 
 /* Grid Overlay on Right Panel */
@@ -72,10 +110,10 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
-    background-size: 40px 40px;
+    background-size: 50px 50px;
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     pointer-events: none;
 }
 
@@ -94,42 +132,50 @@ body, html {
 .dual-branding {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 15px;
     margin-bottom: 5px;
 }
 
 .nsia-logo-container {
-    background-color: #ffffff;
-    border-radius: 16px;
+    position: relative;
+    background-color: #2563eb; /* bg-blue-600 */
+    border-radius: 20px; /* rounded-2xl */
     padding: 8px;
-    box-shadow: 0 4px 15px rgba(0, 45, 98, 0.12);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 72px;
-    height: 72px;
-    border: 1px solid var(--border-color);
+    width: 96px;
+    height: 96px;
+    border: 1px solid #3b82f6;
 }
 
 .nsia-logo {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 90%;
+    max-height: 90%;
     object-fit: contain;
 }
 
 .branding-separator {
-    font-size: 24px;
+    font-size: 28px;
     color: var(--text-muted);
-    font-weight: 300;
+    font-weight: 200;
 }
 
 .bank-logo-container {
     display: flex;
     align-items: center;
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    height: 64px;
 }
 
 .bank-logo {
-    height: 48px;
+    height: 40px;
     object-fit: contain;
 }
 
@@ -142,22 +188,28 @@ body, html {
 }
 
 .institutional-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1a202c;
+    font-size: 30px;
+    font-weight: 800;
+    background: linear-gradient(to right, #111827, #374151);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
     margin: 0;
 }
 
 /* Login Box Card */
 .login-box-card {
+    width: 100%;
     background: #ffffff;
-    border-radius: 20px;
-    border: 1px solid #edf2f7;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+    border-radius: 24px; /* rounded-2xl */
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     padding: 35px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    text-align: left;
 }
 
 .login-box-title {
@@ -165,12 +217,14 @@ body, html {
     font-weight: 700;
     color: #1a202c;
     margin: 0;
+    text-align: center; /* Center form header in the card! */
 }
 
 .login-box-subtitle {
     font-size: 14px;
     color: var(--text-muted);
     margin-top: 5px;
+    text-align: center;
 }
 
 /* Alert Banner */

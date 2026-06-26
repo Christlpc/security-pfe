@@ -129,6 +129,9 @@
     
     <!-- RIGHT SIDE: Presentational Panel -->
     <div class="login-right-panel">
+        <div class="blur-shape blur-shape-1"></div>
+        <div class="blur-shape blur-shape-2"></div>
+        <div class="blur-shape blur-shape-3"></div>
         <div class="grid-overlay"></div>
         <div class="login-right-content">
             <span class="badge-secure">
