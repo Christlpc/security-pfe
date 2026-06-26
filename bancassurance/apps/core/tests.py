@@ -232,3 +232,99 @@ class MultiTenancyORMAccessTestCase(TestCase):
         # Nettoyer les thread locals
         set_current_user(None)
         set_current_banque(None)
+
+
+from unittest.mock import patch, Mock
+
+class KeycloakUserSyncTestCase(TestCase):
+    """
+    Tests unitaires pour la synchronisation des utilisateurs avec Keycloak.
+    """
+    def setUp(self):
+        self.banque = Banque.objects.create(
+            code_banque="ECOBANK",
+            nom_complet="Ecobank Congo",
+            email_contact="contact@ecobank.com"
+        )
+        self.agence = Agence.objects.create(
+            banque=self.banque,
+            code="ECOBANK-SIEGE",
+            nom="Siège ECOBANK"
+        )
+        self.user = User(
+            username="new_agent_test",
+            email="new_agent@ecobank.com",
+            first_name="Alice",
+            last_name="Mamba",
+            role=User.Role.GESTIONNAIRE,
+            banque=self.banque,
+            agence=self.agence,
+            est_actif=True
+        )
+
+    @patch('requests.post')
+    @patch('requests.get')
+    def test_sync_django_user_to_keycloak(self, mock_get, mock_post):
+        # Configurer les mocks
+        # 1. Jeton admin Keycloak
+        token_response = Mock()
+        token_response.status_code = 200
+        token_response.json.return_value = {'access_token': 'mock-admin-token'}
+        
+        # 2. Création de l'utilisateur (201 Created)
+        create_response = Mock()
+        create_response.status_code = 201
+        create_response.headers = {'Location': 'http://localhost:8080/admin/realms/BANK_ECOBANK/users/mock-user-uuid-1234'}
+        
+        # 3. Association du rôle
+        # GET role details
+        role_response = Mock()
+        role_response.status_code = 200
+        role_response.json.return_value = {'id': 'role-uuid-5678', 'name': 'BANK_AGENCY_OPERATOR'}
+        
+        # POST role mapping
+        map_response = Mock()
+        map_response.status_code = 204
+        
+        mock_post.side_effect = [token_response, create_response, map_response]
+        mock_get.return_value = role_response
+        
+        from apps.core.keycloak_sync import sync_django_user_to_keycloak
+        
+        user_uuid = sync_django_user_to_keycloak(self.user, "TempP@ssword12!")
+        
+        self.assertEqual(user_uuid, 'mock-user-uuid-1234')
+        
+        # Vérifier que requests.post a été appelé pour la création
+        self.assertEqual(mock_post.call_count, 3)
+        # Premier appel : login token admin
+        # Deuxième appel : création utilisateur Keycloak (avec les attributs corrects)
+        create_call_args = mock_post.call_args_list[1]
+        self.assertIn('BANK_ECOBANK/users', create_call_args[0][0])
+        payload = create_call_args[1]['json']
+        self.assertEqual(payload['username'], 'new_agent_test')
+        self.assertEqual(payload['attributes']['bank'], ['ECOBANK'])
+        self.assertEqual(payload['attributes']['agency'], ['ECOBANK-SIEGE'])
+        self.assertEqual(payload['attributes']['scope'], ['BANK'])
+
+    @patch('requests.put')
+    @patch('requests.post')
+    def test_update_keycloak_user_status(self, mock_post, mock_put):
+        token_response = Mock()
+        token_response.status_code = 200
+        token_response.json.return_value = {'access_token': 'mock-admin-token'}
+        mock_post.return_value = token_response
+        
+        put_response = Mock()
+        put_response.status_code = 204
+        mock_put.return_value = put_response
+        
+        from apps.core.keycloak_sync import update_keycloak_user_status
+        self.user.id = uuid.uuid4()
+        
+        update_keycloak_user_status(self.user, False)
+        
+        mock_put.assert_called_once()
+        self.assertIn(str(self.user.id), mock_put.call_args[0][0])
+        self.assertEqual(mock_put.call_args[1]['json']['enabled'], False)
+
