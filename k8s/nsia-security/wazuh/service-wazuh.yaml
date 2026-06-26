@@ -1,0 +1,23 @@
+# ============================================================
+# Wazuh Manager — Service ClusterIP
+# Ports : 1514 (agents), 1515 (registration), 55000 (API)
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-manager
+  namespace: nsia-security
+spec:
+  type: ClusterIP
+  ports:
+    - port: 1514
+      targetPort: 1514
+      name: agent
+    - port: 1515
+      targetPort: 1515
+      name: registration
+    - port: 55000
+      targetPort: 55000
+      name: api
+  selector:
+    app: wazuh-manager

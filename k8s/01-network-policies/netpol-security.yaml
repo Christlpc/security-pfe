@@ -1,0 +1,48 @@
+# ============================================================
+# NetworkPolicy — nsia-security (Control Plane / SOC)
+# Vault, Wazuh Manager, OpenSearch Indexer, Dashboard, Suricata
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-security-traffic
+  namespace: nsia-security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Vault ← tout le cluster (lecture de secrets)
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: 8200
+    # Wazuh Manager ← agents (tous namespaces)
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: 1514     # Agent communication
+        - port: 1515     # Agent registration
+    # Wazuh Dashboard ← Internet (soutenance)
+    - ports:
+        - port: 5601
+  egress:
+    # Vault/Wazuh → API K8s (auth, token review)
+    - to: []
+      ports:
+        - port: 443
+        - port: 6443
+    # Suricata → Internet (suricata-update, règles Emerging Threats)
+    - to: []
+      ports:
+        - port: 443
+        - port: 80
+    # DNS
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+    # Intra-namespace (Manager ↔ Indexer ↔ Dashboard)
+    - to:
+        - podSelector: {}

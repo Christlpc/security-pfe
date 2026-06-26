@@ -1,0 +1,121 @@
+# ============================================================
+# Kong Gateway + WAF ModSecurity — Deployment (Sidecar Pattern)
+# Trafic : Internet → ModSecurity (:80/443) → Kong (:8000)
+# SEUL point d'entrée de l'architecture Security Fabric
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: nsia-ingress
+  labels:
+    app: kong
+    nsia.cg/component: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+        nsia.cg/component: api-gateway
+    spec:
+      containers:
+        # ===== CONTENEUR 1 : WAF ModSecurity (point d'entrée) =====
+        - name: modsecurity
+          image: owasp/modsecurity-crs:nginx-alpine
+          ports:
+            - containerPort: 80
+              name: waf-http
+            - containerPort: 443
+              name: waf-https
+          env:
+            - name: SEC_RULE_ENGINE
+              value: "On"
+            - name: SEC_AUDIT_ENGINE
+              value: "RelevantOnly"
+            - name: SEC_AUDIT_LOG_FORMAT
+              value: "JSON"
+          volumeMounts:
+            - name: modsec-config
+              mountPath: /etc/nginx/templates/conf.d/default.conf.template
+              subPath: default.conf
+            - name: kong-tls
+              mountPath: /etc/ssl/certs/tls.crt
+              subPath: tls.crt
+              readOnly: true
+            - name: kong-tls
+              mountPath: /etc/ssl/private/tls.key
+              subPath: tls.key
+              readOnly: true
+            - name: modsec-logs
+              mountPath: /var/log/modsecurity
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+        # ===== CONTENEUR 2 : Kong Gateway (reçoit le trafic filtré) =====
+        - name: kong
+          image: kong:3.6
+          ports:
+            - containerPort: 8000
+              name: proxy
+            - containerPort: 8001
+              name: admin
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: "/kong/declarative/kong.yaml"
+            - name: KONG_PROXY_LISTEN
+              value: "0.0.0.0:8000"
+            - name: KONG_ADMIN_LISTEN
+              value: "0.0.0.0:8001"
+            - name: KONG_LOG_LEVEL
+              value: "info"
+            - name: KONG_PROXY_ACCESS_LOG
+              value: "/dev/stdout"
+            - name: KONG_PROXY_ERROR_LOG
+              value: "/dev/stderr"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong/declarative
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 30
+
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-declarative-config
+        - name: modsec-config
+          configMap:
+            name: modsecurity-config
+        - name: kong-tls
+          secret:
+            secretName: kong-tls
+        - name: modsec-logs
+          emptyDir: {}

@@ -1,0 +1,611 @@
+# ============================================================
+# Kong Gateway — Configuration Déclarative (DB-less)
+# Routes API avec profils de sécurité (key-auth/JWT/ACL)
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-declarative-config
+  namespace: nsia-ingress
+data:
+  kong.yaml: |
+    _format_version: "3.0"
+    services:
+      # ===== SERVICE FRONTEND (Web UI Next.js) =====
+      - name: nsia-frontend-service
+        url: http://frontend-service.nsia-frontend.svc.cluster.local:3000
+        routes:
+          - name: frontend-route
+            paths:
+              - /
+            strip_path: false
+
+      # ===== SERVICE BACKEND (API Métier NSIA) =====
+      - name: nsia-backend-service
+        url: http://backend.nsia-backend.svc.cluster.local:8000
+        routes:
+          # --- Routes Admin (key-auth + ACL admins) ---
+          - name: api-v1-banques-get
+            paths:
+              - /api/v1/banques/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-post
+            paths:
+              - /api/v1/banques/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-id-get
+            paths:
+              - ~/api/v1/banques/(?<id>[^/]+)/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-id-put
+            paths:
+              - ~/api/v1/banques/(?<id>[^/]+)/
+            methods:
+              - PUT
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-id-patch
+            paths:
+              - ~/api/v1/banques/(?<id>[^/]+)/
+            methods:
+              - PATCH
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-id-delete
+            paths:
+              - ~/api/v1/banques/(?<id>[^/]+)/
+            methods:
+              - DELETE
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          - name: api-v1-banques-id-utilisateurs-get
+            paths:
+              - ~/api/v1/banques/(?<id>[^/]+)/utilisateurs/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: key-auth
+                config:
+                  key_names:
+                    - apikey
+              - name: acl
+                config:
+                  allow:
+                    - admins
+
+          # --- Routes Partenaires (JWT + Rate Limiting + ACL) ---
+          - name: api-v1-simulations-elikia-post
+            paths:
+              - /api/v1/simulations/elikia/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-emprunteur-post
+            paths:
+              - /api/v1/simulations/emprunteur/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-etudes-post
+            paths:
+              - /api/v1/simulations/etudes/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-historique
+            paths:
+              - /api/v1/simulations/historique/
+            methods:
+              - GET
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-historique-id
+            paths:
+              - ~/api/v1/simulations/historique/(?<id>[^/]+)/
+            methods:
+              - GET
+              - PUT
+              - PATCH
+              - DELETE
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-historique-id-souscrire
+            paths:
+              - ~/api/v1/simulations/historique/(?<id>[^/]+)/souscrire/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-historique-id-valider
+            paths:
+              - ~/api/v1/simulations/historique/(?<id>[^/]+)/valider/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-mobateli-post
+            paths:
+              - /api/v1/simulations/mobateli/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-questionnaires-medicaux
+            paths:
+              - /api/v1/simulations/questionnaires-medicaux/
+            methods:
+              - GET
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-questionnaires-medicaux-id
+            paths:
+              - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/
+            methods:
+              - GET
+              - PUT
+              - PATCH
+              - DELETE
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-questionnaires-medicaux-id-appliquer
+            paths:
+              - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/appliquer-a-simulation/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-questionnaires-medicaux-id-recalculer
+            paths:
+              - ~/api/v1/simulations/questionnaires-medicaux/(?<id>[^/]+)/recalculer-surprime/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-questionnaires-medicaux-bareme
+            paths:
+              - /api/v1/simulations/questionnaires-medicaux/bareme/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-retraite-post
+            paths:
+              - /api/v1/simulations/retraite/
+            methods:
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-bia-info
+            paths:
+              - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/bia-info/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-export-bia
+            paths:
+              - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/export-bia/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-preview-bia
+            paths:
+              - ~/api/v1/simulations/simulations/(?<simulation_id>[^/]+)/preview-bia/
+            methods:
+              - GET
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-souscriptions
+            paths:
+              - /api/v1/simulations/souscriptions/
+            methods:
+              - GET
+              - POST
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+          - name: api-v1-simulations-souscriptions-id
+            paths:
+              - ~/api/v1/simulations/souscriptions/(?<id>[^/]+)/
+            methods:
+              - GET
+              - PUT
+              - PATCH
+              - DELETE
+            strip_path: false
+            plugins:
+              - name: jwt
+                config:
+                  claims_to_verify:
+                    - exp
+              - name: rate-limiting
+                config:
+                  minute: 5
+                  policy: local
+              - name: acl
+                config:
+                  allow:
+                    - partners
+              - name: request-size-limiting
+                config:
+                  allowed_payload_size: 1
+
+      # ===== SERVICE KEYCLOAK (Proxy IAM via Kong) =====
+      - name: keycloak-service
+        url: http://keycloak.nsia-iam.svc.cluster.local:8080
+        routes:
+          - name: keycloak-realms
+            paths:
+              - /realms
+              - /admin
+              - /resources
+              - /js
+            strip_path: false
+
+      # ===== HEALTH CHECK ENDPOINT =====
+      - name: health-service
+        url: http://127.0.0.1:8001
+        routes:
+          - name: health
+            paths:
+              - /health
+            methods:
+              - GET
+            strip_path: true

@@ -1,0 +1,15 @@
+# ============================================================
+# PostgreSQL (Backend Métier) — Persistent Volume Claim
+# Stockage persistant pour les données de souscription
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-db-data
+  namespace: nsia-backend
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

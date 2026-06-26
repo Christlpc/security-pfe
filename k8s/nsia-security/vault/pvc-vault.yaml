@@ -1,0 +1,16 @@
+# ============================================================
+# HashiCorp Vault — Persistent Volume Claim
+# Stockage persistant pour les données du coffre-fort
+# K3s local-path-provisioner utilisé par défaut
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vault-data
+  namespace: nsia-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

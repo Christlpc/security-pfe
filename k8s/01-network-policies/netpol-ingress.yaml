@@ -1,0 +1,48 @@
+# ============================================================
+# NetworkPolicy — nsia-ingress (Data Plane)
+# Seul namespace exposé sur Internet via Kong + WAF
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-traffic
+  namespace: nsia-ingress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Trafic entrant depuis Internet (via NodePort)
+    - ports:
+        - port: 80       # WAF ModSecurity HTTP
+        - port: 443      # WAF ModSecurity HTTPS
+  egress:
+    # Kong → Backend (API métier)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: api
+      ports:
+        - port: 8000
+    # Kong → Keycloak (proxy IAM / validation JWT)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: iam
+      ports:
+        - port: 8080
+    # Kong → Frontend (Web UI)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: web
+      ports:
+        - port: 3000
+    # DNS (résolution des noms de services K8s)
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP

@@ -1,0 +1,15 @@
+# ============================================================
+# OpenSearch Indexer (Wazuh) — Persistent Volume Claim
+# Stockage des index de logs et alertes de sécurité
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: indexer-data
+  namespace: nsia-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi

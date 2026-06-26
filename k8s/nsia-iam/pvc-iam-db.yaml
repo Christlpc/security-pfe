@@ -1,0 +1,15 @@
+# ============================================================
+# PostgreSQL (Keycloak IAM) — Persistent Volume Claim
+# Stockage persistant pour la base de données d'identité
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iam-db-data
+  namespace: nsia-iam
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

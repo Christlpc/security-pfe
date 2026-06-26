@@ -1,0 +1,15 @@
+# ============================================================
+# Keycloak — PVC pour les thèmes personnalisés NSIA
+# Remplace le hostPath fragile par un volume persistant
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: keycloak-themes
+  namespace: nsia-iam
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

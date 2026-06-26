@@ -110,6 +110,8 @@
     service_accounts_enabled: false # Aucun droit d'administration sur le front-end public
     redirect_uris:
       - "https://bancassurance.nsia.cg/*"
+      - "https://4.223.87.112:30843/*"
+      - "http://4.223.87.112:30800/*"
 
 # 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
 - name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"

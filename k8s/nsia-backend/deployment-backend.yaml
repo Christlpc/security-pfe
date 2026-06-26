@@ -1,0 +1,54 @@
+# ============================================================
+# Django Backend API — Deployment
+# Image buildée localement et importée via K3s containerd
+# Build : docker build -t nsia-backend:latest ./backend/
+# Import: docker save nsia-backend:latest | sudo k3s ctr images import -
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: nsia-backend
+  labels:
+    app: backend
+    nsia.cg/component: business-api
+spec:
+  replicas: 2                         # Haute disponibilité
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        nsia.cg/component: business-api
+    spec:
+      containers:
+        - name: django
+          image: nsia-backend:latest
+          imagePullPolicy: Never       # Image importée via containerd (K3s)
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15

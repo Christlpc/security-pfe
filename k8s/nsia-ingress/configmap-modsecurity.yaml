@@ -1,0 +1,40 @@
+# ============================================================
+# ModSecurity WAF — Configuration NGINX + OWASP CRS
+# Sidecar du pod Kong : filtre les requêtes avant Kong
+# Trafic : Internet → ModSecurity (:80/443) → Kong (:8000)
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: modsecurity-config
+  namespace: nsia-ingress
+data:
+  default.conf: |
+    server {
+        listen 80;
+        listen 443 ssl;
+
+        ssl_certificate     /etc/ssl/certs/tls.crt;
+        ssl_certificate_key /etc/ssl/private/tls.key;
+
+        # Enable active blocking, configure audit logs, and disable conflicting rules
+        modsecurity_rules '
+            SecRuleEngine On
+            SecAuditEngine RelevantOnly
+            SecAuditLogParts ABIJDEFHZ
+            SecAuditLogType Serial
+            SecAuditLog /var/log/modsecurity/audit.log
+            SecAuditLogFormat JSON
+            
+            # Disable RFI rule that blocks IP addresses in URLs (needed for Keycloak without domain)
+            SecRuleRemoveById 931100
+        ';
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }

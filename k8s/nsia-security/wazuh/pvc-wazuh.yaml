@@ -1,0 +1,15 @@
+# ============================================================
+# Wazuh Manager — Persistent Volume Claim
+# Stockage persistant pour les données SIEM
+# ============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wazuh-data
+  namespace: nsia-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi

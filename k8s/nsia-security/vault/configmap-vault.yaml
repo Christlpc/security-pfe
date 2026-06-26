@@ -1,0 +1,25 @@
+# ============================================================
+# HashiCorp Vault — Configuration HCL
+# Mode standalone, file backend, TLS désactivé en interne
+# (chiffrement délégué au réseau overlay K3s WireGuard)
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: nsia-security
+data:
+  vault-config.hcl: |
+    ui = true
+    disable_mlock = true
+
+    storage "file" {
+      path = "/vault/data"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_disable = 1
+    }
+
+    api_addr = "http://0.0.0.0:8200"

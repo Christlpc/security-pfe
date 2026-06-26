@@ -1,0 +1,16 @@
+# ============================================================
+# Backend Django — ConfigMap
+# Variables d'environnement non-sensibles
+# URLs inter-services via DNS Kubernetes
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: nsia-backend
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings"
+  KEYCLOAK_URL: "http://keycloak.nsia-iam.svc.cluster.local:8080"
+  DATABASE_HOST: "backend-db.nsia-backend.svc.cluster.local"
+  DATABASE_PORT: "5432"
+  VAULT_ADDR: "http://vault.nsia-security.svc.cluster.local:8200"

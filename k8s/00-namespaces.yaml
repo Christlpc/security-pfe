@@ -1,0 +1,35 @@
+# ============================================================
+# NSIA Bancassurance — Security Fabric
+# Namespaces Kubernetes (Segmentation en plans isolés)
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nsia-ingress
+  labels:
+    nsia.cg/plane: data
+    nsia.cg/purpose: ingress
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nsia-iam
+  labels:
+    nsia.cg/plane: identity
+    nsia.cg/purpose: iam
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nsia-backend
+  labels:
+    nsia.cg/plane: business
+    nsia.cg/purpose: api
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nsia-security
+  labels:
+    nsia.cg/plane: control
+    nsia.cg/purpose: soc

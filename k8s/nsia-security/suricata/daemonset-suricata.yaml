@@ -1,0 +1,86 @@
+# ============================================================
+# Suricata IDS 7.0 — DaemonSet avec initContainer suricata-update
+# Télécharge automatiquement les règles Emerging Threats
+# avant de démarrer la détection réseau
+# ============================================================
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: suricata
+  namespace: nsia-security
+  labels:
+    app: suricata
+    nsia.cg/component: ids
+spec:
+  selector:
+    matchLabels:
+      app: suricata
+  template:
+    metadata:
+      labels:
+        app: suricata
+        nsia.cg/component: ids
+    spec:
+      hostNetwork: true
+      # ===== initContainer : Mise à jour automatique des règles =====
+      initContainers:
+        - name: suricata-update
+          image: jasonish/suricata:7.0
+          command:
+            - "suricata-update"
+            - "--suricata-conf=/etc/suricata/suricata.yaml"
+            - "--output=/var/lib/suricata/rules/"
+          volumeMounts:
+            - name: suricata-config
+              mountPath: /etc/suricata/suricata.yaml
+              subPath: suricata.yaml
+            - name: suricata-rules
+              mountPath: /var/lib/suricata/rules
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+
+      # ===== Conteneur principal : Suricata IDS =====
+      containers:
+        - name: suricata
+          image: jasonish/suricata:7.0
+          command:
+            - "suricata"
+            - "-c"
+            - "/etc/suricata/suricata.yaml"
+            - "-i"
+            - "eth0"
+            - "--af-packet"
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+                - SYS_NICE
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: suricata-config
+              mountPath: /etc/suricata/suricata.yaml
+              subPath: suricata.yaml
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+            - name: suricata-rules
+              mountPath: /var/lib/suricata/rules
+
+      volumes:
+        - name: suricata-config
+          configMap:
+            name: suricata-config
+        - name: suricata-logs
+          hostPath:
+            path: /var/log/suricata
+            type: DirectoryOrCreate
+        - name: suricata-rules
+          emptyDir: {}

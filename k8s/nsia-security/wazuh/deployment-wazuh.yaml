@@ -1,0 +1,78 @@
+# ============================================================
+# Wazuh Manager 4.7.2 — Deployment
+# SIEM central : collecte et corrèle les événements de sécurité
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-manager
+  namespace: nsia-security
+  labels:
+    app: wazuh-manager
+    nsia.cg/component: siem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-manager
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+        nsia.cg/component: siem
+    spec:
+      containers:
+        - name: wazuh
+          image: wazuh/wazuh-manager:4.7.2
+          ports:
+            - containerPort: 1514
+              name: agent
+            - containerPort: 1515
+              name: registration
+            - containerPort: 55000
+              name: api
+          env:
+            - name: INDEXER_URL
+              value: "https://indexer.nsia-security.svc.cluster.local:9200"
+            - name: FILEBEAT_SSL_VERIFICATION_MODE
+              value: "none"
+            - name: INDEXER_USERNAME
+              value: "admin"
+            - name: INDEXER_PASSWORD
+              value: "admin"
+            - name: API_USERNAME
+              value: "wazuh-wui"
+            - name: API_PASSWORD
+              value: "MyS3cr3tP4ssw0rd!"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: wazuh-data
+              mountPath: /var/ossec/data
+            - name: wazuh-config
+              mountPath: /wazuh-custom
+            - name: wazuh-config
+              mountPath: /entrypoint-scripts/01-setup-api.sh
+              subPath: 01-setup-api.sh
+          readinessProbe:
+            tcpSocket:
+              port: 55000
+            initialDelaySeconds: 90
+            periodSeconds: 15
+          livenessProbe:
+            tcpSocket:
+              port: 1514
+            initialDelaySeconds: 180
+            periodSeconds: 30
+      volumes:
+        - name: wazuh-data
+          persistentVolumeClaim:
+            claimName: wazuh-data
+        - name: wazuh-config
+          configMap:
+            name: wazuh-config

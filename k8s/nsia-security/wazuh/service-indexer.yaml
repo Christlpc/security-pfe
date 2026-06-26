@@ -1,0 +1,20 @@
+# ============================================================
+# Wazuh Indexer (OpenSearch) — Service ClusterIP
+# Accessible par le Wazuh Manager et le Dashboard
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: indexer
+  namespace: nsia-security
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: 9200
+      name: api
+    - port: 9300
+      targetPort: 9300
+      name: transport
+  selector:
+    app: indexer

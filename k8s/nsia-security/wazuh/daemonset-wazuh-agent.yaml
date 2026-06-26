@@ -1,0 +1,50 @@
+# ============================================================
+# Wazuh Agent — DaemonSet
+# Déployé sur chaque nœud pour collecter les logs système
+# Connecté au Wazuh Manager pour la corrélation
+# ============================================================
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: wazuh-agent
+  namespace: nsia-security
+  labels:
+    app: wazuh-agent
+    nsia.cg/component: siem-agent
+spec:
+  selector:
+    matchLabels:
+      app: wazuh-agent
+  template:
+    metadata:
+      labels:
+        app: wazuh-agent
+        nsia.cg/component: siem-agent
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+        - name: wazuh-agent
+          image: wazuh/wazuh-agent:4.7.2
+          env:
+            - name: WAZUH_MANAGER
+              value: "wazuh-manager.nsia-security.svc.cluster.local"
+            - name: WAZUH_REGISTRATION_SERVER
+              value: "wazuh-manager.nsia-security.svc.cluster.local"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: var-log
+              mountPath: /var/log
+              readOnly: true
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+              readOnly: true
+      volumes:
+        - name: var-log
+          hostPath:
+            path: /var/log
+        - name: suricata-logs
+          hostPath:
+            path: /var/log/suricata
+            type: DirectoryOrCreate

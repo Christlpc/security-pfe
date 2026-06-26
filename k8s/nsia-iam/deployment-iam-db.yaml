@@ -1,0 +1,76 @@
+# ============================================================
+# PostgreSQL 15 — Base de données Keycloak (IAM)
+# Deployment avec SecurityContext non-root et health checks
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-db
+  namespace: nsia-iam
+  labels:
+    app: iam-db
+    nsia.cg/component: keycloak-database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam-db
+  strategy:
+    type: Recreate           # PostgreSQL = 1 seul writer
+  template:
+    metadata:
+      labels:
+        app: iam-db
+        nsia.cg/component: keycloak-database
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: iam-db-data

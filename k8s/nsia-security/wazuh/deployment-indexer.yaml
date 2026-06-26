@@ -1,0 +1,76 @@
+# ============================================================
+# Wazuh Indexer (OpenSearch) — Deployment
+# Moteur d'indexation et de recherche des logs de sécurité
+# Pré-requis : sudo sysctl -w vm.max_map_count=262144
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indexer
+  namespace: nsia-security
+  labels:
+    app: indexer
+    nsia.cg/component: siem-indexer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: indexer
+  template:
+    metadata:
+      labels:
+        app: indexer
+        nsia.cg/component: siem-indexer
+    spec:
+      initContainers:
+        # OpenSearch nécessite vm.max_map_count=262144
+        - name: sysctl
+          image: busybox
+          command: ["sh", "-c", "sysctl -w vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+      containers:
+        - name: indexer
+          image: wazuh/wazuh-indexer:4.7.2
+          ports:
+            - containerPort: 9200
+              name: api
+            - containerPort: 9300
+              name: transport
+          env:
+            - name: OPENSEARCH_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: discovery.type
+              value: "single-node"
+            - name: compatibility.override_main_response_version
+              value: "true"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "1536Mi"
+          volumeMounts:
+            - name: indexer-data
+              mountPath: /var/lib/wazuh-indexer
+          readinessProbe:
+            tcpSocket:
+              port: 9200
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9200
+            initialDelaySeconds: 240
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: indexer-data
+          persistentVolumeClaim:
+            claimName: indexer-data

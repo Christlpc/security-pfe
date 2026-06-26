@@ -1,0 +1,101 @@
+# ============================================================
+# Wazuh Manager — Configuration & Customizations
+# Règles de détection et script d'initialisation de l'API
+# Ingestion des logs Kong, ModSecurity, Keycloak, Suricata
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wazuh-config
+  namespace: nsia-security
+data:
+  local_rules.xml: |
+    <group name="nsia,">
+      <!-- Démo 3 : Brute Force / Credential Stuffing -->
+      <rule id="100001" level="10" frequency="5" timeframe="120">
+        <if_matched_sid>5710</if_matched_sid>
+        <description>[NSIA SOC] Attaque par force brute détectée - Credential Stuffing</description>
+        <group>authentication_failure,brute_force</group>
+      </rule>
+
+      <!-- Démo 5 : Requêtes 401 répétées (Zero Trust Enforcement) -->
+      <rule id="100002" level="8" frequency="10" timeframe="60">
+        <if_matched_sid>31100</if_matched_sid>
+        <match>status_code: 401</match>
+        <description>[NSIA SOC] Pic de requêtes non authentifiées (Zero Trust)</description>
+        <group>access_denied,zero_trust</group>
+      </rule>
+
+      <!-- ═══ OWASP Top 10 — Règles de Détection ═══ -->
+
+      <!-- A03 : SQL Injection détectée par ModSecurity WAF -->
+      <rule id="100003" level="12">
+        <if_sid>30411</if_sid>
+        <match>SQL Injection|sql injection|942</match>
+        <description>[NSIA SOC] A03 — Injection SQL bloquée par le WAF ModSecurity</description>
+        <group>attack,sql_injection,owasp_a03</group>
+      </rule>
+
+      <!-- A03 : Cross-Site Scripting (XSS) détecté par ModSecurity WAF -->
+      <rule id="100004" level="12">
+        <if_sid>30411</if_sid>
+        <match>XSS|Cross-Site Scripting|941</match>
+        <description>[NSIA SOC] A03 — Tentative XSS bloquée par le WAF ModSecurity</description>
+        <group>attack,xss,owasp_a03</group>
+      </rule>
+
+      <!-- A04 : Path Traversal détecté par ModSecurity WAF -->
+      <rule id="100005" level="10">
+        <if_sid>30411</if_sid>
+        <match>directory traversal|path traversal|930</match>
+        <description>[NSIA SOC] A04 — Traversée de répertoire bloquée par le WAF</description>
+        <group>attack,path_traversal,owasp_a04</group>
+      </rule>
+
+      <!-- A02 : Token JWT invalide/expiré rejeté par Kong Gateway -->
+      <rule id="100006" level="8">
+        <if_sid>31100</if_sid>
+        <match>Unauthorized|jwt|token</match>
+        <status>401</status>
+        <description>[NSIA SOC] A02 — Token JWT invalide/expiré rejeté par Kong</description>
+        <group>authentication_failure,jwt_rejected,owasp_a02</group>
+      </rule>
+
+      <!-- A05 : Scan de reconnaissance réseau détecté par Suricata IDS -->
+      <rule id="100007" level="14">
+        <if_sid>86601</if_sid>
+        <match>ET SCAN|ET POLICY|NMAP|scan</match>
+        <description>[NSIA SOC] A05 — Scan de reconnaissance réseau détecté (Suricata)</description>
+        <group>ids,network_scan,owasp_a05</group>
+      </rule>
+
+      <!-- A08 : Injection de headers HTTP malveillants -->
+      <rule id="100008" level="10">
+        <if_sid>30411</if_sid>
+        <match>Request Header|header injection|920</match>
+        <description>[NSIA SOC] A08 — Injection de headers HTTP malveillants détectée</description>
+        <group>attack,header_injection,owasp_a08</group>
+      </rule>
+    </group>
+
+  01-setup-api.sh: |
+    #!/bin/bash
+    set -e
+
+    # 1. Configurer les règles locales avant le démarrage
+    echo "Copying custom rules..."
+    cp -f /wazuh-custom/local_rules.xml /var/ossec/etc/rules/local_rules.xml
+    chown wazuh:wazuh /var/ossec/etc/rules/local_rules.xml
+    chmod 660 /var/ossec/etc/rules/local_rules.xml
+
+    # 2. Configurer les limites de débit dans api.yaml
+    echo "Configuring API rate limits in api.yaml..."
+    cat << EOF >> /var/ossec/api/configuration/api.yaml
+
+    # CUSTOM CONFIG FOR NSIA
+    access:
+      max_login_attempts: 100
+      block_time: 30
+      max_request_per_minute: 10000
+    EOF
+    echo "API setup completed successfully."

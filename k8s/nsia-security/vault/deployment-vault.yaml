@@ -1,0 +1,72 @@
+# ============================================================
+# HashiCorp Vault — Deployment
+# Coffre-fort numérique pour la gestion dynamique des secrets
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  namespace: nsia-security
+  labels:
+    app: vault
+    nsia.cg/component: keyvault
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+        nsia.cg/component: keyvault
+    spec:
+      serviceAccountName: vault
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100       # uid vault
+        runAsGroup: 1000     # gid vault
+        fsGroup: 1000
+      containers:
+        - name: vault
+          image: hashicorp/vault:1.15
+          command: ["vault", "server", "-config=/vault/config/vault-config.hcl"]
+          ports:
+            - containerPort: 8200
+              name: api
+          env:
+            - name: VAULT_ADDR
+              value: "http://127.0.0.1:8200"
+            - name: VAULT_API_ADDR
+              value: "http://0.0.0.0:8200"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: vault-config
+              mountPath: /vault/config
+            - name: vault-data
+              mountPath: /vault/data
+          readinessProbe:
+            httpGet:
+              path: /v1/sys/health?standbyok=true&uninitcode=204&sealedcode=204
+              port: 8200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/sys/health?standbyok=true&uninitcode=204&sealedcode=204
+              port: 8200
+            initialDelaySeconds: 20
+            periodSeconds: 30
+      volumes:
+        - name: vault-config
+          configMap:
+            name: vault-config
+        - name: vault-data
+          persistentVolumeClaim:
+            claimName: vault-data

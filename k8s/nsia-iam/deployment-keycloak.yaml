@@ -1,0 +1,92 @@
+# ============================================================
+# Keycloak 26 — Serveur d'Identité (IAM)
+# Mode PRODUCTION (start) — pas start-dev
+# Accessible UNIQUEMENT via Kong Gateway (ClusterIP)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: nsia-iam
+  labels:
+    app: keycloak
+    nsia.cg/component: identity-provider
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+        nsia.cg/component: identity-provider
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0
+          args:
+            - "start"
+            - "--hostname=https://4.223.87.112:30843"
+            - "--http-enabled=true"
+            - "--hostname-strict=false"
+            - "--proxy-headers=xforwarded"
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://iam-db.nsia-iam.svc.cluster.local:5432/keycloak"
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: POSTGRES_USER
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: POSTGRES_PASSWORD
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: KEYCLOAK_ADMIN
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: KEYCLOAK_ADMIN_PASSWORD
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 15
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 9000
+            initialDelaySeconds: 90
+            periodSeconds: 30
+          volumeMounts:
+            - name: themes
+              mountPath: /opt/keycloak/themes
+      volumes:
+        - name: themes
+          persistentVolumeClaim:
+            claimName: keycloak-themes

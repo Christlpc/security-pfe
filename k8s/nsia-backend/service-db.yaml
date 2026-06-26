@@ -1,0 +1,16 @@
+# ============================================================
+# PostgreSQL (Backend Métier) — Service ClusterIP
+# Accessible uniquement par le Backend Django (intra-namespace)
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-db
+  namespace: nsia-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: backend-db

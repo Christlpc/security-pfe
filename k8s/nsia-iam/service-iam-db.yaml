@@ -1,0 +1,16 @@
+# ============================================================
+# PostgreSQL (Keycloak IAM) — Service ClusterIP
+# Accessible uniquement par Keycloak (intra-namespace)
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam-db
+  namespace: nsia-iam
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: iam-db

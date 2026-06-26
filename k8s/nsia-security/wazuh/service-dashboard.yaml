@@ -1,0 +1,19 @@
+# ============================================================
+# Wazuh Dashboard — Service NodePort
+# Exposé sur le port 30601 pour la soutenance
+# Accès : http://4.223.87.112:30601
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-dashboard
+  namespace: nsia-security
+spec:
+  type: NodePort
+  ports:
+    - port: 5601
+      targetPort: 5601
+      nodePort: 30601
+      name: ui
+  selector:
+    app: wazuh-dashboard

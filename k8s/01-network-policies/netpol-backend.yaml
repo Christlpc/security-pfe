@@ -1,0 +1,56 @@
+# ============================================================
+# NetworkPolicy — nsia-backend (Business Plane)
+# Backend accessible uniquement via Kong Gateway
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-traffic
+  namespace: nsia-backend
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Backend ← Kong uniquement (via API Gateway)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: ingress
+      ports:
+        - port: 8000
+    # Backend-DB ← Backend uniquement (intra-namespace)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - port: 5432
+  egress:
+    # Backend → sa propre BDD PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend-db
+      ports:
+        - port: 5432
+    # Backend → Keycloak (validation des tokens OIDC)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: iam
+      ports:
+        - port: 8080
+    # Backend → Vault (récupération dynamique des secrets)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              nsia.cg/purpose: soc
+      ports:
+        - port: 8200
+    # DNS
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP

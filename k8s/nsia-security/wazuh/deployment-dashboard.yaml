@@ -1,0 +1,93 @@
+# ============================================================
+# Wazuh Dashboard 4.7.2 — Deployment
+# Interface graphique du SOC pour la soutenance
+# Accès : http://4.223.87.112:30601
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wazuh-dashboard-config
+  namespace: nsia-security
+data:
+  opensearch_dashboards.yml: |
+    server.host: 0.0.0.0
+    server.port: 5601
+    opensearch.hosts: https://indexer.nsia-security.svc.cluster.local:9200
+    opensearch.ssl.verificationMode: none
+    opensearch.requestHeadersWhitelist: [ authorization,securitytenant ]
+    opensearch_security.multitenancy.enabled: false
+    opensearch_security.readonly_mode.roles: ["kibana_read_only"]
+    server.ssl.enabled: false
+    uiSettings.overrides.defaultRoute: /app/wazuh
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-dashboard
+  namespace: nsia-security
+  labels:
+    app: wazuh-dashboard
+    nsia.cg/component: siem-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-dashboard
+  template:
+    metadata:
+      labels:
+        app: wazuh-dashboard
+        nsia.cg/component: siem-dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: wazuh/wazuh-dashboard:4.7.2
+          ports:
+            - containerPort: 5601
+              name: ui
+          env:
+            - name: INDEXER_URL
+              value: "https://indexer.nsia-security.svc.cluster.local:9200"
+            - name: OPENSEARCH_HOSTS
+              value: '["https://indexer.nsia-security.svc.cluster.local:9200"]'
+            - name: INDEXER_USERNAME
+              value: "admin"
+            - name: INDEXER_PASSWORD
+              value: "admin"
+            - name: OPENSEARCH_SSL_VERIFICATIONMODE
+              value: "none"
+            - name: WAZUH_API_URL
+              value: "https://wazuh-manager.nsia-security.svc.cluster.local"
+            - name: API_USERNAME
+              value: "wazuh-wui"
+            - name: API_PASSWORD
+              value: "MyS3cr3tP4ssw0rd!"
+            - name: SERVER_SSL_ENABLED
+              value: "false"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+              subPath: opensearch_dashboards.yml
+          readinessProbe:
+            tcpSocket:
+              port: 5601
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5601
+            initialDelaySeconds: 240
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: dashboard-config
+          configMap:
+            name: wazuh-dashboard-config

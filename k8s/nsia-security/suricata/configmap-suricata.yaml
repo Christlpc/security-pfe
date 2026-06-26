@@ -1,0 +1,44 @@
+# ============================================================
+# Suricata IDS — Configuration
+# Mode passif (IDS, pas IPS) — analyse du trafic réseau
+# Logs JSON envoyés à Wazuh via l'agent
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: suricata-config
+  namespace: nsia-security
+data:
+  suricata.yaml: |
+    %YAML 1.1
+    ---
+    vars:
+      address-groups:
+        HOME_NET: "[10.0.0.0/8,10.42.0.0/16,10.43.0.0/16]"
+        EXTERNAL_NET: "!$HOME_NET"
+      port-groups:
+        HTTP_PORTS: "8000,8080,8443,30800,30843"
+
+    default-log-dir: /var/log/suricata/
+
+    outputs:
+      - eve-log:
+          enabled: yes
+          filetype: regular
+          filename: eve.json
+          types:
+            - alert
+            - http
+            - dns
+            - tls
+            - anomaly
+
+    af-packet:
+      - interface: eth0
+        cluster-id: 99
+        cluster-type: cluster_flow
+        defrag: yes
+
+    default-rule-path: /var/lib/suricata/rules/
+    rule-files:
+      - suricata.rules
