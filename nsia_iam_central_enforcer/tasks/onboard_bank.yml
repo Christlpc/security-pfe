@@ -123,6 +123,8 @@
       - "https://bancassurance.nsia.cg/*"
       - "https://4.223.87.112:30843/*"
       - "http://4.223.87.112:30800/*"
+      - "{{ keycloak_frontend_url }}/*"
+      - "http://localhost:3000/*"
 
 # 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
 - name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"
