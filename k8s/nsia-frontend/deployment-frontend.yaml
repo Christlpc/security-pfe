@@ -35,7 +35,7 @@ spec:
             - name: NEXTAUTH_URL
               value: "https://4.223.87.112:30843"
             - name: KEYCLOAK_ISSUER
-              value: "https://4.223.87.112:30843/realms/master"
+              value: "https://4.223.87.112:30843/realms/BANK_ECOBANK"
             - name: KEYCLOAK_CLIENT_SECRET
               value: ""
             - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
