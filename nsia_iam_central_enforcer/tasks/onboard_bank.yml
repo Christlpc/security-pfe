@@ -129,6 +129,43 @@
       - "https://4.223.87.112:30843"
       - "{{ keycloak_frontend_url }}"
       - "http://localhost:3000"
+    protocol_mappers:
+      - name: "bank"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: false
+        config:
+          user.attribute: "bank"
+          claim.name: "bank"
+          jsonType.label: "String"
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "true"
+          multivalued: "false"
+      - name: "scope"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: false
+        config:
+          user.attribute: "scope"
+          claim.name: "scope"
+          jsonType.label: "String"
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "true"
+          multivalued: "false"
+      - name: "agency"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: false
+        config:
+          user.attribute: "agency"
+          claim.name: "agency"
+          jsonType.label: "String"
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "true"
+          multivalued: "false"
 
 # 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
 - name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"
