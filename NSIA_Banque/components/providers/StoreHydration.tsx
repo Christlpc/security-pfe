@@ -22,7 +22,25 @@ export function StoreHydration({ children }: { children: React.ReactNode }) {
         access: (session as any).accessToken || "",
         refresh: (session as any).refreshToken || "",
       });
-      setUser(session.user as any);
+
+      const fetchProfile = async () => {
+        try {
+          const { USE_MOCK_DATA } = await import("@/lib/utils/config");
+          if (USE_MOCK_DATA) {
+            setUser(session.user as any);
+          } else {
+            const { profileApi } = await import("@/lib/api/profile");
+            const realUser = await profileApi.getProfile();
+            console.log("[StoreHydration] Profil utilisateur récupéré du backend :", realUser);
+            setUser(realUser);
+          }
+        } catch (error) {
+          console.error("[StoreHydration] Erreur lors de la récupération du profil, repli sur la session NextAuth :", error);
+          setUser(session.user as any);
+        }
+      };
+
+      fetchProfile();
     } else if (status === "unauthenticated") {
       setTokens(null);
       setUser(null);
