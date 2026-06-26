@@ -29,6 +29,21 @@ spec:
           ports:
             - containerPort: 3000
               name: http
+          env:
+            - name: NEXTAUTH_SECRET
+              value: "a-very-long-and-secure-random-secret-for-nextauth-sign-keys"
+            - name: NEXTAUTH_URL
+              value: "https://4.223.87.112:30843"
+            - name: KEYCLOAK_ISSUER
+              value: "https://4.223.87.112:30843/realms/master"
+            - name: KEYCLOAK_CLIENT_SECRET
+              value: ""
+            - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+              value: "nsia-bancassurance-frontend"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://4.223.87.112:30843"
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
           resources:
             requests:
               cpu: "100m"

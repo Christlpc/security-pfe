@@ -25,8 +25,17 @@
   no_log: true
 
 
-# 1. CRÉATION IDEMPOTENTE DU REALM AVEC EXIGENCES LIFESPAN
-- name: "[Realm {{ target_realm }}] Enforce de la Baseline de Sécurité et des TTLs"
+# 1. RÉCUPÉRATION DYNAMIQUE DE LA CONFIGURATION SMTP DE MASTER
+- name: "[Realm {{ target_realm }}] Récupérer la configuration du realm master pour SMTP"
+  ansible.builtin.uri:
+    url: "{{ keycloak_admin_url }}/admin/realms/master"
+    method: GET
+    headers:
+      Authorization: "{{ auth_header }}"
+  register: master_realm_output
+
+# 1.5. CRÉATION IDEMPOTENTE DU REALM AVEC EXIGENCES LIFESPAN ET SMTP
+- name: "[Realm {{ target_realm }}] Enforce de la Baseline de Sécurité, des TTLs et du SMTP"
   community.general.keycloak_realm:
     token: "{{ nsia_auth_token }}"
     auth_keycloak_url: "{{ keycloak_admin_url }}"
@@ -46,8 +55,10 @@
       - fr
       - en
     default_locale: fr
+    display_name: "{{ (current_bank.name == 'credit_du_congo') | ternary('Crédit du Congo', (current_bank.name == 'charden_farrel') | ternary('Charden Farrel', (current_bank.name == 'express_union') | ternary('Express Union', (current_bank.name == 'hope_congo') | ternary('Hope Congo', current_bank.name | title)))) }}"
     attributes:
       frontendUrl: "{{ keycloak_frontend_url }}"
+    smtp_server: "{{ master_realm_output.json.smtpServer | default({}) | combine(nsia_smtp_config | default({})) }}"
 
 
 
