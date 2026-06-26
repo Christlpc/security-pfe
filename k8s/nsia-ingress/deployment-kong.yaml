@@ -83,6 +83,12 @@ spec:
               value: "/dev/stdout"
             - name: KONG_PROXY_ERROR_LOG
               value: "/dev/stderr"
+            - name: KONG_NGINX_PROXY_PROXY_BUFFER_SIZE
+              value: "128k"
+            - name: KONG_NGINX_PROXY_PROXY_BUFFERS
+              value: "4 256k"
+            - name: KONG_NGINX_PROXY_PROXY_BUSY_BUFFERS_SIZE
+              value: "256k"
           resources:
             requests:
               cpu: "200m"
