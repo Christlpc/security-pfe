@@ -35,8 +35,8 @@ export function StoreHydration({ children }: { children: React.ReactNode }) {
       const { isAuthenticated } = useAuthStore.getState();
 
       if (status === "unauthenticated" && !isPublicRoute) {
-        console.log("[StoreHydration] Not authenticated via NextAuth, redirecting to Keycloak...");
-        signIn("keycloak");
+        console.log("[StoreHydration] Not authenticated, redirecting to local login page...");
+        router.push("/login");
       }
     }
   }, [pathname, router, status]);
