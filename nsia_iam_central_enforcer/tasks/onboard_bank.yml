@@ -253,7 +253,7 @@
 # 8. SÉCURISATION DU DISPOSITIF SMTP (VÉRIFICATION STRICTE)
 - name: "[Realm {{ target_realm }}] Déclenchement de l'e-mail d'onboarding"
   ansible.builtin.uri:
-    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/users/{{ user_output.end_state.id }}/execute-actions-email?client_id={{ public_client_id }}&redirect_uri=https://bancassurance.nsia.cg/"
+    url: "{{ keycloak_admin_url }}/admin/realms/{{ target_realm }}/users/{{ user_output.end_state.id }}/execute-actions-email?client_id={{ public_client_id }}&redirect_uri={{ keycloak_frontend_url }}/"
     method: PUT
     headers:
       Authorization: "{{ auth_header }}"
