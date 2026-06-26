@@ -135,7 +135,7 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
 
   const onSubmit = async (data: UserFormData) => {
     // Validation de banque et agence seulement si non SUPER_ADMIN/ADMIN
-    const needsBanque = data.role !== "SUPER_ADMIN" && data.role !== "ADMIN";
+    const needsBanque = data.role !== "SUPER_ADMIN" && data.role !== "ADMIN" && data.role !== "ADMIN_NSIA";
     if (needsBanque && (!data.banque || data.banque === "" || data.banque === 0)) {
       toast.error("Veuillez sélectionner une banque");
       setValue("banque", undefined as any, { shouldValidate: true });

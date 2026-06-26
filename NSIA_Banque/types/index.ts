@@ -17,6 +17,7 @@ export interface User {
 export type UserRole =
   | "SUPER_ADMIN"
   | "ADMIN"
+  | "ADMIN_NSIA"
   | "RESPONSABLE_BANQUE"
   | "GESTIONNAIRE"
   | "SUPPORT";

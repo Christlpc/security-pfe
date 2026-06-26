@@ -42,7 +42,7 @@ export const authOptions = {
           if (tokenRoles.includes("NSIA_SUPER_ADMIN")) {
             userRole = "SUPER_ADMIN";
           } else if (tokenRoles.includes("NSIA_ADMIN")) {
-            userRole = "ADMIN";
+            userRole = "ADMIN_NSIA";
           } else if (tokenRoles.includes("BANK_SUPER_ADMIN")) {
             userRole = "RESPONSABLE_BANQUE";
           } else if (tokenRoles.includes("BANK_AGENCY_OPERATOR") || tokenRoles.includes("BANK_AGENCY_MANAGER")) {
