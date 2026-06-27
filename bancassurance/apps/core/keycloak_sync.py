@@ -112,7 +112,7 @@ def sync_django_user_to_keycloak(user, password):
     }
     
     role_name = DJANGO_TO_KC_ROLE.get(user.role)
-    if role_name:
+    if role_name and realm != 'master':
         try:
             # Récupérer l'ID du rôle
             role_url = f"{keycloak_url}/admin/realms/{realm}/roles/{role_name}"
