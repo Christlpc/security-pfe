@@ -36,7 +36,8 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useProductLabels } from "@/lib/hooks/useProductLabels";
 import { ALL_PRODUITS } from "@/lib/utils/constants";
 import toast from "react-hot-toast";
-import { Loader2, CheckCircle, ArrowRight, ArrowLeft, UserCircle, Mail, Phone, GraduationCap, Building2, Briefcase, PiggyBank, HandCoins, User, FileText, Shield, Heart, DollarSign, AlertCircle, Plus, Trash2, Users } from "lucide-react";
+import { Loader2, CheckCircle, ArrowRight, ArrowLeft, UserCircle, Mail, Phone, GraduationCap, Building2, Briefcase, PiggyBank, HandCoins, User, FileText, Shield, Heart, DollarSign, AlertCircle, Plus, Trash2, Users, Check } from "lucide-react";
+import { SimulationStepper, StepCard, StepSectionHeader, StepContainer, StepNavigation } from "@/components/simulations/SimulationStepper";
 import { MedicalForm, MEDICAL_QUESTIONS } from "@/components/questionnaire/MedicalForm";
 import { questionnairesApi, exportsApi } from "@/lib/api/simulations";
 import { calculateRealAge, formatDateFull } from "@/lib/utils/date";
@@ -1054,56 +1055,33 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="mb-8 px-4">
-        <div className="flex justify-between items-center relative">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 -z-10 rounded-full"></div>
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 -z-10 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${((wizardData.step - 1) / 4) * 100}%` }}></div>
-
-          {[
-            { step: 1, label: "Client" },
-            { step: 2, label: "Produit" },
-            { step: 3, label: "Résultat" },
-            { step: 4, label: "Santé" },
-            { step: 5, label: "BIA" },
-          ].map((item) => {
-            const isActive = wizardData.step === item.step;
-            const isCompleted = wizardData.step > item.step;
-
-            return (
-              <div key={item.step} className="flex flex-col items-center group cursor-default">
-                <div className={`
-                            w-10 h-10 rounded-full flex items-center justify-center border-2 text-sm font-bold transition-all duration-300 bg-white
-                            ${isActive ? "border-blue-600 text-blue-600 shadow-md scale-110" :
-                    isCompleted ? "border-blue-600 bg-blue-600 text-white" : "border-gray-200 text-gray-400"}
-                        `}>
-                  {isCompleted ? <CheckCircle className="w-5 h-5" /> : item.step}
-                </div>
-                <span className={`
-                            text-xs mt-2 font-medium bg-white px-2 rounded-full transition-colors
-                            ${isActive ? "text-blue-700 font-bold" : isCompleted ? "text-blue-600" : "text-gray-400"}
-                        `}>
-                  {item.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      {/* Premium Stepper */}
+      <div className="mb-8 px-2">
+        <SimulationStepper
+          currentStep={wizardData.step}
+          steps={[
+            { step: 1, label: "Client", description: "Identité & coordonnées" },
+            { step: 2, label: "Produit", description: "Garanties & paramètres" },
+            { step: 3, label: "Résultat", description: "Simulation calculée" },
+            { step: 4, label: "Santé", description: "Questionnaire médical" },
+            { step: 5, label: "BIA", description: "Bulletin d'adhésion" },
+          ]}
+        />
       </div>
 
       {/* ÉTAPE 1 : Infos Client */}
       {wizardData.step === 1 && (
-        <form onSubmit={onStep1Submit} className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <StepContainer>
+        <form onSubmit={onStep1Submit} className="space-y-4">
 
-          {/* ── SECTION 1 : État Civil ─────────────────────────── */}
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <div className="bg-blue-100 p-2 rounded-lg"><UserCircle className="w-5 h-5 text-blue-600" /></div>
-                État Civil
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<UserCircle className="w-4 h-4" />}
+              title="État Civil"
+              subtitle="Informations d'identité de l'assuré"
+              accentColor="blue"
+            />
+            <div className="p-6 space-y-5">
               {/* Civilité + Situation matrimoniale */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -1214,18 +1192,18 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                 </div>
                 {errors.email && <p className="text-xs text-red-600 font-medium mt-1">{errors.email.message}</p>}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </StepCard>
 
           {/* ── SECTION 2 : Coordonnées ───────────────────────── */}
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <div className="bg-green-100 p-2 rounded-lg"><Phone className="w-5 h-5 text-green-600" /></div>
-                Coordonnées
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<Phone className="w-4 h-4" />}
+              title="Coordonnées"
+              subtitle="Téléphones et adresses de l'assuré"
+              accentColor="emerald"
+            />
+            <div className="p-6 space-y-5">
               {/* 3 téléphones */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -1255,18 +1233,18 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   <Input id="adresse_geographique" {...register("adresse_geographique")} className="h-11 bg-gray-50/50 border-gray-200 focus:bg-white transition-colors" placeholder="Bacongo, Arr. 2, Brazzaville" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </StepCard>
 
           {/* ── SECTION 3 : Emploi & Compte ───────────────────── */}
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <div className="bg-amber-100 p-2 rounded-lg"><Briefcase className="w-5 h-5 text-amber-600" /></div>
-                Activité Professionnelle
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<Briefcase className="w-4 h-4" />}
+              title="Activité Professionnelle"
+              subtitle="Emploi, employeur et compte bancaire"
+              accentColor="amber"
+            />
+            <div className="p-6 space-y-5">
               {/* Profession + Poste */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -1305,19 +1283,18 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   {errors.numero_compte && <p className="text-xs text-red-600 font-medium mt-1">{errors.numero_compte.message}</p>}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </StepCard>
 
           {/* ── SECTION 4 : Correspondant ─────────────────────── */}
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <div className="bg-purple-100 p-2 rounded-lg"><Users className="w-5 h-5 text-purple-600" /></div>
-                Correspondant
-                <span className="text-gray-400 text-sm font-normal ml-2">(Personne à contacter en cas d'indisponibilité)</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<Users className="w-4 h-4" />}
+              title="Correspondant"
+              subtitle="Personne à contacter en cas d'indisponibilité (optionnel)"
+              accentColor="violet"
+            />
+            <div className="p-6 space-y-5">
               {/* Nom + Prénom */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -1347,37 +1324,36 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   <Input id="correspondant_cellulaire" {...register("correspondant_cellulaire")} className="h-11 bg-gray-50/50 border-gray-200 focus:bg-white transition-colors" placeholder="06XXXXXXX" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </StepCard>
 
-          <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 px-8">
-              Suivant <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+          <StepNavigation
+            type="submit"
+            onNextLabel="Continuer"
+            showBack={false}
+          />
         </form>
+        </StepContainer>
       )}
 
       {/* ÉTAPE 2 : Produit */}
       {wizardData.step === 2 && (
+        <StepContainer>
         <form
           onSubmit={handleSubmit(onStep2Submit, (errors) => {
             console.error("Form validation errors:", errors);
             toast.error(`Erreur de validation: ${Object.keys(errors).map(k => k.replace(/_/g, ' ')).join(", ")}`);
           })}
-          className="space-y-6 animate-in slide-in-from-right-4 duration-500"
+          className="space-y-4"
         >
-          <div className="flex items-center gap-2 mb-6">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setWizardStep(1)} className="text-gray-500 hover:text-gray-800 -ml-2">
-              <ArrowLeft className="mr-1 h-4 w-4" /> Retour
-            </Button>
-          </div>
-
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
-              <CardTitle className="text-slate-800">Sélection du Produit</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<Shield className="w-4 h-4" />}
+              title="Sélection du Produit"
+              subtitle="Choisissez le produit d'assurance à simuler"
+              accentColor="blue"
+            />
+            <div className="p-6">
               {availableProducts.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                   <p className="text-gray-500 font-medium">Aucun produit disponible pour cette configuration.</p>
@@ -1421,15 +1397,18 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </StepCard>
 
           {selectedProduct && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Détails du Produit: {getLabel(selectedProduct)}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <StepCard>
+              <StepSectionHeader
+                icon={<FileText className="w-4 h-4" />}
+                title={`Paramètres — ${getLabel(selectedProduct)}`}
+                subtitle="Renseignez les détails du contrat et les bénéficiaires"
+                accentColor="violet"
+              />
+              <div className="p-6 space-y-4">
                 {/* Emprunteur ADI - Refactored */}
                 {selectedProduct === "emprunteur" && (
                   <EmprunteurSection
@@ -1500,34 +1479,30 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                     />
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </StepCard>
           )}
 
-          <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => setWizardStep(1)}>Précédent</Button>
-            <Button type="submit" disabled={isStep2Submitting}>
-              {isStep2Submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Simulation en cours...
-                </>
-              ) : (
-                <>
-                  Simuler <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
+          <StepNavigation
+            type="submit"
+            onBack={() => setWizardStep(1)}
+            onNextLabel={isStep2Submitting ? "Simulation en cours..." : "Simuler"}
+            isLoading={isStep2Submitting}
+            showBack={true}
+          />
         </form>
+        </StepContainer>
       )}
 
       {/* ÉTAPE 3 : Résultat (Review) */}
       {wizardData.step === 3 && (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Button variant="ghost" onClick={() => setWizardStep(2)}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-            <h2 className="text-xl font-semibold">Résultat de la Simulation</h2>
+        <StepContainer>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <button type="button" onClick={() => setWizardStep(2)} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50">
+              <ArrowLeft className="h-4 w-4" /> Retour
+            </button>
+            <h2 className="text-lg font-semibold text-gray-900">Résultat de la Simulation</h2>
           </div>
 
           <Card>
@@ -2992,6 +2967,7 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
             </Button>
           </div>
         </div>
+        </StepContainer>
       )
       }
 
@@ -3661,7 +3637,6 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
           </div>
         )
       }
-    </div >
+    </div>
   );
 }
-
