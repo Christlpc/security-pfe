@@ -13,17 +13,18 @@ interface AdminChartsProps {
     dataByBank: Array<{ name: string; value: number; color?: string }>;
     dataByProduct: Array<{ name: string; value: number }>;
     dataByStatus: Array<{ name: string; value: number }>;
+    mainChartTitle: string;
 }
 
-export function AdminCharts({ dataByBank, dataByProduct, dataByStatus }: AdminChartsProps) {
+export function AdminCharts({ dataByBank, dataByProduct, dataByStatus, mainChartTitle }: AdminChartsProps) {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Volume par Banque */}
+                {/* Volume par Banque / Agence */}
                 <div className="lg:col-span-2">
                     <Card className="border-0 h-full flex flex-col justify-between">
                         <CardHeader className="border-b border-gray-50 pb-3 pt-4 px-5">
-                            <CardTitle className="text-base font-bold text-gray-900">Volume de Simulations par Banque (Top 5)</CardTitle>
+                            <CardTitle className="text-base font-bold text-gray-900">{mainChartTitle}</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-4 px-5 pb-4 flex-1 flex items-center justify-center">
                             <div className="h-[265px] w-full">

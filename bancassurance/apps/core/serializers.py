@@ -104,15 +104,12 @@ class UtilisateurSerializer(serializers.ModelSerializer):
 
 
 class UtilisateurCreateSerializer(serializers.ModelSerializer):
-    """Serializer pour la création d'utilisateurs (avec password)"""
-    
-    password = serializers.CharField(write_only=True, required=True, min_length=8)
-    password_confirm = serializers.CharField(write_only=True, required=True)
+    """Serializer pour la création d'utilisateurs (sans saisie de password)"""
     
     class Meta:
         model = Utilisateur
         fields = [
-            'username', 'email', 'password', 'password_confirm',
+            'username', 'email',
             'first_name', 'last_name', 'role', 'banque','agence',
             'matricule', 'telephone', 'est_actif'
         ]
@@ -150,19 +147,17 @@ class UtilisateurCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """Validation avec vérification password"""
-        # Vérifier mots de passe identiques
-        if attrs['password'] != attrs['password_confirm']:
-            raise serializers.ValidationError({
-                'password_confirm': "Les mots de passe ne correspondent pas"
-            })
-
-        # SECURITE : Restreindre la banque assignable
+        """Validation et auto-résolution de la banque"""
         request = self.context.get('request')
         if request and request.user:
             demandeur = request.user
+            
+            # Si le demandeur est responsable de banque, on force la banque à celle du demandeur
+            if demandeur.est_responsable_banque:
+                attrs['banque'] = demandeur.banque
+            
+            # SECURITE : Restreindre la banque assignable
             banque_demandee = attrs.get('banque')
-            # Un responsable banque ne peut créer que dans sa propre banque
             if demandeur.est_responsable_banque and banque_demandee:
                 if banque_demandee != demandeur.banque:
                     raise serializers.ValidationError({
@@ -196,9 +191,9 @@ class UtilisateurCreateSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        """Créer l'utilisateur avec password hashé et provisionnement Keycloak"""
-        validated_data.pop('password_confirm')
-        password = validated_data.pop('password')
+        """Créer l'utilisateur avec un password sécurisé généré et provisionnement Keycloak"""
+        import secrets
+        password = secrets.token_urlsafe(16)
         
         # 1. Instancier l'utilisateur Django en mémoire
         user = Utilisateur(**validated_data)

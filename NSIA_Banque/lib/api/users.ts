@@ -7,7 +7,7 @@ import type { User, UserRole, PaginatedResponse, Banque } from "@/types";
 export interface UserCreateData {
   username: string; // Nom d'utilisateur pour la connexion
   email: string;
-  password: string;
+  password?: string;
   nom: string; // last_name
   prenom: string; // first_name
   role: UserRole;
@@ -162,11 +162,9 @@ export const userApi = {
       return mockUserApi.createUser(data);
     }
     // Adapter les données pour l'API - utiliser les noms de colonnes exact de la base
-    const apiData = {
+    const apiData: Record<string, any> = {
       username: data.username,
       email: data.email,
-      password: data.password,
-      password_confirm: data.password,
       first_name: data.prenom,
       last_name: data.nom,
       role: data.role,
@@ -177,6 +175,10 @@ export const userApi = {
       est_actif: data.is_active !== false,
       is_active: data.is_active !== false,
     };
+    if (data.password) {
+      apiData.password = data.password;
+      apiData.password_confirm = data.password;
+    }
     const response = await apiClient.post<ApiUser>("/api/v1/utilisateurs/", apiData);
     return transformApiUser(response.data);
   },

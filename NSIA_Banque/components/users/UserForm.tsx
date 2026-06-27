@@ -172,14 +172,9 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
         }
         await updateUser(user.id as number, updateData);
       } else {
-        if (!data.password || data.password.length < 8) {
-          toast.error("Le mot de passe est requis pour créer un utilisateur");
-          return;
-        }
         const createData: UserCreateData = {
           username: data.username,
           email: data.email,
-          password: data.password,
           nom: data.nom,
           prenom: data.prenom,
           role: data.role as UserRole,
@@ -320,28 +315,6 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                     <span>•</span>
                     {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
-                  Mot de passe {isEditing ? "(laisser vide pour ne pas changer)" : "*"}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                  placeholder={isEditing ? "Nouveau mot de passe (optionnel)" : "Minimum 8 caractères"}
-                  className={cn(
-                    "transition-all",
-                    errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"
-                  )}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                    <span>•</span>
-                    {errors.password.message}
                   </p>
                 )}
               </div>
