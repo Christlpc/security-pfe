@@ -61,7 +61,7 @@ class Command(BaseCommand):
                 "role": Utilisateur.Role.SUPER_ADMIN,
                 "banque": None,
                 "agence": None,
-                "password": "NsiaSuperAdmin2026!!",
+                "password": "NsiaSuperAdmin2026!!!",
                 "matricule": "M-NSIA-MOB-01"
             },
             {
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 "role": Utilisateur.Role.RESPONSABLE_AGENCE,
                 "banque": banque_ecobank,
                 "agence": agence_siege,
-                "password": "ChefEcobank123!!",
+                "password": "ChefEcobank2026!!!",
                 "matricule": "M-ECO-CHEF-01"
             },
             {
@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 "role": Utilisateur.Role.GESTIONNAIRE,
                 "banque": banque_ecobank,
                 "agence": agence_siege,
-                "password": "GestEcobank123!!",
+                "password": "GestEcobank2026!!!",
                 "matricule": "M-ECO-GEST-03"
             }
         ]
