@@ -1,10 +1,41 @@
 import logging
+import requests
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from apps.core.models import Utilisateur, Banque, Agence
-from apps.core.keycloak_sync import sync_django_user_to_keycloak, reset_keycloak_user_password
+from apps.core.keycloak_sync import (
+    sync_django_user_to_keycloak,
+    reset_keycloak_user_password,
+    get_keycloak_admin_token,
+    get_keycloak_realm_from_banque
+)
 
 logger = logging.getLogger(__name__)
+
+def get_keycloak_user_id(username, realm):
+    """
+    Recherche un utilisateur dans Keycloak par son nom d'utilisateur.
+    """
+    keycloak_url = getattr(settings, 'KEYCLOAK_URL', 'http://keycloak.nsia-iam.svc.cluster.local:8080')
+    try:
+        token = get_keycloak_admin_token()
+    except Exception:
+        return None
+    url = f"{keycloak_url}/admin/realms/{realm}/users?username={username}"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            users = response.json()
+            for u in users:
+                if u.get('username') == username:
+                    return u.get('id')
+    except Exception:
+        pass
+    return None
 
 class Command(BaseCommand):
     help = "Seed les utilisateurs synchronisés avec Keycloak (nsia_mobile_admin, chef_ecobank1, gest_ecobank3)"
@@ -61,47 +92,72 @@ class Command(BaseCommand):
             username = u_data["username"]
             email = u_data["email"]
             password = u_data["password"]
+            role = u_data["role"]
+            banque = u_data["banque"]
+            agence = u_data["agence"]
 
             self.stdout.write(f"👤 Traitement de l'utilisateur {username}...")
 
-            # 1. Vérifier si l'utilisateur existe déjà en local
-            user, created = Utilisateur.objects.get_or_create(
-                username=username,
-                defaults={
-                    "email": email,
-                    "first_name": u_data["first_name"],
-                    "last_name": u_data["last_name"],
-                    "role": u_data["role"],
-                    "banque": u_data["banque"],
-                    "agence": u_data["agence"],
-                    "matricule": u_data["matricule"],
-                    "is_active": True,
-                }
-            )
+            # Déterminer le realm
+            realm = get_keycloak_realm_from_banque(banque)
 
-            # 2. Synchroniser ou réinitialiser avec Keycloak
-            try:
-                if created:
-                    self.stdout.write(f"  🆕 Création de l'utilisateur {username} dans Keycloak...")
+            # 1. Vérifier si l'utilisateur existe déjà dans Keycloak
+            keycloak_id = get_keycloak_user_id(username, realm)
+
+            if keycloak_id:
+                self.stdout.write(f"  ✓ Utilisateur {username} trouvé dans Keycloak (UUID: {keycloak_id}).")
+                # Nettoyer l'utilisateur local s'il a un ID différent pour éviter les conflits d'unicité
+                Utilisateur.objects.filter(username=username).exclude(id=keycloak_id).delete()
+                
+                # Mettre à jour ou créer localement avec le bon ID
+                user, created = Utilisateur.objects.update_or_create(
+                    id=keycloak_id,
+                    defaults={
+                        "username": username,
+                        "email": email,
+                        "first_name": u_data["first_name"],
+                        "last_name": u_data["last_name"],
+                        "role": role,
+                        "banque": banque,
+                        "agence": agence,
+                        "matricule": u_data["matricule"],
+                        "is_active": True,
+                    }
+                )
+                
+                # Réaligner le mot de passe dans Keycloak
+                try:
+                    reset_keycloak_user_password(user, password)
+                    user.set_password(password)
+                    user.save()
+                    self.stdout.write(self.style.SUCCESS(f"  ✅ Utilisateur {username} réaligné et synchronisé !"))
+                except Exception as reset_err:
+                    self.stderr.write(f"  ❌ Échec de la réinitialisation de mot de passe Keycloak pour {username} : {str(reset_err)}")
+            else:
+                self.stdout.write(f"  🆕 Création de l'utilisateur {username} dans Keycloak...")
+                # Nettoyer l'utilisateur local s'il existe pour repartir sur de bonnes bases
+                Utilisateur.objects.filter(username=username).delete()
+
+                # Instancier l'utilisateur Django temporairement en mémoire
+                user = Utilisateur(
+                    username=username,
+                    email=email,
+                    first_name=u_data["first_name"],
+                    last_name=u_data["last_name"],
+                    role=role,
+                    banque=banque,
+                    agence=agence,
+                    matricule=u_data["matricule"],
+                    is_active=True
+                )
+
+                try:
                     user_id = sync_django_user_to_keycloak(user, password)
                     user.id = user_id
                     user.set_password(password)
                     user.save()
                     self.stdout.write(self.style.SUCCESS(f"  ✅ Utilisateur {username} créé localement et sur Keycloak ! (UUID: {user_id})"))
-                else:
-                    self.stdout.write(f"  ✓ Utilisateur {username} existe déjà localement. Réalignement du mot de passe Keycloak...")
-                    try:
-                        reset_keycloak_user_password(user, password)
-                        self.stdout.write(self.style.SUCCESS(f"  ✅ Mot de passe Keycloak réaligné pour {username} !"))
-                    except Exception as reset_err:
-                        self.stdout.write(self.style.WARNING(f"  ⚠️ Impossible de réaligner le mot de passe Keycloak (l'utilisateur n'existe peut-être pas encore sur Keycloak). Tentative de création..."))
-                        user_id = sync_django_user_to_keycloak(user, password)
-                        user.id = user_id
-                        user.set_password(password)
-                        user.save()
-                        self.stdout.write(self.style.SUCCESS(f"  ✅ Utilisateur {username} créé sur Keycloak ! (UUID: {user_id})"))
-
-            except Exception as e:
-                self.stderr.write(f"  ❌ Échec de la synchronisation Keycloak pour {username} : {str(e)}")
+                except Exception as e:
+                    self.stderr.write(f"  ❌ Échec de la synchronisation Keycloak pour {username} : {str(e)}")
 
         self.stdout.write(self.style.SUCCESS("🎉 Seeding des utilisateurs Keycloak terminé !"))
