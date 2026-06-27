@@ -25,7 +25,8 @@ export function canManageBanques(role?: UserRole | null): boolean {
  * Vérifie si l'utilisateur peut gérer les utilisateurs (CRUD)
  */
 export function canManageUsers(role?: UserRole | null): boolean {
-    return isAdmin(role);
+    if (!role) return false;
+    return isAdmin(role) || role === ROLES.RESPONSABLE_BANQUE;
 }
 
 /**
@@ -44,10 +45,8 @@ export function canViewGlobalStats(role?: UserRole | null): boolean {
 
 /**
  * Vérifie si l'utilisateur peut gérer les agences (CRUD)
- * Les RESPONSABLE_BANQUE ne peuvent pas gérer les agences
  */
 export function canManageAgences(role?: UserRole | null): boolean {
     if (!role) return false;
-    // Seuls les admins NSIA peuvent gérer les agences
-    return ADMIN_ROLES.includes(role as any);
+    return isAdmin(role) || role === ROLES.RESPONSABLE_BANQUE;
 }

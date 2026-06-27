@@ -16,7 +16,7 @@ import { AdminStats } from "@/components/dashboard/AdminStats";
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const theme = getBankTheme(user?.banque);
-  const isAdmin = user?.role === ROLES.SUPER_ADMIN_NSIA || user?.role === ROLES.ADMIN_NSIA;
+  const isAdmin = user?.role === ROLES.SUPER_ADMIN_NSIA || user?.role === ROLES.ADMIN_NSIA || user?.role === ROLES.RESPONSABLE_BANQUE;
 
   if (isAdmin) {
     return (

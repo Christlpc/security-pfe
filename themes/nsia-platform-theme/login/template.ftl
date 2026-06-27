@@ -63,48 +63,51 @@
             <!-- Institutional Title -->
             <h1 class="institutional-title">${realm.displayName!'NSIA Vie Assurances'}</h1>
             
-            <!-- Main Login Box Card -->
-            <div class="login-box-card">
-                <!-- Header -->
-                <header class="login-box-header">
-                    <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
-                        <h2 class="login-box-title"><#nested "header"></h2>
-                    <#else>
-                        <h2 class="login-box-title"><#nested "header"></h2>
-                        <div class="username-display-wrapper">
-                            <span class="username-display">${auth.attemptedUsername}</span>
-                            <a class="username-reset-link" href="${url.loginRestartFlowUrl}">
-                                <span>${msg("restartLoginTooltip")}</span>
-                            </a>
+            <!-- Main Login Box Card Wrapper with Premium Glow -->
+            <div class="login-card-wrapper">
+                <div class="login-card-glow"></div>
+                <div class="login-box-card">
+                    <!-- Header -->
+                    <header class="login-box-header">
+                        <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
+                            <h2 class="login-box-title"><#nested "header"></h2>
+                        <#else>
+                            <h2 class="login-box-title"><#nested "header"></h2>
+                            <div class="username-display-wrapper">
+                                <span class="username-display">${auth.attemptedUsername}</span>
+                                <a class="username-reset-link" href="${url.loginRestartFlowUrl}">
+                                    <span>${msg("restartLoginTooltip")}</span>
+                                </a>
+                            </div>
+                        </#if>
+                    </header>
+                    
+                    <!-- Alert Messages -->
+                    <#if displayMessage && message?has_content && (message.type != 'warning' || !isAppInitiatedAction??)>
+                        <div class="alert-banner alert-${message.type}">
+                            <div class="alert-icon">
+                                <#if message.type = 'success'>✅
+                                <#elseif message.type = 'warning'>⚠️
+                                <#elseif message.type = 'error'>🛑
+                                <#else>ℹ️
+                                </#if>
+                            </div>
+                            <div class="alert-text">${kcSanitize(message.summary)?no_esc}</div>
                         </div>
                     </#if>
-                </header>
-                
-                <!-- Alert Messages -->
-                <#if displayMessage && message?has_content && (message.type != 'warning' || !isAppInitiatedAction??)>
-                    <div class="alert-banner alert-${message.type}">
-                        <div class="alert-icon">
-                            <#if message.type = 'success'>✅
-                            <#elseif message.type = 'warning'>⚠️
-                            <#elseif message.type = 'error'>🛑
-                            <#else>ℹ️
-                            </#if>
+
+                    <!-- Form Content -->
+                    <div class="login-box-body">
+                        <#nested "form">
+                    </div>
+
+                    <!-- Info Section -->
+                    <#if displayInfo>
+                        <div class="login-box-info">
+                            <#nested "info">
                         </div>
-                        <div class="alert-text">${kcSanitize(message.summary)?no_esc}</div>
-                    </div>
-                </#if>
-
-                <!-- Form Content -->
-                <div class="login-box-body">
-                    <#nested "form">
+                    </#if>
                 </div>
-
-                <!-- Info Section -->
-                <#if displayInfo>
-                    <div class="login-box-info">
-                        <#nested "info">
-                    </div>
-                </#if>
             </div>
             
             <!-- Secure Connection Callout Box -->
@@ -122,7 +125,8 @@
 
             <!-- Footer Legal -->
             <footer class="login-left-footer">
-                Sécurisé et confidentiel
+                <p>© ${.now?string('yyyy')} NSIA Vie Assurances</p>
+                <p class="text-xs">Tous droits réservés</p>
             </footer>
         </div>
     </div>

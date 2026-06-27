@@ -26,6 +26,7 @@ import { useUserStore } from "@/lib/store/userStore";
 import { UserCreateData, UserUpdateData } from "@/lib/api/users";
 import { ROLES } from "@/lib/utils/constants";
 import { getRoleDisplayName } from "@/lib/utils/theme";
+import { useAuthStore } from "@/lib/store/authStore";
 import { useBanques, useResourceCache } from "@/lib/providers/ResourceProvider";
 import { cn } from "@/lib/utils";
 import type { User, UserRole, Agence } from "@/types";
@@ -56,6 +57,7 @@ interface UserFormProps {
 
 export function UserForm({ user, open, onOpenChange }: UserFormProps) {
   const { createUser, updateUser, fetchUsers, filters } = useUserStore();
+  const { user: currentUser } = useAuthStore();
 
   // Use cached resources from ResourceProvider (loaded at app start)
   const { banques } = useBanques();
@@ -79,7 +81,7 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
       nom: user?.nom || "",
       prenom: user?.prenom || "",
       role: user?.role || "GESTIONNAIRE",
-      banque: user?.banque?.id || undefined,
+      banque: user?.banque?.id || currentUser?.banque?.id || undefined,
       agence: (user as any)?.agence?.id || (user as any)?.agence || undefined,
       matricule: user?.matricule || "",
       telephone: user?.telephone || "",
@@ -113,6 +115,7 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
         prenom: user.prenom,
         role: user.role,
         banque: user.banque?.id || undefined,
+        agence: (user as any)?.agence?.id || (user as any)?.agence || undefined,
         matricule: user.matricule || "",
         telephone: user.telephone || "",
         is_active: user.is_active !== false,
@@ -125,24 +128,26 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
         nom: "",
         prenom: "",
         role: "GESTIONNAIRE",
-        banque: undefined,
+        banque: currentUser?.banque?.id || undefined,
+        agence: undefined,
         matricule: "",
         telephone: "",
         is_active: true,
       });
     }
-  }, [user, reset]);
+  }, [user, reset, currentUser]);
 
   const onSubmit = async (data: UserFormData) => {
-    // Validation de banque et agence seulement si non SUPER_ADMIN/ADMIN
-    const needsBanque = data.role !== "SUPER_ADMIN" && data.role !== "ADMIN" && data.role !== "ADMIN_NSIA";
+    // Validation de banque obligatoire pour les rôles banque (Responsable et Gestionnaire)
+    const needsBanque = data.role === ROLES.RESPONSABLE_BANQUE || data.role === ROLES.GESTIONNAIRE;
     if (needsBanque && (!data.banque || data.banque === "" || data.banque === 0)) {
       toast.error("Veuillez sélectionner une banque");
       setValue("banque", undefined as any, { shouldValidate: true });
       return;
     }
-    // Validation d'agence obligatoire quand banque sélectionnée
-    if (needsBanque && data.banque && (!data.agence || data.agence === "")) {
+    // Validation d'agence obligatoire uniquement pour le rôle GESTIONNAIRE
+    const needsAgence = data.role === ROLES.GESTIONNAIRE;
+    if (needsAgence && (!data.agence || data.agence === "")) {
       toast.error("Veuillez sélectionner une agence");
       return;
     }
@@ -193,13 +198,26 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
     }
   };
 
+  const currentUserRole = currentUser?.role;
   const roleOptions = [
     { value: ROLES.SUPER_ADMIN_NSIA, label: getRoleDisplayName(ROLES.SUPER_ADMIN_NSIA) },
     { value: ROLES.ADMIN_NSIA, label: getRoleDisplayName(ROLES.ADMIN_NSIA) },
     { value: ROLES.RESPONSABLE_BANQUE, label: getRoleDisplayName(ROLES.RESPONSABLE_BANQUE) },
     { value: ROLES.GESTIONNAIRE, label: getRoleDisplayName(ROLES.GESTIONNAIRE) },
     { value: ROLES.SUPPORT, label: getRoleDisplayName(ROLES.SUPPORT) },
-  ];
+  ].filter(option => {
+    if (currentUserRole === ROLES.SUPER_ADMIN_NSIA) {
+      return true;
+    }
+    if (currentUserRole === ROLES.ADMIN_NSIA) {
+      return option.value !== ROLES.SUPER_ADMIN_NSIA;
+    }
+    if (currentUserRole === ROLES.RESPONSABLE_BANQUE) {
+      // Bank admin can only create agents (GESTIONNAIRE)
+      return option.value === ROLES.GESTIONNAIRE;
+    }
+    return false;
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -361,44 +379,32 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="banque" className="text-sm font-semibold text-gray-700">
-                    {selectedRole === ROLES.RESPONSABLE_BANQUE ? "Agence *" : "Banque *"}
-                  </Label>
-                  <Select
-                    value={selectedBanque ? String(selectedBanque) : ""}
-                    onValueChange={(value) => {
-                      // Les IDs peuvent être des UUIDs (strings) ou des nombres
-                      if (value && value.trim() !== "") {
-                        setValue("banque", value, { shouldValidate: true });
-                      } else {
-                        setValue("banque", undefined as any, { shouldValidate: true });
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      className={cn(
-                        "transition-all",
-                        errors.banque ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"
-                      )}
+                {(currentUser?.role === ROLES.SUPER_ADMIN_NSIA || currentUser?.role === ROLES.ADMIN_NSIA) &&
+                 (selectedRole === ROLES.RESPONSABLE_BANQUE || selectedRole === ROLES.GESTIONNAIRE) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="banque" className="text-sm font-semibold text-gray-700">
+                      Banque *
+                    </Label>
+                    <Select
+                      value={selectedBanque ? String(selectedBanque) : ""}
+                      onValueChange={(value) => {
+                        if (value && value.trim() !== "") {
+                          setValue("banque", value, { shouldValidate: true });
+                        } else {
+                          setValue("banque", undefined as any, { shouldValidate: true });
+                        }
+                      }}
                     >
-                      <SelectValue placeholder={selectedRole === ROLES.RESPONSABLE_BANQUE ? "Sélectionner une agence" : "Sélectionner une banque"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedRole === ROLES.RESPONSABLE_BANQUE ? (
-                        agences.length === 0 ? (
-                          <div className="px-2 py-4 text-center text-sm text-gray-500">
-                            Aucune agence disponible
-                          </div>
-                        ) : (
-                          agences.map((agence) => (
-                            <SelectItem key={agence.id} value={agence.id}>
-                              {agence.nom} ({agence.code})
-                            </SelectItem>
-                          ))
-                        )
-                      ) : (
-                        banques.filter(b => b.id).length === 0 ? (
+                      <SelectTrigger
+                        className={cn(
+                          "transition-all",
+                          errors.banque ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"
+                        )}
+                      >
+                        <SelectValue placeholder="Sélectionner une banque" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {banques.filter((banque) => banque.id).length === 0 ? (
                           <div className="px-2 py-4 text-center text-sm text-gray-500">
                             Aucune banque disponible
                           </div>
@@ -410,21 +416,21 @@ export function UserForm({ user, open, onOpenChange }: UserFormProps) {
                                 {banque.nom || `Banque ${banque.id}`}
                               </SelectItem>
                             ))
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {errors.banque && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <span>•</span>
-                      {errors.banque.message}
-                    </p>
-                  )}
-                </div>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {errors.banque && (
+                      <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                        <span>•</span>
+                        {errors.banque.message}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Agency Selection - Shows when bank is selected */}
-              {selectedBanque && selectedRole !== ROLES.SUPER_ADMIN_NSIA && selectedRole !== ROLES.ADMIN_NSIA && (
+              {/* Agency Selection - Shows when bank is selected/available and role is GESTIONNAIRE */}
+              {selectedBanque && selectedRole === ROLES.GESTIONNAIRE && (
                 <div className="space-y-2">
                   <Label htmlFor="agence" className="text-sm font-semibold text-gray-700">
                     Agence *

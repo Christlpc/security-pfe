@@ -101,14 +101,14 @@ kubectl wait --for=condition=ready pod -l app=backend-db -n nsia-backend --timeo
 echo "   ✓ PostgreSQL (Backend) déployé"
 
 # Build + import de l'image backend
-if command -v docker &>/dev/null && [ -d "../backend" ]; then
+if command -v docker &>/dev/null && [ -d "../bancassurance" ]; then
   echo "   🐳 Build de l'image backend..."
-  docker build -t nsia-backend:latest ../backend/
+  docker build -t nsia-backend:latest ../bancassurance/
   echo "   📦 Import dans K3s (containerd)..."
   docker save nsia-backend:latest | sudo k3s ctr images import -
   echo "   ✓ Image nsia-backend:latest importée"
 else
-  echo "   ⚠️  Docker ou backend/ non trouvé — builder manuellement"
+  echo "   ⚠️  Docker ou bancassurance/ non trouvé — builder manuellement"
 fi
 
 kubectl apply -f "$K8S_DIR/nsia-backend/deployment-backend.yaml"

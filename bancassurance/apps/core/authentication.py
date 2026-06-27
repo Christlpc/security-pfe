@@ -75,6 +75,15 @@ class KeycloakJWTAuthentication(authentication.BaseAuthentication):
 
         # Extraction des claims multi-tenant
         bank_code = payload.get('bank_id') or payload.get('bank')
+        
+        # Fallback robuste : extraire le code banque depuis le realm name dans l'issuer (iss)
+        if not bank_code and 'iss' in payload:
+            iss = payload['iss']
+            if '/realms/' in iss:
+                realm_name = iss.split('/realms/')[-1].strip('/')
+                if realm_name.upper().startswith('BANK_'):
+                    bank_code = realm_name[5:]  # Ex: ECOBANK pour BANK_ECOBANK
+
         agency_code = payload.get('agency_id') or payload.get('agency')
 
         # Extraction des rôles (support du root 'roles', de 'realm_access' et 'resource_access')

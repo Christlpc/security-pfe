@@ -63,7 +63,7 @@ export default function UsersPage() {
   const admins = users.filter(u => String(u.role).includes("ADMIN")).length;
 
   return (
-    <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA]}>
+    <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA, ROLES.RESPONSABLE_BANQUE]}>
       <div className="space-y-8 pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

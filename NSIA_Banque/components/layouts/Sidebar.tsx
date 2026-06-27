@@ -50,7 +50,7 @@ const menuItems = [
     title: "Agences",
     icon: Building2,
     href: "/agences",
-    roles: [ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA],
+    roles: [ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA, ROLES.RESPONSABLE_BANQUE],
   },
   {
     title: "Banques",
@@ -62,7 +62,7 @@ const menuItems = [
     title: "Utilisateurs",
     icon: Users,
     href: "/users",
-    roles: [ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA],
+    roles: [ROLES.SUPER_ADMIN_NSIA, ROLES.ADMIN_NSIA, ROLES.RESPONSABLE_BANQUE],
   },
   {
     title: "Paramètres",
