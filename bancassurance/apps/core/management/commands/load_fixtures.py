@@ -184,6 +184,7 @@ class Command(BaseCommand):
             self.stdout.write(f'  {"✨ Créé" if created else "✓ Existe"}: Responsable {code_banque} - {resp.username}')
         
         # Gestionnaires
+        from apps.core.models import Agence
         gestionnaires_data = [
             ('ECOBANK', 'gest_ecobank1', 'Élisée', 'KONAN', 'G-ECO-001'),
             ('ECOBANK', 'gest_ecobank2', 'Estelle', 'MINZELET', 'G-ECO-002'),
@@ -192,6 +193,16 @@ class Command(BaseCommand):
         ]
         
         for code_banque, username, prenom, nom, matricule in gestionnaires_data:
+            banque_obj = banques[code_banque]
+            agence_obj, _ = Agence.objects.get_or_create(
+                banque=banque_obj,
+                code=f"{code_banque}-SIEGE",
+                defaults={
+                    'nom': f'Siège {banque_obj.nom_court}',
+                    'ville': 'Brazzaville',
+                    'active': True
+                }
+            )
             gest, created = Utilisateur.objects.get_or_create(
                 username=username,
                 defaults={
@@ -199,7 +210,8 @@ class Command(BaseCommand):
                     'first_name': prenom,
                     'last_name': nom,
                     'role': Utilisateur.Role.GESTIONNAIRE,
-                    'banque': banques[code_banque],
+                    'banque': banque_obj,
+                    'agence': agence_obj,
                     'matricule': matricule,
                     'telephone': f'+242 06 222 {code_banque[:3]} {username[-2:]}',
                     'is_staff': False,

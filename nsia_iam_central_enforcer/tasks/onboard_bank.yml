@@ -166,6 +166,17 @@
           access.token.claim: "true"
           userinfo.token.claim: "true"
           multivalued: "false"
+      - name: "groups"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-group-membership-mapper"
+        consentRequired: false
+        config:
+          full.path: "true"
+          claim.name: "groups"
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "true"
+
 
 # 4. ARCHITECTURE ZERO-FLUSH : EXPÉDITION DIRECTE VERS HASHICORP VAULT
 - name: "[🔒 VAULT CORE] Injection sécurisée du secret de production"

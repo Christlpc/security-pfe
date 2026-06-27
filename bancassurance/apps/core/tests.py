@@ -44,11 +44,13 @@ class KeycloakJWTAuthTestCase(TestCase):
     Tests d'intégration pour l'authentification Keycloak JWT et le provisionnement dynamique.
     """
     def setUp(self):
-        # Création préalable d'une banque pour le test
-        self.banque = Banque.objects.create(
+        # Récupération ou création préalable d'une banque pour le test
+        self.banque, _ = Banque.objects.get_or_create(
             code_banque="ECOBANK",
-            nom_complet="Ecobank Congo",
-            email_contact="contact@ecobank.com"
+            defaults={
+                "nom_complet": "Ecobank Congo",
+                "email_contact": "contact@ecobank.com"
+            }
         )
         self.auth = KeycloakJWTAuthentication()
 
@@ -89,6 +91,39 @@ class KeycloakJWTAuthTestCase(TestCase):
         self.assertIsNotNone(user.agence)
         self.assertEqual(user.agence.code, 'PLATEAU')
         self.assertEqual(user.agence.banque, self.banque)
+
+    def test_dynamic_provisioning_fallback_groups(self):
+        user_uuid = str(uuid.uuid4())
+        
+        # Jeton sans agency_id ni agency, mais avec claim groups
+        token_payload = {
+            'sub': user_uuid,
+            'preferred_username': 'ecobank_agent_fallback',
+            'email': 'agent.fallback@ecobank.com',
+            'given_name': 'Jean',
+            'family_name': 'Dupont',
+            'bank_id': 'ECOBANK',
+            'groups': ['/ECOBANK-SIEGE/Poto-Poto'],
+            'roles': ['BANK_AGENCY_OPERATOR']
+        }
+        
+        token = jwt.encode(token_payload, "test-key", algorithm="HS256")
+        
+        class MockRequest:
+            def __init__(self, token_str):
+                self.headers = {'Authorization': f'Bearer {token_str}'}
+                
+        request = MockRequest(token)
+        
+        user, auth_data = self.auth.authenticate(request)
+        
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, 'ecobank_agent_fallback')
+        # L'agence doit être résolue depuis le claim groups
+        self.assertIsNotNone(user.agence)
+        self.assertEqual(user.agence.code, 'POTO-POTO')
+        self.assertEqual(user.agence.banque, self.banque)
+
 
 
 class MultiTenantMiddlewareTestCase(TestCase):

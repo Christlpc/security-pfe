@@ -85,6 +85,18 @@ class KeycloakJWTAuthentication(authentication.BaseAuthentication):
                     bank_code = realm_name[5:]  # Ex: ECOBANK pour BANK_ECOBANK
 
         agency_code = payload.get('agency_id') or payload.get('agency')
+        
+        # Fallback robuste 2 : Extraire l'agence depuis le claim 'groups' s'il est présent (contenant le chemin Keycloak)
+        if not agency_code and 'groups' in payload:
+            for grp in payload['groups']:
+                parts = [p for p in grp.split('/') if p]
+                if len(parts) >= 2:  # Ex: ['ECOBANK-SIEGE', 'Plateau'] -> 'Plateau'
+                    agency_code = parts[-1]
+                    break
+                elif len(parts) == 1 and parts[0].endswith('-SIEGE'):  # Ex: ['ECOBANK-SIEGE'] -> 'ECOBANK-SIEGE'
+                    agency_code = parts[0]
+                    break
+
 
         # Extraction des rôles (support du root 'roles', de 'realm_access' et 'resource_access')
         token_roles = payload.get('roles', [])
