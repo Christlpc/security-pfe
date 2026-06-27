@@ -313,7 +313,7 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
           // écraser l'âge réel calculé à l'étape Client (bug âge incohérent).
           ...(currentValues.age ? { age: currentValues.age } : {}),
           ...(currentValues.age_parent ? { age_parent: currentValues.age_parent } : {}),
-        });
+        } as any);
       }
 
       if (selectedProduct !== "emprunteur") {
@@ -435,7 +435,6 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
           beneficiaires: beneficiaires.length > 0 ? beneficiaires : undefined,
         };
       case "elikia_scolaire":
-      case "elikia":
         return {
           ...commonFields,
           // Paramètres Elikia
@@ -718,7 +717,7 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
       }
 
       // Appel API pour simuler (création temporaire ou calcul)
-      const result = await createSimulation(selectedProduct, { ...simulationData, sauvegarder: false });
+      const result = await createSimulation(selectedProduct, { ...simulationData, sauvegarder: false } as any);
 
       console.log("API Simulation Result:", result);
 
@@ -1473,7 +1472,7 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                 {beneficiaryConfig && (
                   <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <BeneficiarySection
-                      config={beneficiaryConfig}
+                      config={beneficiaryConfig as any}
                       beneficiaries={beneficiaires}
                       onUpdate={setBeneficiaires}
                     />
