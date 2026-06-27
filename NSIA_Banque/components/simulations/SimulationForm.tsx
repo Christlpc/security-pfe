@@ -1498,18 +1498,14 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
       {wizardData.step === 3 && (
         <StepContainer>
         <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <button type="button" onClick={() => setWizardStep(2)} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50">
-              <ArrowLeft className="h-4 w-4" /> Retour
-            </button>
-            <h2 className="text-lg font-semibold text-gray-900">Résultat de la Simulation</h2>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Récapitulatif</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+          <StepCard>
+            <StepSectionHeader
+              icon={<Shield className="w-4 h-4" />}
+              title="Résultat de la Simulation"
+              subtitle="Consultez les détails financiers de votre simulation avant de poursuivre"
+              accentColor="emerald"
+            />
+            <div className="p-6 space-y-6">
               {(() => {
                 // Get original user input values (these should NOT be overwritten by API results)
                 const originalInput = wizardData.simulationData || {};
@@ -2941,30 +2937,50 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   </>
                 );
               })()}
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-                <p className="text-blue-800 font-medium text-center">
-                  Simulation effectuée avec succès. Veuillez vérifier les informations avant de sauvegarder.
+              <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/80">
+                <p className="text-emerald-800 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  Simulation effectuée avec succès. Veuillez vérifier les informations ci-dessus.
                 </p>
               </div>
-            </CardContent >
-          </Card>
+            </div>
+          </StepCard>
 
-          <div className="flex justify-end gap-4">
-            <Button variant="destructive" onClick={() => router.push("/simulations")}>Abandonner</Button>
-            <Button variant="outline" onClick={() => setWizardStep(2)}>Modifier</Button>
-            <Button onClick={onStep3Submit} disabled={isStep2Submitting} className="bg-green-600 hover:bg-green-700">
-              {isStep2Submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sauvegarde...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Sauvegarder et Continuer
-                </>
-              )}
-            </Button>
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              onClick={() => router.push("/simulations")}
+              className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors px-4 py-2 hover:bg-red-50 rounded-lg"
+            >
+              Abandonner
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setWizardStep(2)}
+                className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors px-4 py-2 hover:bg-gray-50 rounded-lg border border-gray-200 bg-white"
+              >
+                Modifier
+              </button>
+              <button
+                type="button"
+                onClick={onStep3Submit}
+                disabled={isStep2Submitting}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60"
+              >
+                {isStep2Submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Sauvegarde...
+                  </>
+                ) : (
+                  <>
+                    {wizardData.simulationData?.produit === 'epargne_plus' ? "Confirmer et valider" : "Continuer vers questionnaire"}
+                    <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
         </StepContainer>
@@ -2972,51 +2988,43 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
       }
 
       {/* ÉTAPE 4 : Questionnaire Médical */}
-      {
-        wizardData.step === 4 && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              {/* Pas de retour possible vers l'étape 3 une fois sauvegardé, ou alors en mode édition */}
-              <h2 className="text-xl font-semibold">Questionnaire Médical</h2>
-            </div>
-
-            {isStep2Submitting ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                <p className="text-gray-600">Traitement du questionnaire...</p>
-              </div>
-            ) : (
-              <MedicalForm
-                isWizardMode={true}
-                initialData={wizardData.questionnaireData}
-                onSubmit={onStep4Submit}
-                simulationReference={wizardData.simulationData?.reference}
-              />
-            )}
-          </div>
-        )
-      }
+      {wizardData.step === 4 && (
+        <StepContainer>
+          {isStep2Submitting ? (
+            <StepCard className="py-12 flex flex-col items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-3" />
+              <p className="text-sm text-gray-600">Traitement du questionnaire...</p>
+            </StepCard>
+          ) : (
+            <MedicalForm
+              isWizardMode={true}
+              initialData={wizardData.questionnaireData}
+              onSubmit={onStep4Submit}
+              simulationReference={wizardData.simulationData?.reference}
+            />
+          )}
+        </StepContainer>
+      )}
 
       {/* ÉTAPE 5 : Validation BIA */}
-      {
-        wizardData.step === 5 && (
-          <div className="space-y-6">
-            {/* Header with back button and title */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => setWizardStep(4)} className="hover:bg-gray-100">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-                </Button>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Validation BIA</h2>
-                  <p className="text-sm text-gray-500">Vérifiez les informations avant validation finale</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-green-700">Prêt à valider</span>
-              </div>
+      {wizardData.step === 5 && (
+        <StepContainer>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setWizardStep(4)}
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50"
+              >
+                <ArrowLeft className="h-4 w-4" /> Retour
+              </button>
+              <h2 className="text-lg font-semibold text-gray-900">Validation BIA</h2>
             </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-50 border border-green-100 rounded-full">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-bold text-green-700 tracking-wider uppercase">Prêt à valider</span>
+            </div>
+          </div>
 
             {wizardData.biaInfo ? (
               <>
@@ -3093,127 +3101,118 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                   const questionnaire = wizardData.biaInfo?.["questionnaire medical"] || wizardData.questionnaireData || {};
 
                   return (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
                       {/* Left Column: Client Info & Questionnaire */}
                       <div className="lg:col-span-2 space-y-6">
                         {/* Reference Card */}
-                        <Card className="border-l-4 border-l-blue-500 shadow-sm">
-                          <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                                  <FileText className="h-6 w-6 text-white" />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Référence BIA</p>
-                                  <p className="text-xl font-bold text-gray-900">{info.reference || "En attente de génération"}</p>
-                                </div>
+                        <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-blue-500 p-5 shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-blue-600" />
                               </div>
-                              <div className="text-right">
-                                <p className="text-sm text-gray-500">Date d'effet</p>
-                                <p className="text-base font-semibold text-gray-700">{formatDateFull(info.date_effet || info.date_creation || info.created_at) || "Non définie"}</p>
+                              <div>
+                                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Référence BIA</p>
+                                <p className="text-lg font-bold text-gray-900">{info.reference || "En attente de génération"}</p>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Date d'effet</p>
+                              <p className="text-sm font-semibold text-gray-700">{formatDateFull(info.date_effet || info.date_creation || info.created_at) || "Non définie"}</p>
+                            </div>
+                          </div>
+                        </div>
 
                         {/* Client Info Card */}
-                        <Card className="shadow-sm hover:shadow-md transition-shadow">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                                <User className="h-4 w-4 text-purple-600" />
-                              </div>
-                              <CardTitle className="text-lg">Informations de l'Assuré</CardTitle>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
+                        <StepCard>
+                          <StepSectionHeader
+                            icon={<User className="h-4 w-4" />}
+                            title="Informations de l'Assuré"
+                            subtitle="Détails du profil client et coordonnées"
+                            accentColor="blue"
+                          />
+                          <div className="p-6">
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                               <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Nom complet</p>
-                                <p className="text-base font-semibold text-gray-900">{info.prenom_client || info.prenom} {info.nom_client || info.nom}</p>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Nom complet</p>
+                                <p className="text-sm font-bold text-gray-900">{info.prenom_client || info.prenom} {info.nom_client || info.nom}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Date de naissance</p>
-                                <p className="text-base font-semibold text-gray-900">{formatDateFull(info.date_naissance) || "-"}</p>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Date de naissance</p>
+                                <p className="text-sm font-bold text-gray-900">{formatDateFull(info.date_naissance) || "-"}</p>
                               </div>
                               {info.lieu_naissance && (
                                 <div className="space-y-1">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Lieu de naissance</p>
-                                  <p className="text-base text-gray-700">{info.lieu_naissance}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Lieu de naissance</p>
+                                  <p className="text-sm font-medium text-gray-700">{info.lieu_naissance}</p>
                                 </div>
                               )}
                               <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Email</p>
-                                <p className="text-base text-gray-700">{info.email_client || info.email || "-"}</p>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Email</p>
+                                <p className="text-sm font-medium text-gray-700">{info.email_client || info.email || "-"}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Téléphone</p>
-                                <p className="text-base text-gray-700">{info.telephone_client || info.telephone || "-"}</p>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Téléphone</p>
+                                <p className="text-sm font-medium text-gray-700">{info.telephone_client || info.telephone || "-"}</p>
                               </div>
                               {info.adresse && (
                                 <div className="space-y-1 col-span-2">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Adresse</p>
-                                  <p className="text-base text-gray-700">{info.adresse}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Adresse</p>
+                                  <p className="text-sm font-medium text-gray-700">{info.adresse}</p>
                                 </div>
                               )}
                               {info.profession && (
                                 <div className="space-y-1">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Profession</p>
-                                  <p className="text-base text-gray-700">{info.profession}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Profession</p>
+                                  <p className="text-sm font-medium text-gray-700">{info.profession}</p>
                                 </div>
                               )}
                               {info.employeur && (
                                 <div className="space-y-1">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Employeur</p>
-                                  <p className="text-base text-gray-700">{info.employeur}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Employeur</p>
+                                  <p className="text-sm font-medium text-gray-700">{info.employeur}</p>
                                 </div>
                               )}
                               {info.numero_compte && (
                                 <div className="space-y-1">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">N° Compte</p>
-                                  <p className="text-base text-gray-700 font-mono">{info.numero_compte}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">N° Compte</p>
+                                  <p className="text-sm font-mono font-medium text-gray-700">{info.numero_compte}</p>
                                 </div>
                               )}
                               {info.situation_matrimoniale && (
                                 <div className="space-y-1">
-                                  <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Situation matrimoniale</p>
-                                  <p className="text-base text-gray-700 capitalize">{info.situation_matrimoniale}</p>
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Situation matrimoniale</p>
+                                  <p className="text-sm font-medium text-gray-700 capitalize">{info.situation_matrimoniale}</p>
                                 </div>
                               )}
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </StepCard>
 
                         {/* Beneficiaires Card */}
                         {beneficiaires.length > 0 && (
-                          <Card className="shadow-sm hover:shadow-md transition-shadow">
-                            <CardHeader className="pb-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                                    <Users className="h-4 w-4 text-purple-600" />
-                                  </div>
-                                  <CardTitle className="text-lg">Bénéficiaires</CardTitle>
-                                </div>
-                                <span className="text-sm text-gray-500">{beneficiaires.length} bénéficiaire(s)</span>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
+                          <StepCard>
+                            <StepSectionHeader
+                              icon={<Users className="h-4 w-4" />}
+                              title="Bénéficiaires"
+                              subtitle={`${beneficiaires.length} bénéficiaire(s) enregistré(s)`}
+                              accentColor="violet"
+                            />
+                            <div className="p-6">
                               <div className="space-y-3">
                                 {beneficiaires.map((ben, index) => (
-                                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-gray-100">
                                     <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
                                         {ben.ordre}
                                       </div>
                                       <div>
-                                        <p className="font-semibold text-gray-900">{ben.nom_prenoms}</p>
-                                        <p className="text-xs text-gray-500 capitalize">{ben.qualite}</p>
+                                        <p className="font-semibold text-sm text-gray-900">{ben.nom_prenoms}</p>
+                                        <p className="text-[10px] text-gray-500 capitalize">{ben.qualite}</p>
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-purple-100 text-purple-800">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700">
                                         {ben.part_pourcentage}%
                                       </span>
                                     </div>
@@ -3221,235 +3220,232 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                                 ))}
                               </div>
                               <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-600">Total des parts</span>
-                                <span className="text-lg font-bold text-green-600">
+                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total des parts</span>
+                                <span className="text-base font-bold text-green-600">
                                   {beneficiaires.reduce((sum, b) => sum + b.part_pourcentage, 0)}%
                                 </span>
                               </div>
-                            </CardContent>
-                          </Card>
+                            </div>
+                          </StepCard>
                         )}
 
                         {/* Questionnaire Card (if present) */}
                         {questionnaire && Object.keys(questionnaire).length > 0 && (
-                          <Card className="shadow-sm hover:shadow-md transition-shadow">
-                            <CardHeader className="pb-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
-                                  <Heart className="h-4 w-4 text-red-600" />
-                                </div>
-                                <CardTitle className="text-lg">Questionnaire Médical</CardTitle>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
+                          <StepCard>
+                            <StepSectionHeader
+                              icon={<Heart className="h-4 w-4" />}
+                              title="Questionnaire Médical"
+                              subtitle="Résumé des données physiologiques"
+                              accentColor="rose"
+                            />
+                            <div className="p-6">
                               <div className="grid grid-cols-3 gap-4">
-                                <div className="p-4 bg-gray-50 rounded-xl text-center">
-                                  <p className="text-2xl font-bold text-gray-900">{questionnaire.taille_cm || "-"}</p>
-                                  <p className="text-xs text-gray-500 mt-1">Taille (cm)</p>
+                                <div className="p-4 bg-gray-50/50 rounded-xl text-center border border-gray-100">
+                                  <p className="text-xl font-bold text-gray-900">{questionnaire.taille_cm || "-"}</p>
+                                  <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-1">Taille (cm)</p>
                                 </div>
-                                <div className="p-4 bg-gray-50 rounded-xl text-center">
-                                  <p className="text-2xl font-bold text-gray-900">{questionnaire.poids_kg || "-"}</p>
-                                  <p className="text-xs text-gray-500 mt-1">Poids (kg)</p>
+                                <div className="p-4 bg-gray-50/50 rounded-xl text-center border border-gray-100">
+                                  <p className="text-xl font-bold text-gray-900">{questionnaire.poids_kg || "-"}</p>
+                                  <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-1">Poids (kg)</p>
                                 </div>
-                                <div className="p-4 bg-gray-50 rounded-xl text-center">
-                                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${questionnaire.fumeur ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                                    }`}>
+                                <div className="p-4 bg-gray-50/50 rounded-xl flex items-center justify-center border border-gray-100">
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                                    questionnaire.fumeur ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
+                                  }`}>
                                     {questionnaire.fumeur ? "Fumeur" : "Non-fumeur"}
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
-                            </CardContent>
-                          </Card>
+                            </div>
+                          </StepCard>
                         )}
                       </div>
 
                       {/* Right Column: Product & Primes */}
                       <div className="space-y-6">
                         {/* Product Card */}
-                        <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-5 w-5 text-blue-200" />
-                              <p className="text-sm text-blue-200 font-medium">Produit sélectionné</p>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold mb-4">
-                              {info.produit ? getLabel(info.produit) : "-"}
-                            </p>
+                        <div className="rounded-[20px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 shadow-md shadow-blue-100 relative overflow-hidden">
+                          {/* Accent glow */}
+                          <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                          
+                          <div className="flex items-center gap-2 mb-2 relative z-10">
+                            <Shield className="h-4.5 w-4.5 text-blue-200" />
+                            <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Produit sélectionné</p>
+                          </div>
+                          
+                          <p className="text-xl font-black mb-4 relative z-10">
+                            {info.produit ? getLabel(info.produit) : "-"}
+                          </p>
 
-                            <div className="h-px bg-white/20 my-4"></div>
+                          <div className="h-px bg-white/20 my-4 relative z-10"></div>
 
-                            <div className="space-y-3">
-                              {/* Show Capital for Études (uses cotisation_totale) */}
-                              {info.isEtudesProduct ? (
-                                <div className="flex justify-between items-center">
-                                  <span className="text-blue-200">Cotisation Totale</span>
-                                  <span className="text-2xl font-bold">{formatCFA(info.cotisation_totale || 0)} FCFA</span>
-                                </div>
-                              ) : info.produit === 'epargne_plus' ? (
-                                /* Epargne Plus: Cumul Cotisations, Durée & Prime Mensuelle */
-                                <>
-                                  {/* Cumul Cotisations */}
-                                  {info.cumul_cotisations !== undefined && (
-                                    <div className="flex justify-between items-center bg-white/10 rounded-lg p-3 mb-2">
-                                      <span className="text-blue-100 font-semibold">Cumul Cotisations</span>
-                                      <span className="text-2xl font-bold text-yellow-300">{formatCFA(info.cumul_cotisations)} FCFA</span>
-                                    </div>
-                                  )}
+                          <div className="space-y-3 relative z-10">
+                            {/* Show Capital for Études (uses cotisation_totale) */}
+                            {info.isEtudesProduct ? (
+                              <div className="flex justify-between items-center bg-white/10 rounded-xl p-3">
+                                <span className="text-blue-100 font-semibold text-sm">Cotisation Totale</span>
+                                <span className="text-xl font-black text-yellow-300">{formatCFA(info.cotisation_totale || 0)} FCFA</span>
+                              </div>
+                            ) : info.produit === 'epargne_plus' ? (
+                              /* Epargne Plus: Cumul Cotisations, Durée & Prime Mensuelle */
+                              <>
+                                {/* Cumul Cotisations */}
+                                {info.cumul_cotisations !== undefined && (
+                                  <div className="flex justify-between items-center bg-white/15 rounded-xl p-3 mb-2 border border-white/5">
+                                    <span className="text-blue-100 font-semibold text-sm">Cumul Cotisations</span>
+                                    <span className="text-xl font-black text-yellow-300">{formatCFA(info.cumul_cotisations)} FCFA</span>
+                                  </div>
+                                )}
 
-                                  {/* Durée de contrat */}
-                                  {(info.duree_annees !== undefined || info.duree !== undefined) && (
-                                    <div className="flex justify-between items-center text-sm py-1 border-b border-white/10">
-                                      <span className="text-blue-200">Durée de contrat</span>
-                                      <span className="font-semibold">{info.duree_annees || info.duree} ans</span>
-                                    </div>
-                                  )}
+                                {/* Durée de contrat */}
+                                {(info.duree_annees !== undefined || info.duree !== undefined) && (
+                                  <div className="flex justify-between items-center text-xs py-1.5 border-b border-white/10">
+                                    <span className="text-blue-200">Durée de contrat</span>
+                                    <span className="font-bold">{info.duree_annees || info.duree} ans</span>
+                                  </div>
+                                )}
 
-                                  {/* Prime Mensuelle */}
-                                  {(info.cotisation_mensuelle !== undefined || info.prime_periodique_saisie !== undefined || info.prime_mensuelle !== undefined) && (
-                                    <div className="flex justify-between items-center text-sm py-1">
-                                      <span className="text-blue-200">Prime mensuelle</span>
-                                      <span className="font-semibold">{formatCFA(info.cotisation_mensuelle || info.prime_periodique_saisie || info.prime_mensuelle)} FCFA</span>
-                                    </div>
-                                  )}
-                                </>
-                              ) : info.produit === 'confort_retraite' ? (
-                                /* For Retraite products: Highlight Capital Garanti, Prime Totale goes to financial details */
-                                <>
-                                  {info.capital_garanti !== undefined && (
-                                    <div className="flex justify-between items-center bg-white/10 rounded-lg p-3">
-                                      <span className="text-blue-100 font-semibold">Capital Garanti</span>
-                                      <span className="text-2xl font-bold text-yellow-300">{formatCFA(info.capital_garanti)} FCFA</span>
-                                    </div>
-                                  )}
-                                  {info.capital_deces !== undefined && (
-                                    <div className="flex justify-between items-center text-sm">
-                                      <span className="text-blue-200">Capital Décès</span>
-                                      <span className="font-semibold">{formatCFA(info.capital_deces)} FCFA</span>
-                                    </div>
-                                  )}
-                                </>
-                              ) : info.produit === 'elikia_scolaire' ? (
-                                /* For Elikia: Only show Rente Annuelle in product highlights (rest goes to financial details) */
-                                <>
-                                  {info.rente_annuelle !== undefined && (
-                                    <div className="flex justify-between items-center bg-white/10 rounded-lg p-3">
-                                      <span className="text-blue-100 font-semibold">Rente Annuelle</span>
-                                      <span className="text-2xl font-bold text-yellow-300">{formatCFA(info.rente_annuelle)} FCFA</span>
-                                    </div>
-                                  )}
-                                  {info.capital_garanti !== undefined && (
-                                    <div className="flex justify-between items-center text-sm">
-                                      <span className="text-blue-200">Capital Garanti</span>
-                                      <span className="font-semibold">{formatCFA(info.capital_garanti)} FCFA</span>
-                                    </div>
-                                  )}
-                                </>
-                              ) : info.produit === 'mobateli' ? (
-                                /* For Mobateli: Highlight Capital DTC/IAD and Tranche d'âge */
-                                <>
-                                  {info.capital_dtc_iad !== undefined && (
-                                    <div className="flex justify-between items-center bg-white/10 rounded-lg p-3">
-                                      <span className="text-blue-100 font-semibold">Capital DTC/IAD</span>
-                                      <span className="text-2xl font-bold text-yellow-300">{formatCFA(info.capital_dtc_iad)} FCFA</span>
-                                    </div>
-                                  )}
-                                  {info.tranche_age && (
-                                    <div className="flex justify-between items-center text-sm">
-                                      <span className="text-blue-200">Tranche d'âge</span>
-                                      <span className="font-semibold">{info.tranche_age}</span>
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <div className="flex justify-between items-center">
-                                  <span className="text-blue-200">Prime Totale</span>
-                                  <span className="text-2xl font-bold">{formatCFA(info.prime_totale || 0)} FCFA</span>
-                                </div>
-                              )}
+                                {/* Prime Mensuelle */}
+                                {(info.cotisation_mensuelle !== undefined || info.prime_periodique_saisie !== undefined || info.prime_mensuelle !== undefined) && (
+                                  <div className="flex justify-between items-center text-xs py-1.5">
+                                    <span className="text-blue-200">Prime mensuelle</span>
+                                    <span className="font-bold">{formatCFA(info.cotisation_mensuelle || info.prime_periodique_saisie || info.prime_mensuelle)} FCFA</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : info.produit === 'confort_retraite' ? (
+                              /* For Retraite products: Highlight Capital Garanti, Prime Totale goes to financial details */
+                              <>
+                                {info.capital_garanti !== undefined && (
+                                  <div className="flex justify-between items-center bg-white/15 rounded-xl p-3 mb-2 border border-white/5">
+                                    <span className="text-blue-100 font-semibold text-sm">Capital Garanti</span>
+                                    <span className="text-xl font-black text-yellow-300">{formatCFA(info.capital_garanti)} FCFA</span>
+                                  </div>
+                                )}
+                                {info.capital_deces !== undefined && (
+                                  <div className="flex justify-between items-center text-xs py-1">
+                                    <span className="text-blue-200">Capital Décès</span>
+                                    <span className="font-bold">{formatCFA(info.capital_deces)} FCFA</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : info.produit === 'elikia_scolaire' ? (
+                              /* For Elikia: Only show Rente Annuelle in product highlights (rest goes to financial details) */
+                              <>
+                                {info.rente_annuelle !== undefined && (
+                                  <div className="flex justify-between items-center bg-white/15 rounded-xl p-3 mb-2 border border-white/5">
+                                    <span className="text-blue-100 font-semibold text-sm">Rente Annuelle</span>
+                                    <span className="text-xl font-black text-yellow-300">{formatCFA(info.rente_annuelle)} FCFA</span>
+                                  </div>
+                                )}
+                                {info.capital_garanti !== undefined && (
+                                  <div className="flex justify-between items-center text-xs py-1">
+                                    <span className="text-blue-200">Capital Garanti</span>
+                                    <span className="font-bold">{formatCFA(info.capital_garanti)} FCFA</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : info.produit === 'mobateli' ? (
+                              /* For Mobateli: Highlight Capital DTC/IAD and Tranche d'âge */
+                              <>
+                                {info.capital_dtc_iad !== undefined && (
+                                  <div className="flex justify-between items-center bg-white/15 rounded-xl p-3 mb-2 border border-white/5">
+                                    <span className="text-blue-100 font-semibold text-sm">Capital DTC/IAD</span>
+                                    <span className="text-xl font-black text-yellow-300">{formatCFA(info.capital_dtc_iad)} FCFA</span>
+                                  </div>
+                                )}
+                                {info.tranche_age && (
+                                  <div className="flex justify-between items-center text-xs py-1">
+                                    <span className="text-blue-200">Tranche d'âge</span>
+                                    <span className="font-bold">{info.tranche_age}</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex justify-between items-center bg-white/15 rounded-xl p-3 border border-white/5">
+                                <span className="text-blue-100 font-semibold text-sm">Prime Totale</span>
+                                <span className="text-xl font-black text-yellow-300">{formatCFA(info.prime_totale || 0)} FCFA</span>
+                              </div>
+                            )}
 
-                              {info.prime_mensuelle && info.produit !== 'confort_etudes' && info.produit !== 'elikia_scolaire' && info.produit !== 'mobateli' && (
-                                <div className="flex justify-between items-center text-sm">
-                                  <span className="text-blue-200">Mensualité</span>
-                                  <span className="font-semibold">{formatCFA(info.prime_mensuelle)} FCFA</span>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
+                            {info.prime_mensuelle && info.produit !== 'confort_etudes' && info.produit !== 'elikia_scolaire' && info.produit !== 'mobateli' && (
+                              <div className="flex justify-between items-center text-xs py-1">
+                                <span className="text-blue-200">Mensualité</span>
+                                <span className="font-bold">{formatCFA(info.prime_mensuelle)} FCFA</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
                         {/* Financial Details Card */}
-                        <Card className="shadow-sm">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                                <DollarSign className="h-4 w-4 text-green-600" />
-                              </div>
-                              <CardTitle className="text-lg">Détails Financiers</CardTitle>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
+                        <StepCard>
+                          <StepSectionHeader
+                            icon={<DollarSign className="h-4 w-4" />}
+                            title="Détails Financiers"
+                            subtitle="Calcul des garanties et primes"
+                            accentColor="emerald"
+                          />
+                          <div className="p-6 space-y-3">
                             {info.montant_pret && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Montant Prêt</span>
-                                <span className="font-semibold">{formatCFA(info.montant_pret)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.montant_pret)} FCFA</span>
                               </div>
                             )}
                             {info.duree_mois && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Durée</span>
-                                <span className="font-semibold">{info.duree_mois} mois</span>
+                                <span className="font-semibold text-gray-800">{info.duree_mois} mois</span>
                               </div>
                             )}
                             {info.prime_nette && info.produit !== 'mobateli' && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Prime Nette</span>
-                                <span className="font-semibold">{formatCFA(info.prime_nette)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.prime_nette)} FCFA</span>
                               </div>
                             )}
                             {/* Études-specific fields */}
                             {info.montant_rente_annuel && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Rente Annuelle</span>
-                                <span className="font-semibold">{formatCFA(info.montant_rente_annuel)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.montant_rente_annuel)} FCFA</span>
                               </div>
                             )}
                             {info.prime_unique && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Capital Unique</span>
-                                <span className="font-semibold">{formatCFA(info.prime_unique)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.prime_unique)} FCFA</span>
                               </div>
                             )}
                             {info.prime_annuelle && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Prime Annuelle</span>
-                                <span className="font-semibold">{formatCFA(info.prime_annuelle)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.prime_annuelle)} FCFA</span>
                               </div>
                             )}
                             {/* Elikia-specific: Full Financial Details */}
                             {info.produit === 'elikia_scolaire' && (
                               <>
                                 {info.prime_nette_annuelle && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Prime Nette Annuelle</span>
-                                    <span className="font-semibold">{formatCFA(info.prime_nette_annuelle)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.prime_nette_annuelle)} FCFA</span>
                                   </div>
                                 )}
                                 {info.prime_mensuelle && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Prime Mensuelle</span>
-                                    <span className="font-semibold">{formatCFA(info.prime_mensuelle)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.prime_mensuelle)} FCFA</span>
                                   </div>
                                 )}
                                 {info.frais_accessoires && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Frais Accessoires</span>
-                                    <span className="font-semibold">{formatCFA(info.frais_accessoires)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.frais_accessoires)} FCFA</span>
                                   </div>
                                 )}
                                 {info.prime_totale && (
-                                  <div className="flex justify-between py-2 border-b border-green-100 bg-green-50/50 -mx-4 px-4">
+                                  <div className="flex justify-between py-2 border-b border-green-100 bg-green-50/50 -mx-4 px-4 text-sm">
                                     <span className="text-green-700 font-medium">Prime Totale</span>
                                     <span className="font-bold text-green-700">{formatCFA(info.prime_totale)} FCFA</span>
                                   </div>
@@ -3460,27 +3456,27 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                             {info.produit === 'epargne_plus' && (
                               <>
                                 {info.interets_totaux !== undefined && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Intérêts Totaux</span>
-                                    <span className="font-semibold">{formatCFA(info.interets_totaux)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.interets_totaux)} FCFA</span>
                                   </div>
                                 )}
                                 {info.frais_adhesion !== undefined && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Frais d'Adhésion</span>
-                                    <span className="font-semibold">{formatCFA(info.frais_adhesion)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.frais_adhesion)} FCFA</span>
                                   </div>
                                 )}
                                 {info.taux_interet_annuel_pourcent !== undefined && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Taux Intérêt Annuel</span>
-                                    <span className="font-semibold">{info.taux_interet_annuel_pourcent} %</span>
+                                    <span className="font-semibold text-gray-800">{info.taux_interet_annuel_pourcent} %</span>
                                   </div>
                                 )}
                                 {info.nombre_mensualites !== undefined && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Nombre de mensualités</span>
-                                    <span className="font-semibold">{info.nombre_mensualites} mois</span>
+                                    <span className="font-semibold text-gray-800">{info.nombre_mensualites} mois</span>
                                   </div>
                                 )}
                               </>
@@ -3488,25 +3484,25 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                             {info.produit === 'mobateli' && (
                               <>
                                 {info.prime_nette && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Prime Nette</span>
-                                    <span className="font-semibold">{formatCFA(info.prime_nette)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.prime_nette)} FCFA</span>
                                   </div>
                                 )}
                                 {info.prime_mensuelle && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Prime Mensuelle</span>
-                                    <span className="font-semibold">{formatCFA(info.prime_mensuelle)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.prime_mensuelle)} FCFA</span>
                                   </div>
                                 )}
                                 {info.frais_accessoires && (
-                                  <div className="flex justify-between py-2 border-b border-gray-100">
+                                  <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                     <span className="text-gray-500">Frais Accessoires</span>
-                                    <span className="font-semibold">{formatCFA(info.frais_accessoires)} FCFA</span>
+                                    <span className="font-semibold text-gray-800">{formatCFA(info.frais_accessoires)} FCFA</span>
                                   </div>
                                 )}
                                 {info.prime_totale && (
-                                  <div className="flex justify-between py-2 border-b border-green-100 bg-green-50/50 -mx-4 px-4">
+                                  <div className="flex justify-between py-2 border-b border-green-100 bg-green-50/50 -mx-4 px-4 text-sm">
                                     <span className="text-green-700 font-medium">Prime Totale</span>
                                     <span className="font-bold text-green-700">{formatCFA(info.prime_totale)} FCFA</span>
                                   </div>
@@ -3514,105 +3510,99 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                               </>
                             )}
                             {info.frais_accessoires && !['confort_retraite', 'epargne_plus', 'elikia_scolaire', 'mobateli'].includes(info.produit) && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Frais Accessoires</span>
-                                <span className="font-semibold">{formatCFA(info.frais_accessoires)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.frais_accessoires)} FCFA</span>
                               </div>
                             )}
                             {info.duree_paiement && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Durée Cotisation</span>
-                                <span className="font-semibold">{info.duree_paiement} ans</span>
+                                <span className="font-semibold text-gray-800">{info.duree_paiement} ans</span>
                               </div>
                             )}
                             {info.duree_service && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Durée Service</span>
-                                <span className="font-semibold">{info.duree_service} ans</span>
+                                <span className="font-semibold text-gray-800">{info.duree_service} ans</span>
                               </div>
                             )}
                             {info.surprime_montant && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Surprime</span>
                                 <span className="font-semibold text-orange-600">{formatCFA(info.surprime_montant)} FCFA</span>
                               </div>
                             )}
                             {info.prime_epargne && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Prime Épargne</span>
-                                <span className="font-semibold">{formatCFA(info.prime_epargne)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.prime_epargne)} FCFA</span>
                               </div>
                             )}
                             {info.prime_deces && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Prime Décès</span>
-                                <span className="font-semibold">{formatCFA(info.prime_deces)} FCFA</span>
-                              </div>
-                            )}
-                            {info.net_a_debourser && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
-                                {/*<span className="text-gray-500">Net à débourser</span>
-                              <span className="font-bold text-blue-600">{Number(info.net_a_debourser).toLocaleString()} FCFA</span>*/}
+                                <span className="font-semibold text-gray-800">{formatCFA(info.prime_deces)} FCFA</span>
                               </div>
                             )}
                             {info.prime_periodique_saisie && (
-                              <div className="flex justify-between py-2 border-b border-gray-100 italic text-gray-400">
+                              <div className="flex justify-between py-2 border-b border-gray-100 italic text-gray-400 text-sm">
                                 <span className="">Prime Périodique (Saisie)</span>
                                 <span className="font-semibold">{formatCFA(info.prime_periodique_saisie)} FCFA</span>
                               </div>
                             )}
                             {info.frais_accessoires && ['confort_retraite', 'epargne_plus'].includes(info.produit) && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Frais Accessoires</span>
-                                <span className="font-semibold">{formatCFA(info.frais_accessoires)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.frais_accessoires)} FCFA</span>
                               </div>
                             )}
                             {info.prime_periodique_commerciale_api && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
-                                <span className="text-gray-500 font-semibold text-blue-600">Prime Périodique Commerciale</span>
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
+                                <span className="text-gray-500 font-semibold text-blue-600">Prime Commerciale</span>
                                 <span className="font-bold text-blue-600">{formatCFA(info.prime_periodique_commerciale_api)} FCFA</span>
                               </div>
                             )}
                             {info.capital_garanti !== undefined && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Capital Garanti</span>
                                 <span className="font-semibold text-purple-600">{formatCFA(info.capital_garanti)} FCFA</span>
                               </div>
                             )}
                             {info.capital_deces !== undefined && (
-                              <div className="flex justify-between py-2 border-b border-gray-100">
+                              <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
                                 <span className="text-gray-500">Capital Décès</span>
-                                <span className="font-semibold">{formatCFA(info.capital_deces)} FCFA</span>
+                                <span className="font-semibold text-gray-800">{formatCFA(info.capital_deces)} FCFA</span>
                               </div>
                             )}
                             {/* Prime Totale in financial details for Retraite products */}
                             {info.prime_totale !== undefined && ['confort_retraite', 'epargne_plus'].includes(info.produit) && (
-                              <div className="flex justify-between py-3 border-b-2 border-green-200 bg-green-50 rounded mt-2 -mx-2 px-2">
+                              <div className="flex justify-between py-2.5 border-b-2 border-green-200 bg-green-50/50 rounded mt-2 -mx-2 px-2 text-sm">
                                 <span className="text-green-800 font-bold">Prime Totale</span>
                                 <span className="font-bold text-green-800">{formatCFA(info.prime_totale)} FCFA</span>
                               </div>
                             )}
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </StepCard>
                       </div>
                     </div>
                   );
                 })()}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <p className="text-sm text-gray-500">
-                    En cliquant sur "Confirmer et Valider", le BIA sera généré et finalisé.
+                <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 font-medium max-w-md">
+                    En cliquant sur "Confirmer et Valider", le Bulletin d'Adhésion Individuel (BIA) sera généré et finalisé.
                   </p>
-                  <Button
+                  <button
+                    type="button"
                     onClick={onFinalSubmit}
                     disabled={isFinalSubmitting}
-                    size="lg"
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all px-8"
+                    className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:pointer-events-none"
                   >
                     {isFinalSubmitting ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         Validation en cours...
                       </>
                     ) : (
@@ -3621,22 +3611,19 @@ export function SimulationForm({ mode = "create" }: SimulationFormProps) {
                         Confirmer et Valider
                       </>
                     )}
-                  </Button>
+                  </button>
                 </div>
               </>
             ) : (
-              <Card className="border-red-200 bg-red-50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3 text-red-600">
-                    <AlertCircle className="h-6 w-6" />
-                    <p className="font-medium">Impossible de charger les informations du BIA.</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-red-50 border border-red-100 p-6 rounded-xl text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <AlertCircle className="h-8 w-8 text-red-500" />
+                  <p className="font-semibold text-red-800 text-sm">Impossible de charger les informations du BIA.</p>
+                </div>
+              </div>
             )}
-          </div>
-        )
-      }
+        </StepContainer>
+      )}
     </div>
   );
 }

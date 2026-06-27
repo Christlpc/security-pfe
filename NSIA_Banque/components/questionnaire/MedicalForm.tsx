@@ -18,6 +18,7 @@ import { MedicalScoring } from "@/src/domain/medical/MedicalScoring";
 import type { QuestionnaireMedical } from "@/types";
 import toast from "react-hot-toast";
 import { Loader2, ArrowRight, Activity, Heart, Ruler, Scale, AlertCircle } from "lucide-react";
+import { StepCard, StepSectionHeader } from "../simulations/SimulationStepper";
 
 const questionnaireSchema = z.object({
   // Use coerce to auto-convert string inputs to numbers (handles pre-filled data from API)
@@ -519,14 +520,14 @@ export function MedicalForm({ simulationId, initialData, onSubmit: onWizardSubmi
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-in fade-in duration-500">
       {/* 1. Données Physiques */}
-      <Card className="border-none shadow-md overflow-hidden">
-        <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-          <div className="bg-blue-100 p-2 rounded-lg">
-            <Ruler className="w-5 h-5 text-blue-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800">Données Physiques</h3>
-        </div>
-        <CardContent className="p-6">
+      <StepCard>
+        <StepSectionHeader
+          icon={<Ruler className="w-4 h-4" />}
+          title="Données Physiques"
+          subtitle="Taille, poids et tension artérielle de l'assuré"
+          accentColor="blue"
+        />
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label className="text-gray-600 text-xs uppercase tracking-wider font-semibold">Taille (cm)</Label>
@@ -578,18 +579,18 @@ export function MedicalForm({ simulationId, initialData, onSubmit: onWizardSubmi
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </StepCard>
 
       {/* 2. Habitudes de Vie */}
-      <Card className="border-none shadow-md overflow-hidden">
-        <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-          <div className="bg-emerald-100 p-2 rounded-lg">
-            <Activity className="w-5 h-5 text-emerald-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800">Habitudes de Vie</h3>
-        </div>
-        <CardContent className="p-6 space-y-4">
+      <StepCard>
+        <StepSectionHeader
+          icon={<Activity className="w-4 h-4" />}
+          title="Habitudes de Vie"
+          subtitle="Consommation de tabac, alcool et loisirs"
+          accentColor="emerald"
+        />
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
               <input type="hidden" {...register("fumeur")} />
@@ -643,18 +644,18 @@ export function MedicalForm({ simulationId, initialData, onSubmit: onWizardSubmi
               <Input {...register("distractions")} placeholder="Ex: Jardinage, Lecture, Voyages..." />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </StepCard>
 
       {/* 3. Antécédents Médicaux */}
-      <Card className="border-none shadow-md overflow-hidden">
-        <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-          <div className="bg-rose-100 p-2 rounded-lg">
-            <Heart className="w-5 h-5 text-rose-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800">Antécédents Médicaux</h3>
-        </div>
-        <CardContent className="p-6">
+      <StepCard>
+        <StepSectionHeader
+          icon={<Heart className="w-4 h-4" />}
+          title="Antécédents Médicaux"
+          subtitle="Déclarations de santé et pathologies"
+          accentColor="rose"
+        />
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
             {MEDICAL_QUESTIONS.map((question) => (
               <div key={question.id} className="space-y-3">
@@ -724,9 +725,8 @@ export function MedicalForm({ simulationId, initialData, onSubmit: onWizardSubmi
               </div>
             ))}
           </div>
-
-        </CardContent>
-      </Card>
+        </div>
+      </StepCard>
 
       {/* Affichage du score */}
       {
