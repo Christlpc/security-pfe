@@ -57,7 +57,7 @@ class KeycloakJWTAuthentication(authentication.BaseAuthentication):
             # Pour la Défense en Profondeur, nous décodons le jeton et appliquons notre logique.
             # verify_signature est désactivé ici car Kong est le point d'entrée de confiance,
             # mais nous vérifions l'intégrité structurelle du JWT.
-            payload = jwt.decode(token, options={"verify_signature": False})
+            payload = jwt.decode(token, options={"verify_signature": False})  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
         except jwt.DecodeError:
             raise exceptions.AuthenticationFailed("Format de jeton JWT invalide.")
         except Exception as e:

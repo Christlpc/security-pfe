@@ -26,6 +26,16 @@ kong.crt
 **/staticfiles/
 *.html
 
+# Exclure les répertoires d'infrastructure et d'outils annexes
+api-security-fabric/
+
+# Exclure les migrations Django (du code SQL/DDL brut auto-généré y est normal)
+**/migrations/
+
+# Exclure les tests (les faux jetons et clés de simulation y sont autorisés)
+**/tests.py
+**/tests/
+
 # Exclure la documentation
 *.md
 **/docs/

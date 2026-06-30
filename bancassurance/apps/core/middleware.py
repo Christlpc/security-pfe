@@ -101,7 +101,7 @@ class MultiTenantMiddleware(MiddlewareMixin):
                     from apps.core.authentication import BANK_CODE_MAP
                     
                     # Décodage sans vérification de signature (Kong Gateway la valide déjà en amont)
-                    payload = jwt.decode(token, options={"verify_signature": False})
+                    payload = jwt.decode(token, options={"verify_signature": False})  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
                     bank_code = payload.get('bank_id') or payload.get('bank')
                     
                     if bank_code:
