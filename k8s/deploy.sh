@@ -119,6 +119,12 @@ echo "   ✓ Backend Django déployé (2 replicas)"
 echo ""
 echo "🔍 [PHASE 4] Déploiement du SOC (Wazuh + Suricata)..."
 
+# Serveur de Messagerie (Mailpit - Relais SMTP pour alertes)
+echo "   ✉️  Serveur de messagerie (Mailpit)..."
+kubectl apply -f "$K8S_DIR/nsia-security/wazuh/deployment-mail.yaml"
+kubectl apply -f "$K8S_DIR/nsia-security/wazuh/service-mail.yaml"
+echo "   ✓ Mailpit SMTP & UI déployé"
+
 # Wazuh Manager
 echo "   📊 Wazuh Manager..."
 kubectl apply -f "$K8S_DIR/nsia-security/wazuh/configmap-wazuh.yaml"
@@ -163,6 +169,7 @@ echo "║                                                          ║"
 echo "║  🌐 API Gateway:  https://4.223.87.112:30843            ║"
 echo "║  🔑 Keycloak:     https://4.223.87.112:30843/admin/     ║"
 echo "║  📊 Wazuh SOC:    http://4.223.87.112:30601             ║"
+echo "║  ✉️  Mail Alerts:  http://4.223.87.112:30625             ║"
 echo "║                                                          ║"
 echo "║  ⚠️  N'oubliez pas :                                    ║"
 echo "║  1. Initialiser + Unseal Vault                           ║"
