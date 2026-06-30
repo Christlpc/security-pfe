@@ -45,3 +45,8 @@ GHSA-vmf3-w455-68vh
 
 # --- glob (Vérifié : dépendance de la suite d'outils de dev eslint) ---
 GHSA-5j98-mcp5-4vw2
+
+# --- cross-spawn (Vérifié : utilitaire npm global de l'image de base node:alpine) ---
+CVE-2024-21538
+GHSA-4rr6-2vfc-39v4
+
