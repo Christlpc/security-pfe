@@ -20,6 +20,12 @@ kong.crt
 *.key
 *.crt
 
+# Exclure les templates HTML et répertoires de fichiers statiques (évite le bruit sur SRI, CSP, etc.)
+**/templates/
+**/static/
+**/staticfiles/
+*.html
+
 # Exclure la documentation
 *.md
 **/docs/

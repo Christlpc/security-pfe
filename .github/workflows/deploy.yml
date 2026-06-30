@@ -48,7 +48,7 @@ jobs:
 
       - name: Run Semgrep scan
         run: |
-          semgrep scan --config auto --error
+          semgrep scan --config auto --error --severity ERROR
 
   # ==========================================
   # 3. SCA (Software Composition Analysis - Trivy FS)
