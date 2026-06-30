@@ -1,4 +1,5 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
+RUN apk update && apk upgrade --no-cache
 
 # Installer les dépendances système nécessaires
 FROM base AS deps
