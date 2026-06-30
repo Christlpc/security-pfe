@@ -197,9 +197,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy] # Exécuté uniquement après le déploiement sur la cible active
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: 'http://4.223.87.112'
+          rules_file_name: '.zap/rules.tsv'
+          allow_issue_writing: false
           fail_action: 'true' # Bloque le job en cas d'alertes graves
