@@ -80,16 +80,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run Checkov Action
-        uses: bridgecrewio/checkov-action@master
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          directory: .
-          framework: all # Scanne Kubernetes, Ansible, Dockerfile et docker-compose
-          soft_fail: false
-          hard_fail_on: HIGH,CRITICAL # Échoue uniquement en cas de faille HIGH ou CRITICAL
-          output_format: cli
-          config_file: .checkov.yaml # Charge le fichier d'exclusions
-          container_user: 0
+          python-version: '3.11'
+
+      - name: Install Checkov
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install checkov
+
+      - name: Run Checkov scan
+        run: |
+          checkov -d . --framework all --config-file .checkov.yaml --hard-fail-on HIGH,CRITICAL
 
   # ==========================================
   # 5. CONTAINER SCANNING (Trivy Image Scan)
