@@ -1,0 +1,26 @@
+# -----------------------------------------------------------------------------
+# SEMGREP IGNORE FILE
+# -----------------------------------------------------------------------------
+# Ce fichier configure Semgrep pour ignorer les répertoires et fichiers
+# non applicables aux scans SAST de code source (ex: configurations K8s, scripts de test).
+# -----------------------------------------------------------------------------
+
+# Exclure les manifestes Kubernetes (déjà scannés et gérés par Checkov)
+k8s/
+
+# Exclure les configurations Ansible (déjà scannées et gérées par Checkov)
+nsia_iam_central_enforcer/
+
+# Exclure les scripts de tests d'intrusion et tests OWASP (contenant des faux tokens/payloads)
+security-tests/
+
+# Exclure les certificats et clés SSL générés pour le POC
+kong.key
+kong.crt
+*.key
+*.crt
+
+# Exclure la documentation
+*.md
+**/docs/
+**/README.md
