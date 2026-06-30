@@ -8,6 +8,9 @@ on:
       - 'api-security-fabric/config/**'
       - 'api-security-fabric/scripts/**'
 
+permissions:
+  contents: read
+
 jobs:
   validate-and-deploy:
     name: Validate and Sync with decK
