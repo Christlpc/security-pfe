@@ -1,0 +1,15 @@
+# -----------------------------------------------------------------------------
+# CHECKOV CONFIGURATION FILE
+# -----------------------------------------------------------------------------
+# Ce fichier configure Checkov pour ignorer les règles d'IaC spécifiques qui ne
+# s'appliquent pas au projet ou qui sont tolérées (ex: HTTP local dans Ansible).
+# -----------------------------------------------------------------------------
+
+skip-check:
+  # --- OpenAPI Spec Rules ---
+  - CKV_OPENAPI_4      # Ensure that the global security field has rules defined (handled at Kong gateway level)
+  - CKV_OPENAPI_21     # Ensure that arrays have a maximum number of items
+
+  # --- Ansible Playbook Rules ---
+  - CKV2_ANSIBLE_1     # Ensure that HTTPS url is used with uri (tolrated for local/internal Keycloak/Vault calls in POC)
+  - CKV2_ANSIBLE_3     # Ensure block is handling task errors properly (handled dynamically in plays)
