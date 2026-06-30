@@ -113,6 +113,7 @@ jobs:
         with:
           context: ./NSIA_Banque
           file: ./NSIA_Banque/Dockerfile
+          load: true # Charge l'image dans le démon Docker local pour le scan Trivy
           push: false # Construit l'image uniquement dans le runner pour analyse
           tags: nsia-frontend:latest
           build-args: |
