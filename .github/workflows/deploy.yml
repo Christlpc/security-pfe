@@ -1,4 +1,4 @@
-name: CI/CD VM Auto-Update
+name: DevSecOps CI/CD Pipeline
 
 on:
   push:
@@ -6,10 +6,127 @@ on:
       - main
 
 jobs:
+  # ==========================================
+  # 1. SECRET SCANNING (Gitleaks)
+  # ==========================================
+  secrets-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Nécessaire pour que Gitleaks scanne tout l'historique des commits
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # 2. SAST (Static Application Security Testing - Semgrep)
+  # ==========================================
+  sast-scan:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Semgrep
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install semgrep
+
+      - name: Run Semgrep scan
+        run: |
+          semgrep scan --config auto --error
+
+  # ==========================================
+  # 3. SCA (Software Composition Analysis - Trivy FS)
+  # ==========================================
+  sca-scan:
+    name: SCA (Trivy Dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy FS Scan (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1' # Bloque le pipeline en cas de vulnérabilité HIGH ou CRITICAL
+          ignore-unfixed: true # Ignore les vulnérabilités sans correctif disponible
+
+  # ==========================================
+  # 4. IaC SCANNING (Infrastructure as Code - Checkov)
+  # ==========================================
+  iac-scan:
+    name: IaC Scanning (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov Action
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: all # Scanne Kubernetes, Ansible, Dockerfile et docker-compose
+          soft_fail: false # Échoue si des failles de conformité ou sécurité sont trouvées
+          output_format: cli
+
+  # ==========================================
+  # 5. CONTAINER SCANNING (Trivy Image Scan)
+  # ==========================================
+  build-and-scan-image:
+    name: Container Build & Scan
+    runs-on: ubuntu-latest
+    needs: [secrets-scan, sast-scan, sca-scan, iac-scan] # Dépend de la réussite de toutes les analyses statiques
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Local Next.js Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./NSIA_Banque
+          file: ./NSIA_Banque/Dockerfile
+          push: false # Construit l'image uniquement dans le runner pour analyse
+          tags: nsia-frontend:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:8000
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=client-id-scan
+            KEYCLOAK_ISSUER=http://localhost:8080/realms/nsia
+
+      - name: Scan Next.js Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nsia-frontend:latest'
+          scan-type: 'image'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1' # Bloque le pipeline en cas de vulnérabilité d'image HIGH ou CRITICAL
+          ignore-unfixed: true
+
+  # ==========================================
+  # 6. DEPLOYMENT (VM SSH)
+  # ==========================================
   deploy:
     name: Deploy to VM
     runs-on: ubuntu-latest
-
+    needs: [build-and-scan-image] # Le déploiement s'exécute uniquement si l'image est valide et sécurisée
     steps:
       - name: Execute remote commands via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -61,3 +178,18 @@ jobs:
               nsia-frontend:latest
 
             echo "✅ Déploiement du backend et du frontend terminé avec succès !"
+
+  # ==========================================
+  # 7. DAST (Dynamic Application Security Testing - OWASP ZAP)
+  # ==========================================
+  dast-scan:
+    name: DAST (OWASP ZAP Scan)
+    runs-on: ubuntu-latest
+    needs: [deploy] # Exécuté uniquement après le déploiement sur la cible active
+    steps:
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://4.223.87.112'
+          fail_action: 'true' # Bloque le job en cas d'alertes graves
