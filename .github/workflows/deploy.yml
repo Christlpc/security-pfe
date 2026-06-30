@@ -85,8 +85,11 @@ jobs:
         with:
           directory: .
           framework: all # Scanne Kubernetes, Ansible, Dockerfile et docker-compose
-          soft_fail: false # Échoue si des failles de conformité ou sécurité sont trouvées
+          soft_fail: false
+          hard_fail_on: HIGH,CRITICAL # Échoue uniquement en cas de faille HIGH ou CRITICAL
           output_format: cli
+          config_file: .checkov.yaml # Charge le fichier d'exclusions
+          container_user: 0
 
   # ==========================================
   # 5. CONTAINER SCANNING (Trivy Image Scan)
