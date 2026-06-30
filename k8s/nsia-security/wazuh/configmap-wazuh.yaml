@@ -78,6 +78,36 @@ data:
       </rule>
     </group>
 
+  agent.conf: |
+    <agent_config>
+      <!-- Surveillance des logs de conteneurs Kubernetes -->
+      <localfile>
+        <log_format>json</log_format>
+        <location>/var/log/containers/*.log</location>
+      </localfile>
+
+      <!-- Surveillance d'intégrité des fichiers système (FIM) -->
+      <syscheck>
+        <disabled>no</disabled>
+        <frequency>43200</frequency>
+        <directories check_all="yes" realtime="yes">/etc,/usr/bin,/usr/sbin,/bin,/sbin</directories>
+      </syscheck>
+    </agent_config>
+
+  ar_config.xml: |
+    <command>
+      <name>firewall-drop</name>
+      <executable>firewall-drop</executable>
+      <timeout_allowed>yes</timeout_allowed>
+    </command>
+
+    <active-response>
+      <command>firewall-drop</command>
+      <location>local</location>
+      <rules_id>100001,100007</rules_id>
+      <timeout>600</timeout>
+    </active-response>
+
   01-setup-api.sh: |
     #!/bin/bash
     set -e
@@ -102,45 +132,15 @@ data:
     # 3. Configurer agent.conf (Shared config pour les agents DaemonSet)
     echo "Configuring shared agent.conf..."
     mkdir -p /var/ossec/etc/shared/default
-    cat << 'EOF' > /var/ossec/etc/shared/default/agent.conf
-    <agent_config>
-      <!-- Surveillance des logs de conteneurs Kubernetes -->
-      <localfile>
-        <log_format>json</log_format>
-        <location>/var/log/containers/*.log</location>
-      </localfile>
-
-      <!-- Surveillance d'intégrité des fichiers système (FIM) -->
-      <syscheck>
-        <disabled>no</disabled>
-        <frequency>43200</frequency>
-        <directories check_all="yes" realtime="yes">/etc,/usr/bin,/usr/sbin,/bin,/sbin</directories>
-      </syscheck>
-    </agent_config>
-EOF
+    cp -f /wazuh-custom/agent.conf /var/ossec/etc/shared/default/agent.conf
     chown -R wazuh:wazuh /var/ossec/etc/shared/default
     chmod 660 /var/ossec/etc/shared/default/agent.conf
 
     # 4. Configurer Active Response dans ossec.conf
     echo "Configuring Active Response..."
-    cat << 'EOF' > /tmp/ar_config.xml
-      <command>
-        <name>firewall-drop</name>
-        <executable>firewall-drop</executable>
-        <timeout_allowed>yes</timeout_allowed>
-      </command>
-
-      <active-response>
-        <command>firewall-drop</command>
-        <location>local</location>
-        <rules_id>100001,100007</rules_id>
-        <timeout>600</timeout>
-      </active-response>
-    </ossec_config>
-EOF
     sed -i 's|</ossec_config>||g' /var/ossec/etc/ossec.conf
-    cat /tmp/ar_config.xml >> /var/ossec/etc/ossec.conf
-    rm -f /tmp/ar_config.xml
+    cat /wazuh-custom/ar_config.xml >> /var/ossec/etc/ossec.conf
+    echo "</ossec_config>" >> /var/ossec/etc/ossec.conf
 
     # 5. Configurer les alertes mail dans ossec.conf
     echo "Configuring email alerts..."
