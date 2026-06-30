@@ -145,9 +145,9 @@ data:
     # 5. Configurer les alertes mail dans ossec.conf
     echo "Configuring email alerts..."
     sed -i 's|<email_notification>no</email_notification>|<email_notification>yes</email_notification>|g' /var/ossec/etc/ossec.conf
-    sed -i 's|<email_to>recipient@example.com</email_to>|<email_to>soc-alerts@nsia.cg</email_to>|g' /var/ossec/etc/ossec.conf
-    sed -i 's|<smtp_server>localhost</smtp_server>|<smtp_server>postfix-mail-service.nsia-security.svc.cluster.local</smtp_server>|g' /var/ossec/etc/ossec.conf
-    sed -i 's|<email_from>wazuh@example.com</email_from>|<email_from>wazuh-manager@nsia.cg</email_from>|g' /var/ossec/etc/ossec.conf
+    sed -i 's|<email_to>recipient@example.wazuh.com</email_to>|<email_to>soc-alerts@nsia.cg</email_to>|g' /var/ossec/etc/ossec.conf
+    sed -i 's|<smtp_server>smtp.example.wazuh.com</smtp_server>|<smtp_server>postfix-mail-service.nsia-security.svc.cluster.local</smtp_server>|g' /var/ossec/etc/ossec.conf
+    sed -i 's|<email_from>wazuh@example.wazuh.com</email_from>|<email_from>wazuh-manager@nsia.cg</email_from>|g' /var/ossec/etc/ossec.conf
     sed -i 's|<email_alert_level>12</email_alert_level>|<email_alert_level>10</email_alert_level>|g' /var/ossec/etc/ossec.conf
 
     echo "API and configurations setup completed successfully."
